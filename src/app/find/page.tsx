@@ -19,18 +19,18 @@ export default function FindPlugPage() {
   return (
     <main className="flex flex-col min-h-screen bg-bone">
       <Navbar />
-      
+
       {/* Search & Header */}
       <div className="bg-midnight pt-8 pb-12 px-4 shadow-lg">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl md:text-4xl font-display text-white mb-6">Find a verified Plug in Ikeja</h1>
-          
+
           <div className="flex flex-col md:flex-row gap-3">
-            <div className="relative flex-grow">
+            <div className="relative grow">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate w-5 h-5" />
-              <input 
-                type="text" 
-                placeholder="Search for an electrician or plumber..." 
+              <input
+                type="text"
+                placeholder="Search for an electrician or plumber..."
                 className="w-full bg-white rounded-pill py-3 pl-12 pr-4 text-midnight font-sans placeholder:text-slate focus:outline-none focus:ring-2 focus:ring-gold"
               />
             </div>
@@ -47,11 +47,10 @@ export default function FindPlugPage() {
         {/* Category Chips */}
         <div className="flex items-center gap-2 mb-8 overflow-x-auto no-scrollbar py-1">
           {categories.map((cat, i) => (
-            <button 
-              key={i} 
-              className={`px-6 py-2 rounded-pill font-medium text-sm transition-colors whitespace-nowrap ${
-                cat === "All" ? "bg-gold text-midnight" : "bg-white text-slate border border-slate/10 hover:border-gold/50"
-              }`}
+            <button
+              key={i}
+              className={`px-6 py-2 rounded-pill font-medium text-sm transition-colors whitespace-nowrap ${cat === "All" ? "bg-gold text-midnight" : "bg-white text-slate border border-slate/10 hover:border-gold/50"
+                }`}
             >
               {cat}
             </button>

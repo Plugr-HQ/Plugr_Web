@@ -17,24 +17,24 @@ export default function PlugWalletPage() {
       <div className="bg-midnight pt-8 pb-12 px-6 text-white text-center">
         <div className="max-w-7xl mx-auto">
           <div className="w-16 h-16 bg-gold rounded-full flex items-center justify-center mx-auto mb-4">
-             <Wallet className="w-8 h-8 text-midnight" />
+            <Wallet className="w-8 h-8 text-midnight" />
           </div>
           <h1 className="text-sm font-bold text-steel-blue uppercase tracking-widest mb-1">Total Balance</h1>
           <div className="text-4xl font-display text-white mb-8">₦54,200</div>
-          
+
           <div className="flex gap-4 max-w-sm mx-auto">
-             <button className="flex-1 bg-gold text-midnight py-3 rounded-pill font-bold text-sm">Withdraw</button>
-             <button className="flex-1 bg-white/10 border border-white/20 text-white py-3 rounded-pill font-bold text-sm">Bank Setup</button>
+            <button className="flex-1 bg-gold text-midnight py-3 rounded-pill font-bold text-sm">Withdraw</button>
+            <button className="flex-1 bg-white/10 border border-white/20 text-white py-3 rounded-pill font-bold text-sm">Bank Setup</button>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto w-full px-6 py-8">
         <div className="bg-gold/10 border border-gold/20 rounded-card p-4 flex gap-3 mb-8">
-           <Clock className="w-5 h-5 text-gold flex-shrink-0" />
-           <p className="text-xs text-midnight">
-              New job earnings are locked for 24 hours for safety. <span className="font-bold underline">Learn why</span>
-           </p>
+          <Clock className="w-5 h-5 text-gold shrink-0" />
+          <p className="text-xs text-midnight">
+            New job earnings are locked for 24 hours for safety. <span className="font-bold underline">Learn why</span>
+          </p>
         </div>
 
         <h2 className="text-xs font-bold text-slate uppercase tracking-widest mb-4">Recent Transactions</h2>

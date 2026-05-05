@@ -5,9 +5,9 @@ import { Button } from '@/src/components/Button'
 export default function AuthWelcomePage() {
   return (
     <main className="flex flex-col min-h-screen bg-midnight text-white px-6 py-12">
-      <div className="flex-grow flex flex-col items-center justify-center text-center">
+      <div className="grow flex flex-col items-center justify-center text-center">
         <Logo variant="light" className="mb-12" />
-        
+
         <h1 className="text-4xl md:text-5xl font-display mb-4 leading-tight">
           Join the artisan network built on <span className="text-gold">trust</span>.
         </h1>

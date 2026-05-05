@@ -5,9 +5,9 @@ export default function PlugSetupPage() {
     <main className="flex flex-col min-h-screen bg-bone px-6 py-8">
       <div className="max-w-sm mx-auto w-full">
         <div className="flex items-center gap-2 mb-8">
-          <div className="h-1 flex-grow bg-gold rounded-full" />
-          <div className="h-1 flex-grow bg-bone border border-slate/10 rounded-full" />
-          <div className="h-1 flex-grow bg-bone border border-slate/10 rounded-full" />
+          <div className="h-1 grow bg-gold rounded-full" />
+          <div className="h-1 grow bg-bone border border-slate/10 rounded-full" />
+          <div className="h-1 grow bg-bone border border-slate/10 rounded-full" />
         </div>
 
         <h1 className="text-3xl font-display text-midnight mb-2">Create your Plug profile</h1>
@@ -16,9 +16,9 @@ export default function PlugSetupPage() {
         <form className="space-y-6">
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate uppercase tracking-wider">Full Name</label>
-            <input 
-              type="text" 
-              placeholder="e.g. Suleiman Yusuf" 
+            <input
+              type="text"
+              placeholder="e.g. Suleiman Yusuf"
               className="w-full h-12 bg-white rounded-card border border-bone px-4 text-midnight font-sans focus:outline-none focus:ring-2 focus:ring-gold"
             />
           </div>
@@ -46,14 +46,14 @@ export default function PlugSetupPage() {
 
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate uppercase tracking-wider">Short Bio</label>
-            <textarea 
-              placeholder="Tell clients why they should hire you..." 
+            <textarea
+              placeholder="Tell clients why they should hire you..."
               className="w-full h-32 bg-white rounded-card border border-bone p-4 text-midnight font-sans focus:outline-none focus:ring-2 focus:ring-gold resize-none"
             />
           </div>
 
           <div className="pt-4">
-               <Button href="/onboarding/plug/verify" fullWidth>Continue</Button>
+            <Button href="/onboarding/plug/verify" fullWidth>Continue</Button>
           </div>
         </form>
       </div>

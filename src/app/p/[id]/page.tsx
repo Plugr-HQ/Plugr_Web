@@ -26,10 +26,10 @@ export default function PublicProfilePage() {
         {/* Profile Card */}
         <div className="bg-white rounded-card shadow-sm p-6 mb-6">
           <div className="flex flex-col md:flex-row gap-6 items-start">
-            <div className="w-24 h-24 md:w-32 md:h-32 bg-bone rounded-full flex items-center justify-center font-display font-bold text-3xl text-midnight flex-shrink-0">
-               SY
+            <div className="w-24 h-24 md:w-32 md:h-32 bg-bone rounded-full flex items-center justify-center font-display font-bold text-3xl text-midnight shrink-0">
+              SY
             </div>
-            <div className="flex-grow">
+            <div className="grow">
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-2xl md:text-3xl font-display text-midnight">{plug.name}</h1>
                 <div className="bg-gold text-midnight text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">
@@ -37,7 +37,7 @@ export default function PublicProfilePage() {
                 </div>
               </div>
               <p className="text-slate text-lg mb-4">{plug.trade}</p>
-              
+
               <div className="flex items-center gap-6 mb-6">
                 <div className="flex items-center gap-1">
                   <Star className="w-5 h-5 fill-gold text-gold" />
@@ -94,25 +94,25 @@ export default function PublicProfilePage() {
 
         {/* Reviews (Placeholder) */}
         <div className="bg-white rounded-card shadow-sm p-6">
-           <h2 className="font-bold text-midnight mb-6">Recent Reviews</h2>
-           <div className="space-y-8">
-             {[1, 2].map((_, i) => (
-               <div key={i} className="border-b border-bone last:border-0 pb-6 last:pb-0">
-                 <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1 font-bold">
-                       <Star className="w-3 h-3 fill-gold text-gold" />
-                       <Star className="w-3 h-3 fill-gold text-gold" />
-                       <Star className="w-3 h-3 fill-gold text-gold" />
-                       <Star className="w-3 h-3 fill-gold text-gold" />
-                       <Star className="w-3 h-3 fill-gold text-gold" />
-                    </div>
-                    <span className="text-xs text-slate">Oct 2023</span>
-                 </div>
-                 <p className="text-midnight text-sm mb-2">"Great work. Suleiman fixed my faulty DB board quickly and explained what was wrong. Very professional."</p>
-                 <span className="text-xs text-slate font-bold">— Funke A.</span>
-               </div>
-             ))}
-           </div>
+          <h2 className="font-bold text-midnight mb-6">Recent Reviews</h2>
+          <div className="space-y-8">
+            {[1, 2].map((_, i) => (
+              <div key={i} className="border-b border-bone last:border-0 pb-6 last:pb-0">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1 font-bold">
+                    <Star className="w-3 h-3 fill-gold text-gold" />
+                    <Star className="w-3 h-3 fill-gold text-gold" />
+                    <Star className="w-3 h-3 fill-gold text-gold" />
+                    <Star className="w-3 h-3 fill-gold text-gold" />
+                    <Star className="w-3 h-3 fill-gold text-gold" />
+                  </div>
+                  <span className="text-xs text-slate">Oct 2023</span>
+                </div>
+                <p className="text-midnight text-sm mb-2">"Great work. Suleiman fixed my faulty DB board quickly and explained what was wrong. Very professional."</p>
+                <span className="text-xs text-slate font-bold">— Funke A.</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
