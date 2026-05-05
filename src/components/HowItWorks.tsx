@@ -6,7 +6,7 @@ export function HowItWorks() {
   ]
 
   return (
-    <section className="bg-white py-16 px-4">
+    <section id="how-it-works" className="bg-white py-16 px-4">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-2xl md:text-3xl text-midnight text-center mb-12">How it works for you</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

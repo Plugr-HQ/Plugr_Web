@@ -58,9 +58,7 @@ export default function PaymentPage() {
            </div>
         </div>
 
-        <a href="/client/track/1">
-          <Button fullWidth className="h-14">Pay Now</Button>
-        </a>
+        <Button href="/client/track/1" fullWidth className="h-14">Pay Now</Button>
       </div>
     </main>
   )

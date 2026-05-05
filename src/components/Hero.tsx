@@ -11,8 +11,8 @@ export function Hero() {
           Find Nigeria's first verified skills identity platform for artisans. Connecting trusted electricians and plumbers in Ikeja with the edge to earn.
         </p>
         <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
-          <Button fullWidth className="md:w-auto">Find a Plug</Button>
-          <Button variant="outline" fullWidth className="md:w-auto">Become a Plug</Button>
+          <Button href="/find" fullWidth className="md:w-auto">Find a Plug</Button>
+          <Button variant="outline" href="/become-a-plug" fullWidth className="md:w-auto">Become a Plug</Button>
         </div>
       </div>
     </section>

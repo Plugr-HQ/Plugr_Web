@@ -1,11 +1,12 @@
+import Link from 'next/link'
 import { Star } from 'lucide-react'
 import { cn } from '@/src/lib/utils'
 
 export function FeaturedPlugs() {
   const plugs = [
-    { name: "Suleiman Yusuf", trade: "Electrician", rating: 4.8, status: "Verified", badge: "Verified" },
-    { name: "John Okoro", trade: "Plumber", rating: 4.9, status: "Available", badge: "Pro" },
-    { name: "Tunde Williams", trade: "Electrician", rating: 4.7, status: "Busy", badge: "Verified" }
+    { id: '1', name: "Suleiman Yusuf", trade: "Electrician", rating: 4.8, status: "Verified", badge: "Verified" },
+    { id: '2', name: "John Okoro", trade: "Plumber", rating: 4.9, status: "Available", badge: "Pro" },
+    { id: '3', name: "Tunde Williams", trade: "Electrician", rating: 4.7, status: "Busy", badge: "Verified" }
   ]
 
   return (
@@ -13,12 +14,12 @@ export function FeaturedPlugs() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl text-midnight">Featured Plugs in Ikeja</h2>
-          <a href="#" className="text-gold font-medium hover:underline">Browse all</a>
+          <Link href="/find" className="text-gold font-medium hover:underline">Browse all</Link>
         </div>
         
         <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-          {plugs.map((plug, i) => (
-            <div key={i} className="min-w-[280px] bg-white rounded-card shadow-sm p-4">
+          {plugs.map((plug) => (
+            <Link key={plug.id} href={`/p/${plug.id}`} className="min-w-[280px] bg-white rounded-card shadow-sm p-4 hover:shadow-md transition-shadow border border-transparent hover:border-gold/20">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 bg-slate rounded-full overflow-hidden">
                   <div className="w-full h-full bg-midnight/10 flex items-center justify-center text-slate font-bold">
@@ -51,7 +52,7 @@ export function FeaturedPlugs() {
                   {plug.status}
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Navbar } from '@/src/components/Navbar'
 import { MobileNav } from '@/src/components/MobileNav'
 import { Briefcase, Clock, TrendingUp, ChevronRight, AlertCircle } from 'lucide-react'
@@ -36,7 +37,7 @@ export default function PlugDashboardPage() {
 
       <div className="max-w-7xl mx-auto w-full px-6 -mt-8">
         {/* Verification Status (if not full) */}
-        <div className="bg-white rounded-card p-4 shadow-sm flex items-center gap-4 border border-amber-100 mb-6">
+        <Link href="/onboarding/plug/verify" className="bg-white rounded-card p-4 shadow-sm flex items-center gap-4 border border-amber-100 mb-6 hover:shadow-md transition-shadow">
            <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center text-amber-500">
               <AlertCircle className="w-6 h-6" />
            </div>
@@ -45,13 +46,13 @@ export default function PlugDashboardPage() {
               <p className="text-xs text-slate">Some features are locked while we review your NIN.</p>
            </div>
            <ChevronRight className="w-4 h-4 text-slate" />
-        </div>
+        </Link>
 
         {/* Active Jobs Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-bold text-slate uppercase tracking-widest">Active Jobs</h2>
-            <span className="text-xs text-gold font-bold">See all</span>
+            <Link href="/plug/dashboard" className="text-xs text-gold font-bold hover:underline">See all</Link>
           </div>
           
           <div className="bg-white rounded-card p-5 shadow-sm border border-bone">

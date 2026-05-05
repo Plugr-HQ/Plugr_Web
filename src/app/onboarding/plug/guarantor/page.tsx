@@ -60,9 +60,7 @@ export default function PlugGuarantorPage() {
           </div>
 
           <div className="pt-4">
-             <a href="/plug/dashboard" className="block">
-               <Button type="button" fullWidth>Finish Application</Button>
-             </a>
+               <Button href="/plug/dashboard" fullWidth>Finish Application</Button>
           </div>
         </form>
       </div>

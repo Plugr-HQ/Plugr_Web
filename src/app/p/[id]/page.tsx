@@ -118,7 +118,7 @@ export default function PublicProfilePage() {
 
       {/* Sticky Booking Bar (Mobile only is done with md:relative patterns) */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-bone md:relative md:bg-transparent md:border-0 md:max-w-4xl md:mx-auto md:px-0 md:pb-12">
-        <Button fullWidth className="h-14 md:h-12">Request this Plug</Button>
+        <Button href="/client/pay" fullWidth className="h-14 md:h-12">Request this Plug</Button>
       </div>
 
       <Footer />

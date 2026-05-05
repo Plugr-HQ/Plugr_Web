@@ -10,7 +10,7 @@ export function ArtisanSection() {
         <p className="text-steel-blue text-lg mb-10 max-w-2xl mx-auto">
           Build your verified professional identity. Plugr doesn't promise you jobs. It gives you the edge to earn them.
         </p>
-        <Button className="md:w-64">Become a Plug</Button>
+        <Button href="/become-a-plug" className="md:w-64">Become a Plug</Button>
       </div>
     </section>
   )

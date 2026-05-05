@@ -61,9 +61,7 @@ export default function PlugVerifyPage() {
           </p>
         </div>
 
-        <a href="/onboarding/plug/guarantor" className="block">
-          <Button fullWidth>Continue to Guarantor</Button>
-        </a>
+        <Button href="/onboarding/plug/guarantor" fullWidth>Continue to Guarantor</Button>
       </div>
     </main>
   )

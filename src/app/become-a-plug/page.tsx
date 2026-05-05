@@ -18,8 +18,8 @@ export default function BecomeAPlugPage() {
             Plugr doesn't promise you jobs. It gives you the edge to earn them. Join the most trusted artisan network in Ikeja.
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center">
-            <Button className="md:w-64">Register as a Plug</Button>
-            <Button variant="outline" className="md:w-64">Learn about verification</Button>
+            <Button href="/auth/phone?role=plug" className="md:w-64">Register as a Plug</Button>
+            <Button variant="outline" href="/onboarding/plug/verify" className="md:w-64">Learn about verification</Button>
           </div>
         </div>
       </section>
@@ -67,7 +67,7 @@ export default function BecomeAPlugPage() {
                 ))}
               </div>
               <div className="mt-12 text-center md:text-left">
-                <Button className="md:w-64">Get Started Now</Button>
+                <Button href="/auth/phone?role=plug" className="md:w-64">Get Started Now</Button>
               </div>
             </div>
             <div className="flex-1 bg-midnight rounded-card p-8 text-white relative overflow-hidden hidden md:block">

@@ -53,9 +53,7 @@ export default function PlugSetupPage() {
           </div>
 
           <div className="pt-4">
-             <a href="/onboarding/plug/verify" className="block">
-               <Button type="button" fullWidth>Continue</Button>
-             </a>
+               <Button href="/onboarding/plug/verify" fullWidth>Continue</Button>
           </div>
         </form>
       </div>

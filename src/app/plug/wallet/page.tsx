@@ -1,6 +1,7 @@
 import { Navbar } from '@/src/components/Navbar'
 import { MobileNav } from '@/src/components/MobileNav'
 import { Wallet, ArrowDownLeft, ArrowUpRight, Clock, ShieldCheck } from 'lucide-react'
+import { cn } from '@/src/lib/utils'
 
 export default function PlugWalletPage() {
   const transactions = [
@@ -71,8 +72,4 @@ export default function PlugWalletPage() {
       <MobileNav />
     </main>
   )
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(' ')
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, User, Wallet, Bell } from 'lucide-react'
 import { cn } from '@/src/lib/utils'
@@ -15,8 +16,8 @@ export function MobileNav({ role = 'plug' }: { role?: 'plug' | 'client' }) {
   ]
 
   const clientTabs = [
-    { icon: Home, label: "Home", href: "/client/home" },
-    { icon: Home, label: "My Jobs", href: "/client/jobs" }, // Use appropriate icons for others
+    { icon: Home, label: "Home", href: "/find" },
+    { icon: Home, label: "My Jobs", href: "/client/jobs" },
     { icon: Bell, label: "Alerts", href: "/client/notifications" },
     { icon: User, label: "Settings", href: "/client/settings" }
   ]
@@ -28,12 +29,12 @@ export function MobileNav({ role = 'plug' }: { role?: 'plug' | 'client' }) {
       {tabs.map((tab, i) => {
         const isActive = pathname === tab.href
         return (
-          <a key={i} href={tab.href} className="flex flex-col items-center gap-1 flex-1">
+          <Link key={i} href={tab.href} className="flex flex-col items-center gap-1 flex-1">
             <tab.icon className={cn("w-6 h-6", isActive ? "text-gold" : "text-slate")} />
             <span className={cn("text-[10px] font-bold uppercase tracking-wider", isActive ? "text-gold" : "text-slate")}>
               {tab.label}
             </span>
-          </a>
+          </Link>
         )
       })}
     </div>

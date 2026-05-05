@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Logo } from '@/src/components/Logo'
 import { Button } from '@/src/components/Button'
 
@@ -15,24 +16,24 @@ export default function AuthWelcomePage() {
         </p>
 
         <div className="w-full max-w-sm space-y-4">
-          <a href="/auth/phone?role=client" className="block">
+          <Link href="/auth/phone?role=client" className="block">
             <div className="bg-white group hover:bg-gold transition-colors p-6 rounded-card border border-white/10 text-left cursor-pointer">
               <h3 className="text-midnight font-bold text-xl mb-1 group-hover:text-midnight transition-colors">I need a Plug</h3>
               <p className="text-slate group-hover:text-midnight/70 transition-colors text-sm">Hire verified electricians and plumbers for your home or office.</p>
             </div>
-          </a>
+          </Link>
 
-          <a href="/auth/phone?role=plug" className="block">
+          <Link href="/auth/phone?role=plug" className="block">
             <div className="bg-deep-blue group hover:bg-gold transition-colors p-6 rounded-card border border-white/10 text-left cursor-pointer">
               <h3 className="text-white font-bold text-xl mb-1 group-hover:text-midnight transition-colors">I am a Plug</h3>
               <p className="text-steel-blue group-hover:text-midnight/70 transition-colors text-sm">Build your verified identity and earn consistent work in Ikeja.</p>
             </div>
-          </a>
+          </Link>
         </div>
       </div>
 
       <div className="mt-12 text-center text-sm text-steel-blue">
-        Already have an account? <a href="/auth/phone" className="text-gold font-bold">Log in</a>
+        Already have an account? <Link href="/auth/phone" className="text-gold font-bold">Log in</Link>
       </div>
     </main>
   )

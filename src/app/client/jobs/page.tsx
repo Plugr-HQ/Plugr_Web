@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Navbar } from '@/src/components/Navbar'
 import { MobileNav } from '@/src/components/MobileNav'
 import { Clock, CheckCircle2, AlertCircle, ChevronRight, MessageSquare } from 'lucide-react'
@@ -68,9 +69,9 @@ export default function ClientJobsPage() {
                     <button className="p-2 rounded-full bg-bone text-slate hover:text-gold transition-colors">
                       <MessageSquare className="w-5 h-5" />
                     </button>
-                    <button className="bg-midnight text-white px-4 py-2 rounded-pill text-xs font-bold hover:bg-gold hover:text-midnight transition-colors">
+                    <Link href={`/client/track/${job.id}`} className="bg-midnight text-white px-4 py-2 rounded-pill text-xs font-bold hover:bg-gold hover:text-midnight transition-colors flex items-center">
                       Track Status
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -83,7 +84,7 @@ export default function ClientJobsPage() {
           <h2 className="text-xs font-bold text-slate uppercase tracking-widest mb-4">Past Jobs</h2>
           <div className="bg-white rounded-card shadow-sm border border-bone divide-y divide-bone">
             {history.map((job) => (
-              <div key={job.id} className="p-4 flex items-center justify-between hover:bg-bone/20 transition-colors cursor-pointer">
+              <Link key={job.id} href={`/client/track/${job.id}`} className="p-4 flex items-center justify-between hover:bg-bone/20 transition-colors cursor-pointer">
                 <div className="flex items-center gap-4">
                   <CheckCircle2 className="w-5 h-5 text-green-500" />
                   <div>
@@ -92,7 +93,7 @@ export default function ClientJobsPage() {
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate" />
-              </div>
+              </Link>
             ))}
           </div>
         </div>

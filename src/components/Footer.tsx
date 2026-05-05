@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Logo } from './Logo'
 
 export function Footer() {
@@ -6,7 +7,9 @@ export function Footer() {
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-2 md:col-span-1">
-            <Logo variant="dark" className="mb-4" />
+            <Link href="/">
+              <Logo variant="dark" className="mb-4" />
+            </Link>
             <p className="text-slate text-sm">
               Nigeria's first verified skills identity platform for artisans.
             </p>
@@ -14,9 +17,9 @@ export function Footer() {
           <div>
             <h4 className="font-bold text-midnight mb-4">Platform</h4>
             <ul className="space-y-2 text-sm text-slate">
-              <li><a href="#" className="hover:text-gold transition-colors">How It Works</a></li>
-              <li><a href="#" className="hover:text-gold transition-colors">Find a Plug</a></li>
-              <li><a href="#" className="hover:text-gold transition-colors">Become a Plug</a></li>
+              <li><Link href="/#how-it-works" className="hover:text-gold transition-colors">How It Works</Link></li>
+              <li><Link href="/find" className="hover:text-gold transition-colors">Find a Plug</Link></li>
+              <li><Link href="/become-a-plug" className="hover:text-gold transition-colors">Become a Plug</Link></li>
             </ul>
           </div>
           <div>

@@ -1,16 +1,17 @@
+import Link from 'next/link'
 import { Navbar } from '@/src/components/Navbar'
 import { Footer } from '@/src/components/Footer'
 import { PlugCard, Plug } from '@/src/components/PlugCard'
 import { Search, Filter, MapPin } from 'lucide-react'
 
 export default function FindPlugPage() {
-  const plugs: Plug[] = [
-    { name: "Suleiman Yusuf", trade: "Electrician", rating: 4.8, status: "Verified", badge: "Verified" },
-    { name: "John Okoro", trade: "Plumber", rating: 4.9, status: "Available", badge: "Pro" },
-    { name: "Tunde Williams", trade: "Electrician", rating: 4.7, status: "Busy", badge: "Verified" },
-    { name: "Blessing Adebayo", trade: "Plumber", rating: 4.6, status: "Verified", badge: "Basic" },
-    { name: "David Nwosu", trade: "Electrician", rating: 4.9, status: "Available", badge: "Pro" },
-    { name: "Emeka Obi", trade: "Plumber", rating: 4.5, status: "Busy", badge: "Verified" },
+  const plugs: (Plug & { id: string })[] = [
+    { id: '1', name: "Suleiman Yusuf", trade: "Electrician", rating: 4.8, status: "Verified", badge: "Verified" },
+    { id: '2', name: "John Okoro", trade: "Plumber", rating: 4.9, status: "Available", badge: "Pro" },
+    { id: '3', name: "Tunde Williams", trade: "Electrician", rating: 4.7, status: "Busy", badge: "Verified" },
+    { id: '4', name: "Blessing Adebayo", trade: "Plumber", rating: 4.6, status: "Verified", badge: "Basic" },
+    { id: '5', name: "David Nwosu", trade: "Electrician", rating: 4.9, status: "Available", badge: "Pro" },
+    { id: '6', name: "Emeka Obi", trade: "Plumber", rating: 4.5, status: "Busy", badge: "Verified" },
   ]
 
   const categories = ["All", "Electricians", "Plumbers"]
@@ -63,14 +64,16 @@ export default function FindPlugPage() {
 
         {/* Results Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {plugs.map((plug, i) => (
-            <PlugCard key={i} plug={plug} />
+          {plugs.map((plug) => (
+            <Link key={plug.id} href={`/p/${plug.id}`}>
+              <PlugCard plug={plug} />
+            </Link>
           ))}
         </div>
 
         {/* Empty State / Pagination Simulation */}
         <div className="mt-12 text-center">
-          <p className="text-slate text-sm mb-4">Showing 6 Plugs in your area</p>
+          <p className="text-slate text-sm mb-4">Showing {plugs.length} Plugs in your area</p>
           <button className="text-gold font-bold hover:underline">Load more</button>
         </div>
       </div>
