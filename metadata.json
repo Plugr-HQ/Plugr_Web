@@ -1,0 +1,12 @@
+{
+  "name": "Plugr",
+  "description": "Nigeria's first verified skills identity platform for artisans. Connecting trusted electricians and plumbers in Ikeja with verified identities.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "Identity Verification",
+    "Escrow Payments",
+    "Skill Matching"
+  ]
+}
