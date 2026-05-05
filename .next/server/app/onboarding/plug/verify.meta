@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/onboarding/layout,_N_T_/onboarding/plug/layout,_N_T_/onboarding/plug/verify/layout,_N_T_/onboarding/plug/verify/page,_N_T_/onboarding/plug/verify"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/onboarding/plug/verify/__PAGE__",
+    "/onboarding/plug/verify",
+    "/onboarding/plug",
+    "/onboarding",
+    "/_index",
+    "/_head"
+  ]
+}

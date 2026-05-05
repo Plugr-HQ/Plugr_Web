@@ -1,0 +1,22 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/api/plugs/route": "app/api/plugs/route.js",
+  "/auth/otp/page": "app/auth/otp/page.js",
+  "/auth/page": "app/auth/page.js",
+  "/auth/phone/page": "app/auth/phone/page.js",
+  "/become-a-plug/page": "app/become-a-plug/page.js",
+  "/client/jobs/page": "app/client/jobs/page.js",
+  "/client/pay/page": "app/client/pay/page.js",
+  "/client/settings/page": "app/client/settings/page.js",
+  "/client/track/[id]/page": "app/client/track/[id]/page.js",
+  "/find/page": "app/find/page.js",
+  "/onboarding/plug/guarantor/page": "app/onboarding/plug/guarantor/page.js",
+  "/onboarding/plug/setup/page": "app/onboarding/plug/setup/page.js",
+  "/onboarding/plug/verify/page": "app/onboarding/plug/verify/page.js",
+  "/p/[id]/page": "app/p/[id]/page.js",
+  "/page": "app/page.js",
+  "/plug/dashboard/page": "app/plug/dashboard/page.js",
+  "/plug/wallet/page": "app/plug/wallet/page.js"
+}

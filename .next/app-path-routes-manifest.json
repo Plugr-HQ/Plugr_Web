@@ -1,0 +1,22 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/admin/page": "/admin",
+  "/api/plugs/route": "/api/plugs",
+  "/auth/otp/page": "/auth/otp",
+  "/auth/page": "/auth",
+  "/auth/phone/page": "/auth/phone",
+  "/become-a-plug/page": "/become-a-plug",
+  "/client/jobs/page": "/client/jobs",
+  "/client/pay/page": "/client/pay",
+  "/client/settings/page": "/client/settings",
+  "/client/track/[id]/page": "/client/track/[id]",
+  "/find/page": "/find",
+  "/onboarding/plug/guarantor/page": "/onboarding/plug/guarantor",
+  "/onboarding/plug/setup/page": "/onboarding/plug/setup",
+  "/onboarding/plug/verify/page": "/onboarding/plug/verify",
+  "/p/[id]/page": "/p/[id]",
+  "/page": "/",
+  "/plug/dashboard/page": "/plug/dashboard",
+  "/plug/wallet/page": "/plug/wallet"
+}
