@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Logo } from '@/src/components/Logo'
 import { Button } from '@/src/components/Button'
 import { ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -23,7 +22,7 @@ export default function PhoneEntryPage() {
         <button onClick={() => router.back()} className="text-midnight">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <Logo variant="dark" iconOnly />
+        <img src="/logo.svg" alt="Plugr" className='h-11 w-48 bg-white rounded-md' />
         <div className="w-6" /> {/* Spacer */}
       </div>
 
@@ -34,12 +33,12 @@ export default function PhoneEntryPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex bg-white rounded-card border border-bone overflow-hidden h-14 items-center px-4 focus-within:ring-2 focus-within:ring-gold">
             <span className="text-midnight font-bold mr-3">+234</span>
-            <input 
-              type="tel" 
-              placeholder="801 234 5678" 
+            <input
+              type="tel"
+              placeholder="801 234 5678"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              className="flex-grow h-full bg-white text-midnight font-sans text-lg focus:outline-none"
+              className="grow h-full bg-white text-midnight font-sans text-lg focus:outline-none"
               autoFocus
             />
           </div>

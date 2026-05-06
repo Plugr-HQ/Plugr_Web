@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Logo } from '@/src/components/Logo'
 import { Button } from '@/src/components/Button'
 import { ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -13,7 +12,7 @@ export default function OtpVerificationPage() {
 
   const handleChange = (index: number, value: string) => {
     if (value.length > 1) value = value.slice(-1)
-    
+
     const newOtp = [...otp]
     newOtp[index] = value
     setOtp(newOtp)
@@ -51,7 +50,7 @@ export default function OtpVerificationPage() {
         <button onClick={() => router.back()} className="text-midnight">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <Logo variant="dark" iconOnly />
+        <img src="/logo.svg" alt="Plugr" className='h-11 w-48 bg-white rounded-md' />
         <div className="w-6" />
       </div>
 
