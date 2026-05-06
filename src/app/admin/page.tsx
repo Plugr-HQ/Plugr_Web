@@ -1,12 +1,11 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Logo } from '@/src/components/Logo'
-import { 
-  Users, 
-  Briefcase, 
-  ShieldCheck, 
-  AlertCircle, 
+import {
+  Users,
+  Briefcase,
+  ShieldCheck,
+  AlertCircle,
   Search,
   Check,
   X,
@@ -17,20 +16,19 @@ import { cn } from '@/src/lib/utils'
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'plugs' | 'jobs' | 'verifications'>('plugs')
-  
+
   return (
     <div className="flex min-h-screen bg-bone">
       {/* Sidebar */}
       <aside className="w-64 bg-midnight text-white hidden md:flex flex-col">
         <div className="p-6 border-b border-white/5">
           <div className="flex items-center gap-3">
-            <Logo variant="light" iconOnly />
-            <span className="font-display font-bold text-xl tracking-tight">Admin</span>
+            <img src="/logo.svg" alt="Plugr" className='h-11 w-48 bg-white rounded-md' />
           </div>
         </div>
-        
-        <nav className="flex-grow p-4 space-y-2">
-          <button 
+
+        <nav className="grow p-4 space-y-2">
+          <button
             onClick={() => setActiveTab('plugs')}
             className={cn(
               "w-full flex items-center gap-3 px-4 py-3 rounded-card text-sm font-bold transition-colors",
@@ -40,7 +38,7 @@ export default function AdminDashboard() {
             <Users className="w-5 h-5" />
             Manage Plugs
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('jobs')}
             className={cn(
               "w-full flex items-center gap-3 px-4 py-3 rounded-card text-sm font-bold transition-colors",
@@ -50,7 +48,7 @@ export default function AdminDashboard() {
             <Briefcase className="w-5 h-5" />
             Job Oversight
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('verifications')}
             className={cn(
               "w-full flex items-center gap-3 px-4 py-3 rounded-card text-sm font-bold transition-colors",
@@ -61,22 +59,22 @@ export default function AdminDashboard() {
             Verifications
           </button>
         </nav>
-        
+
         <div className="p-6 border-t border-white/5 text-xs text-steel-blue">
           Plugr Admin v1.0.0
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-grow flex flex-col">
+      <main className="grow flex flex-col">
         <header className="bg-white h-16 border-b border-bone flex items-center justify-between px-8">
           <h1 className="font-display text-xl text-midnight capitalize">{activeTab} Management</h1>
           <div className="flex items-center gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate w-4 h-4" />
-              <input 
-                type="text" 
-                placeholder="Search..." 
+              <input
+                type="text"
+                placeholder="Search..."
                 className="bg-bone rounded-pill py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-gold w-64"
               />
             </div>
@@ -129,12 +127,12 @@ function PlugsTable() {
               </td>
               <td className="px-6 py-4 text-sm text-slate">{plug.trade}</td>
               <td className="px-6 py-4">
-                 <span className={cn(
-                   "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
-                   plug.status === 'Verified' ? "bg-green-100 text-green-700" : "bg-gold/10 text-gold"
-                 )}>
-                   {plug.status}
-                 </span>
+                <span className={cn(
+                  "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
+                  plug.status === 'Verified' ? "bg-green-100 text-green-700" : "bg-gold/10 text-gold"
+                )}>
+                  {plug.status}
+                </span>
               </td>
               <td className="px-6 py-4 text-sm text-midnight font-bold">{plug.jobs}</td>
               <td className="px-6 py-4 text-sm text-slate">{plug.joined}</td>
@@ -155,7 +153,7 @@ function PendingVerifications() {
   return (
     <div className="space-y-4">
       <div className="bg-amber-50 border border-amber-200 rounded-card p-4 flex gap-4 text-amber-800">
-        <AlertCircle className="w-6 h-6 flex-shrink-0" />
+        <AlertCircle className="w-6 h-6 shrink-0" />
         <div>
           <h4 className="font-bold">4 Pending Reviews</h4>
           <p className="text-sm">These artisans have completed their NIN and Liveness check and require manual approval.</p>
@@ -175,7 +173,7 @@ function PendingVerifications() {
               </div>
               <span className="text-[10px] font-bold bg-bone px-2 py-1 rounded-full text-slate">PLUMBER</span>
             </div>
-            
+
             <div className="space-y-3 mb-6">
               <div className="flex items-center justify-between text-xs py-2 border-b border-bone">
                 <span className="text-slate">NIN Status</span>
