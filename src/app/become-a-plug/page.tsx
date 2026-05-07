@@ -7,12 +7,15 @@ import {
   TrendingUp, 
   ChevronDown, 
   Menu,
+  X,
   CheckCircle2,
   Phone,
   UserCheck,
   Zap
 } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
 
 export default function Page() {
   return (
@@ -31,23 +34,42 @@ export default function Page() {
 }
 
 function Navbar() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
-    <nav className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-dark/50 backdrop-blur-md sticky top-0 z-50">
-      <div className="flex items-center gap-2">
-        <Menu className="w-6 h-6 text-white md:hidden" />
-        <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-1">
-          The Plug
-        </h1>
-      </div>
-      <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
-        <a href="#" className="hover:text-white transition-colors">How it works</a>
-        <a href="#" className="hover:text-white transition-colors">Safety</a>
-        <a href="#" className="hover:text-white transition-colors">Support</a>
-      </div>
-      <button className="text-sm font-semibold text-primary hover:text-white transition-colors underline underline-offset-4">
-        Log in
-      </button>
-    </nav>
+    <>
+      <nav className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-dark/50 backdrop-blur-md sticky top-0 z-50">
+        <div className="flex items-center gap-2">
+          <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? <X className="w-6 h-6 text-white" /> : <Menu className="w-6 h-6 text-white" />}
+          </button>
+          <Link href="/" className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            <Image src="/logo.svg" alt="Plugr Logo" width={24} height={24} className="brightness-0 invert" />
+            plugr
+          </Link>
+        </div>
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
+          <button onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })} className="hover:text-white transition-colors">How it works</button>
+          <Link href="/" className="hover:text-white transition-colors">Safety</Link>
+          <Link href="/" className="hover:text-white transition-colors">Support</Link>
+        </div>
+        <Link href="/auth" className="text-sm font-semibold text-primary hover:text-white transition-colors underline underline-offset-4">
+          Log in
+        </Link>
+      </nav>
+
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 top-[65px] z-40 bg-dark md:hidden flex flex-col p-6 space-y-6 text-white border-t border-white/10">
+          <button onClick={() => { setIsMobileMenuOpen(false); window.scrollTo({ top: window.innerHeight, behavior: 'smooth' }); }} className="text-xl font-bold text-left">How it works</button>
+          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-bold">Safety</Link>
+          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-bold">Support</Link>
+          <div className="pt-6 border-t border-white/10 flex flex-col gap-4">
+            <Link href="/auth" className="w-full py-4 text-center border border-white/20 text-white rounded-full font-bold">Log in</Link>
+            <Link href="/auth/phone?role=plug" className="w-full py-4 text-center bg-primary text-dark rounded-full font-bold">Register as a Plug</Link>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -80,10 +102,10 @@ function Hero() {
           transition={{ delay: 0.2 }}
           className="flex flex-col gap-4 max-w-xs mx-auto md:mx-0 pt-4"
         >
-          <button className="bg-primary text-dark py-4 px-8 rounded-full font-bold text-lg hover:brightness-110 transition-all shadow-xl shadow-primary/20">
+          <Link href="/auth/phone?role=plug" className="text-center bg-primary text-dark py-4 px-8 rounded-full font-bold text-lg hover:brightness-110 transition-all shadow-xl shadow-primary/20">
             Register as a Plug
-          </button>
-          <button className="border border-white/20 bg-transparent text-white py-4 px-8 rounded-full font-bold text-lg hover:bg-white/5 transition-all">
+          </Link>
+          <button onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })} className="border border-white/20 bg-transparent text-white py-4 px-8 rounded-full font-bold text-lg hover:bg-white/5 transition-all">
             How it works
           </button>
         </motion.div>
@@ -264,9 +286,9 @@ function FooterCTA() {
     <section className="bg-dark py-32 px-6 text-center text-white border-t border-white/5">
       <div className="max-w-4xl mx-auto space-y-12">
         <h2 className="text-4xl md:text-6xl font-extrabold tracking-tight">Pledging allegiance to your success.</h2>
-        <button className="bg-primary text-dark py-5 px-12 rounded-full font-bold text-xl hover:scale-105 transition-transform">
+        <Link href="/auth/phone?role=plug" className="inline-block text-center bg-primary text-dark py-5 px-12 rounded-full font-bold text-xl hover:scale-105 transition-transform">
           Become a Plug today
-        </button>
+        </Link>
       </div>
     </section>
   );
@@ -280,15 +302,15 @@ function Footer() {
           <h3 className="text-white text-2xl font-bold tracking-tight">The Plug</h3>
           <p className="max-w-xs text-sm font-medium">© 2024 The Artisan's Ledger. All rights reserved. Crafted for Excellence.</p>
           <div className="flex flex-wrap gap-x-8 gap-y-2 text-xs font-bold uppercase tracking-widest text-white/30">
-            <a href="#" className="hover:text-white transition-colors">About Us</a>
-            <a href="#" className="hover:text-white transition-colors">Safety Guide</a>
-            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+            <Link href="/" className="hover:text-white transition-colors">About Us</Link>
+            <Link href="/" className="hover:text-white transition-colors">Safety Guide</Link>
+            <Link href="/" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>
         </div>
         
         <div className="flex flex-wrap gap-8 text-xs font-bold uppercase tracking-widest text-white/30 pt-4 border-t border-white/5">
-          <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-          <a href="#" className="hover:text-white transition-colors">Contact Support</a>
+          <Link href="/" className="hover:text-white transition-colors">Privacy Policy</Link>
+          <Link href="/" className="hover:text-white transition-colors">Contact Support</Link>
         </div>
       </div>
     </footer>

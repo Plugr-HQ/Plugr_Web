@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 import { useState } from 'react'
 import { Button } from '@/src/components/Button'
 import { ArrowLeft } from 'lucide-react'
@@ -22,7 +24,10 @@ export default function PhoneEntryPage() {
         <button onClick={() => router.back()} className="text-midnight">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <img src="/logo.svg" alt="Plugr" className='h-11 w-48 bg-white rounded-md' />
+        <div className="flex items-center gap-2">
+          <Image src="/logo.svg" alt="Plugr Logo" width={32} height={32} />
+          <span className="text-2xl font-black tracking-tighter text-midnight">plugr</span>
+        </div>
         <div className="w-6" /> {/* Spacer */}
       </div>
 

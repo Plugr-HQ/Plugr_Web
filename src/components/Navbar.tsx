@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Menu } from 'lucide-react'
 import { Button } from './Button'
 
@@ -7,8 +8,9 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 bg-midnight px-6 py-3 flex items-center justify-between border-b border-white/10">
       {/* 1. Logo Section */}
       <div className="flex items-center">
-        <Link href="/">
-          <img src="/logo.svg" alt='Plugr' className='h-11 w-48 bg-white rounded-md' />
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/logo.svg" alt="Plugr Logo" width={32} height={32} className="brightness-0 invert" />
+          <span className="text-2xl font-black tracking-tighter text-white">plugr</span>
         </Link>
       </div>
 

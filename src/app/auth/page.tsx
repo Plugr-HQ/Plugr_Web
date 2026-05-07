@@ -1,11 +1,14 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function AuthWelcomePage() {
   return (
     <main className="flex flex-col min-h-screen bg-midnight text-white px-6 py-12">
       <div className="grow flex flex-col items-center justify-center text-center">
-        <img src="/logo.svg" alt="Plugr" className='h-11 w-48 bg-white rounded-md' />
-
+        <div className="flex items-center gap-2 mb-8">
+          <Image src="/logo.svg" alt="Plugr Logo" width={48} height={48} className="brightness-0 invert" />
+          <span className="text-4xl font-black tracking-tighter">plugr</span>
+        </div>
         <h1 className="text-4xl md:text-5xl font-display mb-4 leading-tight">
           Join the artisan network built on <span className="text-gold">trust</span>.
         </h1>

@@ -1,4 +1,8 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import { 
   CheckCircle2, 
   ChevronRight, 
@@ -29,25 +33,39 @@ const colors = {
 };
 
 export default function LandingPage() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen font-sans" style={{ backgroundColor: colors.cream }}>
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-[#DBA134] flex items-center justify-center">
-            <Zap className="w-5 h-5 text-white" fill="currentColor" />
-          </div>
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/logo.svg" alt="Plugr Logo" width={32} height={32} />
           <span className="text-2xl font-black tracking-tighter text-[#0A1529]">plugr</span>
-        </div>
+        </Link>
         <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-[#0A1529]">
-          <a href="#how-it-works" className="hover:text-[#DBA134] transition-colors">How it Works</a>
-          <a href="#trades" className="hover:text-[#DBA134] transition-colors">Trades</a>
-          <a href="#faq" className="hover:text-[#DBA134] transition-colors">FAQ</a>
+          <Link href="#how-it-works" className="hover:text-[#DBA134] transition-colors">How it Works</Link>
+          <Link href="#trades" className="hover:text-[#DBA134] transition-colors">Trades</Link>
+          <Link href="#faq" className="hover:text-[#DBA134] transition-colors">FAQ</Link>
         </div>
-        <button className="md:hidden">
-          <Menu className="w-6 h-6 text-[#0A1529]" />
+        <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          {isMobileMenuOpen ? <X className="w-6 h-6 text-[#0A1529]" /> : <Menu className="w-6 h-6 text-[#0A1529]" />}
         </button>
       </nav>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 top-[73px] z-40 bg-white md:hidden flex flex-col p-6 space-y-6">
+          <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">How it Works</Link>
+          <Link href="#trades" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">Trades</Link>
+          <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">FAQ</Link>
+          <Link href="/find" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">Find a Plug</Link>
+          <div className="pt-6 border-t border-gray-100 flex flex-col gap-4">
+            <Link href="/auth" className="w-full py-4 text-center border-2 border-[#0A1529] text-[#0A1529] rounded-full font-bold">Log in</Link>
+            <Link href="/become-a-plug" className="w-full py-4 text-center bg-[#DBA134] text-white rounded-full font-bold">Become a Plug</Link>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section */}
       <section className="pt-32 pb-16 px-6 max-w-4xl mx-auto text-center" style={{ backgroundColor: colors.navy }}>
@@ -64,12 +82,12 @@ export default function LandingPage() {
             Get connected to trusted, verified electricians and plumbers for your home and property needs — people you can actually trust.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <button className="w-full sm:w-auto px-10 py-5 bg-[#DBA134] text-white rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-xl shadow-yellow-900/20">
+            <Link href="/find" className="w-full sm:w-auto px-10 py-5 bg-[#DBA134] text-white rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-xl shadow-yellow-900/20 text-center">
               Find a Plug
-            </button>
-            <button className="w-full sm:w-auto px-10 py-5 bg-white text-[#0A1529] rounded-full font-bold text-lg hover:bg-gray-100 transition-colors">
+            </Link>
+            <Link href="/become-a-plug" className="w-full sm:w-auto px-10 py-5 bg-white text-[#0A1529] rounded-full font-bold text-lg hover:bg-gray-100 transition-colors text-center">
               Become a Plug
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -206,9 +224,9 @@ export default function LandingPage() {
             </div>
             <h3 className="text-2xl font-bold text-[#0A1529] mb-2">Electrician</h3>
             <p className="text-gray-500 font-medium mb-6">Wiring, sockets, faults, lighting, and general electrical maintenance.</p>
-            <button className="flex items-center gap-2 text-[#DBA134] font-bold">
+            <Link href="/find" className="flex items-center gap-2 text-[#DBA134] font-bold">
               Find an Electrician <ChevronRight className="w-4 h-4" />
-            </button>
+            </Link>
           </div>
           
           <div className="p-8 rounded-3xl bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
@@ -217,9 +235,9 @@ export default function LandingPage() {
             </div>
             <h3 className="text-2xl font-bold text-[#0A1529] mb-2">Plumber</h3>
             <p className="text-gray-500 font-medium mb-6">Pipes, leaks, fixtures, water heaters, and drainage solutions.</p>
-            <button className="flex items-center gap-2 text-[#DBA134] font-bold">
+            <Link href="/find" className="flex items-center gap-2 text-[#DBA134] font-bold">
               Find a Plumber <ChevronRight className="w-4 h-4" />
-            </button>
+            </Link>
           </div>
         </div>
         
@@ -273,14 +291,14 @@ export default function LandingPage() {
               </div>
             ))}
             
-            <div className="hidden lg:flex items-center justify-center p-8 rounded-[2.5rem] border-2 border-dashed border-gray-200 text-gray-400 group hover:border-[#DBA134] hover:text-[#DBA134] transition-colors cursor-pointer">
+            <Link href="/find" className="hidden lg:flex items-center justify-center p-8 rounded-[2.5rem] border-2 border-dashed border-gray-200 text-gray-400 group hover:border-[#DBA134] hover:text-[#DBA134] transition-colors cursor-pointer">
               <div className="text-center font-bold">
                 <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4 group-hover:bg-[#F8E8C1] transition-colors">
                   <ChevronRight className="w-6 h-6" />
                 </div>
                 Browse all Plugs
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
@@ -372,9 +390,9 @@ export default function LandingPage() {
             ))}
           </div>
           
-          <button className="w-full px-10 py-6 bg-[#DBA134] text-white rounded-full font-bold text-xl hover:scale-105 transition-transform">
+          <Link href="/become-a-plug" className="inline-block text-center w-full px-10 py-6 bg-[#DBA134] text-white rounded-full font-bold text-xl hover:scale-105 transition-transform">
             Become a Plug
-          </button>
+          </Link>
         </div>
       </section>
 
@@ -415,12 +433,12 @@ export default function LandingPage() {
         </h2>
         <p className="text-gray-500 font-bold mb-12">Ikeja, Lagos.</p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button className="w-full sm:w-auto px-12 py-5 bg-[#DBA134] text-white rounded-full font-bold text-lg">
+          <Link href="/find" className="w-full sm:w-auto px-12 py-5 bg-[#DBA134] text-white rounded-full font-bold text-lg text-center">
             Find a Plug
-          </button>
-          <button className="w-full sm:w-auto px-12 py-5 bg-white border-2 border-[#0A1529] text-[#0A1529] rounded-full font-bold text-lg">
+          </Link>
+          <Link href="/become-a-plug" className="w-full sm:w-auto px-12 py-5 bg-white border-2 border-[#0A1529] text-[#0A1529] rounded-full font-bold text-lg text-center">
             Become a Plug
-          </button>
+          </Link>
         </div>
       </section>
 
@@ -428,12 +446,10 @@ export default function LandingPage() {
       <footer className="bg-[#0A1529] text-white py-16 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-4 gap-12">
           <div className="col-span-2">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 rounded-full bg-[#DBA134] flex items-center justify-center">
-                <Zap className="w-5 h-5 text-white" fill="currentColor" />
-              </div>
+            <Link href="/" className="flex items-center gap-2 mb-6">
+              <Image src="/logo.svg" alt="Plugr Logo" width={32} height={32} className="brightness-0 invert" />
               <span className="text-2xl font-black tracking-tighter">plugr</span>
-            </div>
+            </Link>
             <p className="text-gray-400 font-medium max-w-sm mb-8">
               Pledging allegiance to your success. The trusted network for verified artisans in Lagos.
             </p>
@@ -445,19 +461,19 @@ export default function LandingPage() {
           <div>
             <h5 className="font-black uppercase text-xs tracking-widest text-[#DBA134] mb-6">Quick Links</h5>
             <ul className="space-y-4 font-bold text-gray-400">
-              <li><a href="#" className="hover:text-white transition-colors">Home</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">How it Works</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Find a Plug</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Become a Plug</a></li>
+              <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
+              <li><Link href="/#how-it-works" className="hover:text-white transition-colors">How it Works</Link></li>
+              <li><Link href="/find" className="hover:text-white transition-colors">Find a Plug</Link></li>
+              <li><Link href="/become-a-plug" className="hover:text-white transition-colors">Become a Plug</Link></li>
             </ul>
           </div>
           
           <div>
             <h5 className="font-black uppercase text-xs tracking-widest text-[#DBA134] mb-6">Legal</h5>
             <ul className="space-y-4 font-bold text-gray-400">
-              <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Dispute Policy</a></li>
+              <li><Link href="#" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link href="#" className="hover:text-white transition-colors">Dispute Policy</Link></li>
             </ul>
           </div>
         </div>

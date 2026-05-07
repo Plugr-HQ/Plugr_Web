@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 
 export function Footer() {
@@ -7,8 +8,9 @@ export function Footer() {
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/">
-              <img src="/logo.svg" alt='Plugr' className='h-12 w-auto' />
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <Image src="/logo.svg" alt="Plugr Logo" width={32} height={32} />
+              <span className="text-2xl font-black tracking-tighter text-midnight">plugr</span>
             </Link>
             <p className="text-slate text-sm">
               Nigeria's first verified skills identity platform for artisans.

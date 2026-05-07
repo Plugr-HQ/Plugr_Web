@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { motion } from "motion/react";
 import { CheckCircle2, Star, Zap, ShieldCheck, UserCheck, Key, UserPlus } from "lucide-react";
 
@@ -114,7 +116,7 @@ export default function Home() {
         {/* Footer Link */}
         <footer className="text-center py-8">
            <p className="text-sm text-slate-400 font-medium tracking-tight">
-             Are you an artisan? <a href="#" className="text-[#CA8A04] font-bold hover:underline">Become a Plug</a>
+             Are you an artisan? <Link href="/become-a-plug" className="text-[#CA8A04] font-bold hover:underline">Become a Plug</Link>
            </p>
         </footer>
       </main>

@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 import React, { useState } from 'react'
 import {
   Users,
@@ -22,8 +24,9 @@ export default function AdminDashboard() {
       {/* Sidebar */}
       <aside className="w-64 bg-midnight text-white hidden md:flex flex-col">
         <div className="p-6 border-b border-white/5">
-          <div className="flex items-center gap-3">
-            <img src="/logo.svg" alt="Plugr" className='h-11 w-48 bg-white rounded-md' />
+          <div className="flex items-center gap-2">
+            <Image src="/logo.svg" alt="Plugr Logo" width={32} height={32} className="brightness-0 invert" />
+            <span className="text-2xl font-black tracking-tighter text-white">plugr</span>
           </div>
         </div>
 
