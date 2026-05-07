@@ -1,11 +1,11 @@
 "use client";
 
 import { motion } from "motion/react";
-import { 
-  ShieldCheck, 
-  CreditCard, 
-  TrendingUp, 
-  ChevronDown, 
+import {
+  ShieldCheck,
+  CreditCard,
+  TrendingUp,
+  ChevronDown,
   Menu,
   X,
   CheckCircle2,
@@ -77,7 +77,7 @@ function Hero() {
   return (
     <section className="px-6 pt-16 pb-24 bg-dark text-white text-center md:text-left flex flex-col md:flex-row items-center max-w-7xl mx-auto">
       <div className="flex-1 space-y-8">
-        <motion.h2 
+        <motion.h2
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] font-display"
@@ -86,8 +86,8 @@ function Hero() {
           skills into a <br />
           <span className="text-white">verified professional identity.</span>
         </motion.h2>
-        
-        <motion.p 
+
+        <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -95,8 +95,8 @@ function Hero() {
         >
           Plugr doesn't promise you jobs. It gives you the edge to earn them.
         </motion.p>
-        
-        <motion.div 
+
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -154,10 +154,10 @@ function Features() {
         <h2 className="text-4xl md:text-5xl font-extrabold text-dark mb-20 tracking-tight font-display">Built for the modern artisan.</h2>
         <div className="grid md:grid-cols-3 gap-10">
           {features.map((f, i) => (
-            <motion.div 
+            <motion.div
               key={i}
               whileHover={{ y: -8 }}
-              className="p-12 bg-[#FAFAFA] rounded-[2rem] border border-dark/5 space-y-8"
+              className="p-12 bg-[#FAFAFA] rounded-4xl border border-dark/5 space-y-8"
             >
               <div className="bg-white w-20 h-20 rounded-2xl shadow-sm flex items-center justify-center border border-dark/5">
                 {f.icon}
@@ -176,24 +176,24 @@ function Features() {
 
 function Journey() {
   const steps = [
-    { 
-      id: 1, 
-      title: "Sign up with your phone", 
+    {
+      id: 1,
+      title: "Sign up with your phone",
       desc: "Create your account instantly using your phone number.",
     },
-    { 
-      id: 2, 
-      title: "Submit NIN and BVN", 
+    {
+      id: 2,
+      title: "Submit NIN and BVN",
       desc: "Securely verify your identity to ensure community safety.",
     },
-    { 
-      id: 3, 
-      title: "Liveness and Skills check", 
+    {
+      id: 3,
+      title: "Liveness and Skills check",
       desc: "Complete a quick face verification and list your expertise.",
     },
-    { 
-      id: 4, 
-      title: "Set up your profile and go live", 
+    {
+      id: 4,
+      title: "Set up your profile and go live",
       desc: "Add your best work and start receiving booking requests.",
     }
   ];
@@ -202,10 +202,10 @@ function Journey() {
     <section className="bg-white py-28 px-6 border-t border-dark/5">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-extrabold text-dark mb-24 tracking-tight font-display">Your journey to <br /> becoming a Plug.</h2>
-        
+
         <div className="space-y-0 relative max-w-2xl">
           <div className="absolute left-[15px] top-4 bottom-4 w-[2px] bg-primary/30" />
-          
+
           {steps.map((s, i) => (
             <div key={i} className="flex gap-10 pb-20 last:pb-0 relative">
               <div className="w-8 h-8 rounded-full bg-primary text-dark flex items-center justify-center relative z-10 shrink-0 font-black text-sm">
@@ -263,7 +263,7 @@ function FAQ() {
         <div className="space-y-4">
           {faqs.map((f, i) => (
             <div key={i} className="border-b border-dark/10">
-              <button 
+              <button
                 onClick={() => setOpen(open === i ? null : i)}
                 className="w-full py-6 flex items-center justify-between text-left group"
               >
@@ -307,7 +307,7 @@ function Footer() {
             <Link href="/" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>
         </div>
-        
+
         <div className="flex flex-wrap gap-8 text-xs font-bold uppercase tracking-widest text-white/30 pt-4 border-t border-white/5">
           <Link href="/" className="hover:text-white transition-colors">Privacy Policy</Link>
           <Link href="/" className="hover:text-white transition-colors">Contact Support</Link>
