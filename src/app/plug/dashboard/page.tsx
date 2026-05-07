@@ -1,97 +1,157 @@
-import Link from 'next/link'
-import { Navbar } from '@/src/components/Navbar'
-import { MobileNav } from '@/src/components/MobileNav'
-import { Briefcase, Clock, TrendingUp, ChevronRight, AlertCircle } from 'lucide-react'
+"use client";
 
-export default function PlugDashboardPage() {
-   return (
-      <main className="flex flex-col min-h-screen bg-bone pb-24">
-         <Navbar />
+import { motion } from "motion/react";
+import { CheckCircle2, Star, Zap, ShieldCheck, UserCheck, Key, UserPlus } from "lucide-react";
 
-         {/* Welcome Header */}
-         <div className="bg-midnight pt-8 pb-16 px-6 text-white">
-            <div className="max-w-7xl mx-auto">
-               <div className="flex items-center justify-between mb-6">
-                  <div>
-                     <h1 className="text-2xl font-display">Hello, Suleiman</h1>
-                     <p className="text-steel-blue text-sm">Welcome back to your office.</p>
-                  </div>
-                  <div className="bg-gold/10 border border-gold/20 rounded-pill px-3 py-1 flex items-center gap-2">
-                     <div className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-                     <span className="text-[10px] font-bold text-gold uppercase">Available</span>
-                  </div>
-               </div>
+export default function Home() {
+  const skills = [
+    "Fault Finding",
+    "House Wiring",
+    "Solar Installation",
+    "Inverter Repairs"
+  ];
 
-               <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-deep-blue rounded-card p-4 border border-white/5">
-                     <div className="text-steel-blue text-xs mb-1">Total Earnings</div>
-                     <div className="text-xl font-display text-white">₦142,500</div>
-                  </div>
-                  <div className="bg-deep-blue rounded-card p-4 border border-white/5">
-                     <div className="text-steel-blue text-xs mb-1">Jobs Completed</div>
-                     <div className="text-xl font-display text-white">24</div>
-                  </div>
-               </div>
-            </div>
-         </div>
+  const reviews = [
+    {
+      text: "Seun fixed our inverter issue in record time. Very professional and tidy.",
+      author: "Chidinma O.",
+      location: "Ikeja"
+    },
+    {
+      text: "Great work on the house wiring, though he arrived a bit later than scheduled.",
+      author: "Kunle A.",
+      location: "Maryland"
+    }
+  ];
 
-         <div className="max-w-7xl mx-auto w-full px-6 -mt-8">
-            {/* Verification Status (if not full) */}
-            <Link href="/onboarding/plug/verify" className="bg-white rounded-card p-4 shadow-sm flex items-center gap-4 border border-amber-100 mb-6 hover:shadow-md transition-shadow">
-               <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center text-amber-500">
-                  <AlertCircle className="w-6 h-6" />
-               </div>
-               <div className="grow">
-                  <h4 className="font-bold text-midnight text-sm">Verification Under Review</h4>
-                  <p className="text-xs text-slate">Some features are locked while we review your NIN.</p>
-               </div>
-               <ChevronRight className="w-4 h-4 text-slate" />
-            </Link>
+  return (
+    <div className="min-h-screen pb-32 max-w-md mx-auto relative overflow-x-hidden bg-[#FFFBF2] text-[#2D2A26] font-sans antialiased">
+      {/* Header / Status Bar */}
+      <header className="p-6 flex justify-between items-center bg-[#FFFBF2]/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-sm font-medium text-emerald-800">Available Now</span>
+        </div>
+        <div className="flex items-center gap-1.5 bg-white py-1 px-3 rounded-full shadow-sm border border-[#F8F4EA]">
+          <Star className="w-4 h-4 text-[#CA8A04] fill-[#CA8A04]" />
+          <span className="text-sm font-bold">4.9</span>
+          <span className="text-xs text-slate-500 font-medium">(42 reviews)</span>
+        </div>
+      </header>
 
-            {/* Active Jobs Section */}
-            <div className="mb-8">
-               <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xs font-bold text-slate uppercase tracking-widest">Active Jobs</h2>
-                  <Link href="/plug/dashboard" className="text-xs text-gold font-bold hover:underline">See all</Link>
-               </div>
-
-               <div className="bg-white rounded-card p-5 shadow-sm border border-bone">
-                  <div className="flex items-center justify-between mb-4">
-                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-bone rounded-full flex items-center justify-center font-bold text-midnight">FA</div>
-                        <div>
-                           <h4 className="font-bold text-midnight">Funke Adebayo</h4>
-                           <p className="text-[10px] text-slate font-medium">Faulty DB Board • Ikeja GRA</p>
-                        </div>
-                     </div>
-                     <div className="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-[10px] font-bold">IN PROGRESS</div>
-                  </div>
-                  <div className="flex items-center justify-between py-3 border-t border-bone">
-                     <div className="flex flex-col">
-                        <span className="text-[10px] text-slate uppercase">Payout</span>
-                        <span className="text-sm font-bold text-midnight">₦12,500</span>
-                     </div>
-                     <button className="bg-midnight text-white px-4 py-2 rounded-pill text-xs font-bold">Update Job</button>
-                  </div>
+      <main className="px-6 space-y-8">
+        {/* Profile Intro */}
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-4"
+        >
+          <div className="relative inline-block">
+            <div className="w-24 h-24 rounded-2xl bg-[#F8F4EA] border-2 border-[#CA8A04]/20 overflow-hidden">
+               <div className="w-full h-full flex items-center justify-center bg-slate-200">
+                  <UserPlus className="w-8 h-8 text-slate-400" />
                </div>
             </div>
-
-            {/* New Requests Placeholder */}
-            <div>
-               <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xs font-bold text-slate uppercase tracking-widest">New Requests</h2>
-               </div>
-               <div className="bg-bone border-2 border-dashed border-slate/20 rounded-card p-12 text-center">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-slate">
-                     <Clock className="w-6 h-6" />
-                  </div>
-                  <p className="text-slate text-sm font-medium">No new requests in Ikeja today.</p>
-                  <p className="text-[10px] text-slate mt-1">Check back later or refresh your status.</p>
-               </div>
+            <div className="absolute -bottom-1 -right-1 bg-[#CA8A04] rounded-lg p-1 text-white">
+              <ShieldCheck className="w-4 h-4" />
             </div>
-         </div>
+          </div>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-serif font-bold text-[#2D2A26]">Seun Adeyemi</h1>
+            <p className="text-[#CA8A04] font-medium">Master Electrician • Ikeja, Lagos</p>
+          </div>
+        </motion.section>
 
-         <MobileNav />
+        {/* About Section */}
+        <section className="space-y-4">
+          <h2 className="text-xs font-bold tracking-widest text-slate-400 uppercase">About</h2>
+          <div className="bg-white p-6 rounded-2xl border border-[#F8F4EA] shadow-sm">
+            <p className="text-[#2D2A26]/80 leading-relaxed font-medium">
+              Over 8 years of experience in residential and commercial electrical systems across Ikeja and mainland Lagos. Specializing in fault finding, smart home integrations, and safe solar panel installations.
+            </p>
+          </div>
+        </section>
+
+        {/* Verified Identity */}
+        <section className="space-y-4">
+          <h2 className="text-xs font-bold tracking-widest text-slate-400 uppercase">Verified Identity</h2>
+          <div className="bg-white p-6 rounded-2xl border border-[#F8F4EA] shadow-sm space-y-4">
+            <VerificationItem icon={<ShieldCheck className="w-5 h-5" />} label="NIN Verified" />
+            <VerificationItem icon={<UserCheck className="w-5 h-5" />} label="Liveness Confirmed" />
+            <VerificationItem icon={<Key className="w-5 h-5" />} label="BVN Linked" />
+            <VerificationItem icon={<CheckCircle2 className="w-5 h-5" />} label="Guarantor Approved" />
+          </div>
+        </section>
+
+        {/* Skills & Services */}
+        <section className="space-y-4">
+          <h2 className="text-xs font-bold tracking-widest text-slate-400 uppercase">Skills & Services</h2>
+          <div className="flex flex-wrap gap-2">
+            {skills.map((skill) => (
+              <SkillPill key={skill} label={skill} />
+            ))}
+          </div>
+        </section>
+
+        {/* Ratings */}
+        <section className="space-y-4">
+          <h2 className="text-xs font-bold tracking-widest text-slate-400 uppercase">Ratings</h2>
+          <div className="space-y-4">
+            {reviews.map((review, idx) => (
+              <div key={idx} className="bg-white p-6 rounded-2xl border border-[#F8F4EA] shadow-sm italic relative">
+                <div className="flex gap-0.5 mb-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 text-[#CA8A04] fill-[#CA8A04]" />
+                  ))}
+                </div>
+                <p className="text-[#2D2A26]/90 leading-relaxed mb-3">"{review.text}"</p>
+                <p className="text-xs not-italic font-bold text-slate-400">— {review.author}, {review.location}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Footer Link */}
+        <footer className="text-center py-8">
+           <p className="text-sm text-slate-400 font-medium tracking-tight">
+             Are you an artisan? <a href="#" className="text-[#CA8A04] font-bold hover:underline">Become a Plug</a>
+           </p>
+        </footer>
       </main>
-   )
+
+      {/* CTA Button */}
+      <div className="fixed bottom-0 left-0 right-0 p-6 bg-[#FFFBF2]/80 backdrop-blur-md border-t border-[#F8F4EA] max-w-md mx-auto">
+        <motion.button 
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full bg-[#CA8A04] text-white py-4 px-6 rounded-2xl flex items-center justify-center gap-3 font-bold text-lg shadow-xl shadow-[#CA8A04]/20"
+        >
+          <Zap className="w-5 h-5 fill-white" />
+          Request This Plug
+        </motion.button>
+      </div>
+    </div>
+  );
+}
+
+function VerificationItem({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div className="flex items-center gap-3 group">
+      <div className="text-emerald-500 bg-emerald-50 p-1.5 rounded-lg">
+        {icon}
+      </div>
+      <span className="text-[#2D2A26] font-semibold">{label}</span>
+      <div className="ml-auto w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+        <CheckCircle2 className="w-3 h-3 text-white" />
+      </div>
+    </div>
+  );
+}
+
+function SkillPill({ label }: { label: string }) {
+  return (
+    <div className="bg-[#F8F4EA] px-5 py-3 rounded-full border border-[#2D2A26]/5 text-[#2D2A26]/80 font-semibold text-sm hover:border-[#CA8A04]/30 transition-colors cursor-default">
+      {label}
+    </div>
+  );
 }
