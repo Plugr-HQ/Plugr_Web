@@ -5,7 +5,7 @@ import { PlugCard, Plug } from '@/src/components/PlugCard'
 import { Search, Filter, MapPin } from 'lucide-react'
 
 export default function FindPlugPage() {
-  const plugs: (Plug & { id: string })[] = [
+  const plugs: Plug[] = [
     { id: '1', name: "Suleiman Yusuf", trade: "Electrician", rating: 4.8, status: "Verified", badge: "Verified" },
     { id: '2', name: "John Okoro", trade: "Plumber", rating: 4.9, status: "Available", badge: "Pro" },
     { id: '3', name: "Tunde Williams", trade: "Electrician", rating: 4.7, status: "Busy", badge: "Verified" },
@@ -64,9 +64,7 @@ export default function FindPlugPage() {
         {/* Results Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {plugs.map((plug) => (
-            <Link key={plug.id} href={`/p/${plug.id}`}>
-              <PlugCard plug={plug} />
-            </Link>
+            <PlugCard key={plug.id} plug={plug} />
           ))}
         </div>
 

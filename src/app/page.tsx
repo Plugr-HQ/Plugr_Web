@@ -257,23 +257,25 @@ export default function LandingPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
+                id: "1",
                 name: "Obi Nwosu",
                 trade: "Electrician",
                 rating: 4.9,
                 img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Obi"
               },
               {
+                id: "2",
                 name: "Amaka Okafor",
                 trade: "Plumber",
                 rating: 4.8,
                 img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Amaka"
               }
             ].map((plug) => (
-              <div key={plug.name} className="relative group">
+              <Link key={plug.id} href={`/p/${plug.id}`} className="relative group block cursor-pointer hover:-translate-y-1 transition-transform">
                 <div className="absolute -top-4 right-4 z-10 px-3 py-1 rounded-full bg-green-500 text-white text-[10px] font-black uppercase tracking-widest">
                   Available Now
                 </div>
-                <div className="p-8 rounded-[2.5rem] bg-[#F9F6F0] border border-gray-100 flex flex-col items-center text-center">
+                <div className="p-8 rounded-[2.5rem] bg-[#F9F6F0] border border-gray-100 flex flex-col items-center text-center group-hover:border-[#DBA134] transition-colors">
                   <div className="w-32 h-32 rounded-full overflow-hidden mb-6 ring-4 ring-white shadow-lg bg-white">
                     <img src={plug.img} alt={plug.name} className="w-full h-full object-cover" />
                   </div>
@@ -288,7 +290,7 @@ export default function LandingPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
             
             <Link href="/find" className="hidden lg:flex items-center justify-center p-8 rounded-[2.5rem] border-2 border-dashed border-gray-200 text-gray-400 group hover:border-[#DBA134] hover:text-[#DBA134] transition-colors cursor-pointer">
