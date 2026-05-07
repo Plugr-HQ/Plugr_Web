@@ -27,7 +27,7 @@ export function Navbar() {
         <button className="text-white md:hidden">
           <Menu className="w-6 h-6" />
         </button>
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-4 sticky right-0">
           <Button variant="ghost" href="/auth" className="text-white hover:text-gold min-w-0 px-4">Log In</Button>
           <Button href="/auth" className="min-w-0 px-6 py-2">Sign Up</Button>
         </div>
