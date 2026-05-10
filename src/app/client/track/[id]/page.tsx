@@ -74,7 +74,7 @@ export default function ActiveJobTracker() {
 
         {/* Location Info */}
         <div className="bg-bone rounded-card p-4 flex items-start gap-4 border border-slate/10">
-           <MapPin className="w-5 h-5 text-slate flex-shrink-0" />
+           <MapPin className="w-5 h-5 text-slate shrink-0" />
            <div>
               <h4 className="text-xs font-bold text-midnight uppercase tracking-tight">Meeting Point</h4>
               <p className="text-sm text-slate">12, Allen Avenue, Ikeja, Lagos</p>

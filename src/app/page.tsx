@@ -248,39 +248,35 @@ export default function LandingPage() {
       </section>
 
       {/* Featured Plugs */}
-      <section className="py-24 px-6 bg-white flex flex-col items-center justify-center">
+      <section className="py-24 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">Meet the plugs</span>
+          {/* 1. Moved text to left by changing text-center to text-left */}
+          <div className="text-left mb-16">
+            <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">
+              Meet the plugs
+            </span>
             <h2 className="text-4xl md:text-5xl font-black text-[#0A1529] tracking-tighter leading-none mb-4">
               Real people. Verified.
             </h2>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* 2. Added pt-6 to prevent badge clipping and flex-nowrap to force horizontal layout */}
+          <div className="no-scrollbarsnap-x snap-mandatory flex overflow-x-auto gap-8 pb-10 pt-6 no-scrollbar flex-nowrap">
             {[
-              {
-                id: "1",
-                name: "Obi Nwosu",
-                trade: "Electrician",
-                rating: 4.9,
-                img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Obi"
-              },
-              {
-                id: "2",
-                name: "Amaka Okafor",
-                trade: "Plumber",
-                rating: 4.8,
-                img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Amaka"
-              }
+              { id: "1", name: "Obi Nwosu", trade: "Electrician", rating: 4.9, img: "..." },
+              { id: "2", name: "Amaka Okafor", trade: "Plumber", rating: 4.8, img: "..." }
             ].map((plug) => (
-              <Link key={plug.id} href={`/p/${plug.id}`} className="relative group block cursor-pointer hover:-translate-y-1 transition-transform">
-                <div className="absolute -top-4 right-4 z-10 px-3 py-1 rounded-full bg-green-500 text-white text-[10px] font-black uppercase tracking-widest">
+              <Link
+                key={plug.id}
+                href={`/p/${plug.id}`}
+                className="relative group block cursor-pointer hover:-translate-y-1 transition-transform shrink-0 min-w-[300px] snap-center"
+              >
+                <div className="absolute -top-4 right-4 z-10 px-3 py-2 rounded-full bg-green-500 text-white text-[10px] font-black uppercase tracking-widest">
                   Available Now
                 </div>
                 <div className="p-8 rounded-[2.5rem] bg-[#F9F6F0] border border-gray-100 flex flex-col items-center text-center group-hover:border-[#DBA134] transition-colors">
                   <div className="w-32 h-32 rounded-full overflow-hidden mb-6 ring-4 ring-white shadow-lg bg-white">
-                    <img src={plug.img} alt={plug.name} className="w-full h-full object-cover" />
+                    <img src='/logo.svg' alt={plug.name} className="w-full h-full object-cover" />
                   </div>
                   <h4 className="text-2xl font-black text-[#0A1529] mb-1">{plug.name}</h4>
                   <p className="text-gray-500 font-bold text-sm mb-4">{plug.trade}</p>
@@ -296,12 +292,13 @@ export default function LandingPage() {
               </Link>
             ))}
 
-            <Link href="/find" className="hidden lg:flex items-center justify-center p-8 rounded-[2.5rem] border-2 border-dashed border-gray-200 text-gray-400 group hover:border-[#DBA134] hover:text-[#DBA134] transition-colors cursor-pointer">
+            {/* Remember to remove 'hidden' if you want it to show up in the scroll list */}
+            <Link href="/find" className="flex shrink-0 min-w-[200px] items-center justify-center p-8 rounded-[2.5rem] border-2 border-dashed border-gray-200 text-gray-400 group hover:border-[#DBA134] transition-colors cursor-pointer">
               <div className="text-center font-bold">
-                <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4 group-hover:bg-[#F8E8C1] transition-colors">
+                <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4 group-hover:bg-[#F8E8C1]">
                   <ChevronRight className="w-6 h-6" />
                 </div>
-                Browse all Plugs
+                Browse all
               </div>
             </Link>
           </div>
