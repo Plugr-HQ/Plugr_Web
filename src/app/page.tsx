@@ -165,10 +165,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="mb-16">
             <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">Why Plugr</span>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none mb-4">
+            <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none mb-4 text-[#162952]">
               Built Different.
             </h2>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none mb-4">
+            <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none mb-4 text-[#162952]">
               Whatsapp Layered.
             </h2>
           </div>
@@ -203,7 +203,7 @@ export default function LandingPage() {
             ].map((feature) => (
               <div key={feature.id} className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-[#DBA134]/50 transition-colors">
                 <div className="text-[#DBA134] font-bold mb-4">{feature.id}</div>
-                <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
+                <h3 className="text-xl font-bold mb-2 text-[#162952]">{feature.title}</h3>
                 <p className="text-gray-400 font-medium">{feature.description}</p>
               </div>
             ))}
@@ -220,7 +220,7 @@ export default function LandingPage() {
           </h2>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-6">
+        <div className="flex flex-row gap-6">
           <div className="p-8 rounded-3xl bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
             <div className="w-14 h-14 rounded-2xl bg-yellow-50 flex items-center justify-center mb-6 group-hover:bg-yellow-400 transition-colors">
               <Zap className="w-7 h-7 text-yellow-600 group-hover:text-white" fill="currentColor" />
@@ -248,7 +248,7 @@ export default function LandingPage() {
       </section>
 
       {/* Featured Plugs */}
-      <section className="py-24 px-6 bg-white">
+      <section className="py-24 px-6 bg-white flex flex-col items-center justify-center">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">Meet the plugs</span>
