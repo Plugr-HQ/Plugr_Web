@@ -19,7 +19,8 @@ import {
   Search,
   Bell,
   Menu,
-  X
+  X,
+  MessageCircle,
 } from 'lucide-react';
 
 // Common colors based on screenshots
@@ -93,31 +94,50 @@ export default function LandingPage() {
       </section>
 
       {/* Trust Badges */}
-      <div className="bg-white border-y border-gray-100">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100">
-          <div className="p-6 flex flex-col items-center gap-2 text-center">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-              <UserCheck className="w-5 h-5 text-blue-600" />
+      <div className="bg-[#FDFBF9] border-y border-[#0F1F3D]/10">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-4">
+
+            {/* NIN Verified */}
+            <div className="flex items-center gap-3">
+              <div className="shrink-0">
+                <UserCheck className="w-5 h-5 text-[#E8A020]" />
+              </div>
+              <span className="text-[13px] md:text-sm font-semibold text-[#0F1F3D] whitespace-nowrap">
+                NIN Verified
+              </span>
             </div>
-            <span className="text-sm font-bold text-[#0A1529]">NIN Verified</span>
-          </div>
-          <div className="p-6 flex flex-col items-center gap-2 text-center">
-            <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
-              <Lock className="w-5 h-5 text-orange-600" />
+
+            {/* Escrow Protected */}
+            <div className="flex items-center gap-3">
+              <div className="shrink-0">
+                <Lock className="w-5 h-5 text-[#E8A020]" />
+              </div>
+              <span className="text-[13px] md:text-sm font-semibold text-[#0F1F3D] whitespace-nowrap">
+                Escrow Protected
+              </span>
             </div>
-            <span className="text-sm font-bold text-[#0A1529]">Escrow Protected</span>
-          </div>
-          <div className="p-6 flex flex-col items-center gap-2 text-center">
-            <div className="w-10 h-10 rounded-xl bg-yellow-50 flex items-center justify-center">
-              <Star className="w-5 h-5 text-yellow-600" />
+
+            {/* Rated & Reviewed */}
+            <div className="flex items-center gap-3">
+              <div className="shrink-0">
+                <Star className="w-5 h-5 text-[#E8A020]" />
+              </div>
+              <span className="text-[13px] md:text-sm font-semibold text-[#0F1F3D] whitespace-nowrap">
+                Rated & Reviewed
+              </span>
             </div>
-            <span className="text-sm font-bold text-[#0A1529]">Rated & Reviewed</span>
-          </div>
-          <div className="p-6 flex flex-col items-center gap-2 text-center">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-purple-600" />
+
+            {/* WhatsApp Features */}
+            <div className="flex items-center gap-3">
+              <div className="shrink-0">
+                <MessageCircle className="w-5 h-5 text-[#E8A020]" />
+              </div>
+              <span className="text-[13px] md:text-sm font-semibold text-[#0F1F3D] whitespace-nowrap">
+                WhatsApp Features
+              </span>
             </div>
-            <span className="text-sm font-bold text-[#0A1529]">Ikeja, Lagos</span>
+
           </div>
         </div>
       </div>
