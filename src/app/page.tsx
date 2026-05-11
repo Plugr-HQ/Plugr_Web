@@ -25,12 +25,15 @@ import {
 
 // Common colors based on screenshots
 const colors = {
-  navy: '#0A1529',
-  gold: '#DBA134',
-  lightGold: '#F8E8C1',
-  cream: '#F9F6F0',
+  midnightblue: '#0F1F3D',
+  deepblue: '#162952',
+  gold: '#E8A020',
+  lightGold: '#F5C86A',
+  ink: '1A1A1F',
+  slate: '#8A9DB0',
+  bone: '#F5F1EC',
+  steelBlue: '#7A9CC8',
   white: '#FFFFFF',
-  grey: '#64748B',
 };
 
 export default function LandingPage() {
@@ -69,7 +72,7 @@ export default function LandingPage() {
       )}
 
       {/* Hero Section */}
-      <section className="pt-32 pb-16 px-6 max-w-4xl mx-auto text-center" style={{ backgroundColor: colors.navy }}>
+      <section className="pt-32 pb-16 px-6 max-w-4xl mx-auto text-center" style={{ backgroundColor: colors.deepblue }}>
         <div className="space-y-6 pt-10 pb-20">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-widest">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
