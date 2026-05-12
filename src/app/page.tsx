@@ -40,12 +40,11 @@ export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen font-sans" style={{ backgroundColor: colors.white }}>
+    <div className="min-h-screen font-sans" style={{ backgroundColor: colors.bone }}>
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#F5F1EC]">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.svg" alt="Plugr Logo" width={32} height={32} />
-          <span className="text-2xl font-black tracking-tighter text-[#0A1529]">plugr</span>
+          <Image src="/logo.svg" alt="Plugr Logo" width={120} height={60} />
         </Link>
         <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-[#0A1529]">
           <Link href="#how-it-works" className="hover:text-[#DBA134] transition-colors">How it Works</Link>
@@ -72,18 +71,18 @@ export default function LandingPage() {
       )}
 
       {/* Hero Section */}
-      <section className="pt-32 pb-16 px-6 max-w-4xl mx-auto text-center" style={{ backgroundColor: colors.deepblue }}>
+      <section className="pt-32 pb-16 px-6 max-w-4xl mx-auto text-left" style={{ backgroundColor: colors.bone }}>
         <div className="space-y-6 pt-10 pb-20">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-widest">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            100+ Verified Plugs in Lagos
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FFFFFF] text-[#162952] text-xs font-bold uppercase tracking-widest border-[#DBA134]">
+            <span className="w-2 h-2 rounded-full bg-[#F5C86A] animate-pulse" />
+            Verified Plugs in Lagos
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.1] tracking-tight">
-            Home services, <br />
-            <span className="text-[#DBA134]">done right.</span>
+          <h1 className="text-5xl md:text-7xl font-black text-[#162952]">
+            Hire Verified Artisans <br />you can actually <br></br>
+            <span className="text-[#DBA134]">trust.</span>
           </h1>
           <p className="text-gray-400 text-lg md:text-xl max-w-xl mx-auto font-medium">
-            Get connected to trusted, verified electricians and plumbers for your home and property needs — people you can actually trust.
+            Plugr helps clients connect with verified artisans, across Ikeja using secure payments, proffessional identity verification and whatsapp-native job flow.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <Link href="/find" className="w-full sm:w-auto px-10 py-5 bg-[#DBA134] text-white rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-xl shadow-yellow-900/20 text-center">
@@ -97,7 +96,7 @@ export default function LandingPage() {
       </section>
 
       {/* Trust Badges */}
-      <div className="bg-[#FDFBF9] border-y border-[#0F1F3D]/10">
+      <div className="">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-4">
 
@@ -146,7 +145,7 @@ export default function LandingPage() {
       </div>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-24 px-6 max-w-7xl mx-auto">
+      <section id="how-it-works" className="py-24 px-6 max-w-7xl mx-auto bg-white">
         <div className="mb-16">
           <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">How it works</span>
           <h2 className="text-4xl md:text-5xl font-black text-[#0A1529] tracking-tighter max-w-md leading-none">
@@ -172,8 +171,8 @@ export default function LandingPage() {
               description: "Release payment when satisfied, 24hr dispute window."
             }
           ].map((step) => (
-            <div key={step.id} className="group cursor-default">
-              <div className="text-4xl font-black text-gray-200 mb-6 group-hover:text-[#DBA134] transition-colors">
+            <div key={step.id} className="group cursor-default flex-col">
+              <div className="text-4xl font-black text-[#0A1529] mb-6 group-hover:text-[#DBA134] transition-colors bg-amber-100 rounded-full px-6 py-4">
                 {step.id}
               </div>
               <h3 className="text-xl font-bold text-[#0A1529] mb-2">{step.title}</h3>
@@ -506,7 +505,7 @@ export default function LandingPage() {
         </div>
 
         <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col items-center gap-4 text-xs font-bold text-gray-500 uppercase tracking-widest">
-          <span>&copy; 2026 Plugr Technologies Limited. All rights reserved.</span>
+          <span>&copy; 2026 ALHAZEN. All rights reserved.</span>
         </div>
       </footer>
     </div>

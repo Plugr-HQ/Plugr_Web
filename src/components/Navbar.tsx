@@ -5,12 +5,11 @@ import { Button } from './Button'
 
 export function Navbar() {
   return (
-    <nav className="sticky top-0 z-50 bg-midnight px-6 py-3 flex items-center justify-between border-b border-white/10">
+    <nav className="sticky top-0 z-50 bg-midnight px-6 py-3 flex items-center justify-between bg-[#F5F1EC] ">
       {/* 1. Logo Section */}
       <div className="flex items-center">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.svg" alt="Plugr Logo" width={32} height={32} className="brightness-0 invert" />
-          <span className="text-2xl font-black tracking-tighter text-white">plugr</span>
         </Link>
       </div>
 
