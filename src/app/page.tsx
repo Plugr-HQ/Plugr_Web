@@ -225,13 +225,20 @@ export default function LandingPage() {
                 description: "Full quote before work starts. Zero surprises."
               }
             ].map((feature) => (
-              <div key={feature.id} className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-[#DBA134]/50 transition-colors">
-                <div className="text-[#DBA134] font-bold mb-4">{feature.id}</div>
+              <div key={feature.id} className="p-8 rounded-3xl border hover:border-[#DBA134]/50 transition-colors bg-white">
+                <div className="text-[#DBA134] font-medium mb-4">{feature.id}</div>
                 <h3 className="text-xl font-bold mb-2 text-[#162952]">{feature.title}</h3>
                 <p className="text-gray-400 font-medium">{feature.description}</p>
               </div>
             ))}
           </div>
+        </div><br /><br />
+        <div className='text-left'>
+          <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">Why it matters.</span>
+          <h2 className="text-4xl md:text-3xl font-semibold leading-none mb-4 text-[#162952]">
+            Skilled workers <br /> deserve a <br /> professional identity.
+          </h2>
+          <p className="text-[#123076] text-sm mb-6 max-w-3xl w-2/3">Plugr transforms artisans from anaonymous contacts into trusted professionals with visible identity, ratings, and verifiied work history.</p>
         </div>
       </section>
 
