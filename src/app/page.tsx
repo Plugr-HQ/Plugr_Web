@@ -171,12 +171,14 @@ export default function LandingPage() {
               description: "Release payment when satisfied, 24hr dispute window."
             }
           ].map((step) => (
-            <div key={step.id} className="group cursor-default flex-col">
-              <div className="text-4xl font-black text-[#0A1529] mb-6 group-hover:text-[#DBA134] transition-colors bg-amber-100 rounded-full px-6 py-4">
+            <div key={step.id} className="group cursor-default flex flex-row gap-4 items-left">
+              <div className="text-2xl font-black text-[#0A1529] mb-6 group-hover:text-[#DBA134] transition-colors bg-[#F5F1EC] rounded-full px-4 py-2 w-14 h-14 flex justify-center items-center flex-row-1">
                 {step.id}
               </div>
-              <h3 className="text-xl font-bold text-[#0A1529] mb-2">{step.title}</h3>
-              <p className="text-gray-500 font-medium">{step.description}</p>
+              <div className="flex flex-col">
+                <h3 className="text-xl font-bold text-[#0A1529] mb-2">{step.title}</h3>
+                <p className="text-gray-500 font-medium text-sm">{step.description}</p>
+              </div>
             </div>
           ))}
         </div>
