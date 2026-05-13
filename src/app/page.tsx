@@ -329,7 +329,7 @@ export default function LandingPage() {
                 <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4 group-hover:bg-[#F8E8C1]">
                   <ChevronRight className="w-6 h-6" />
                 </div>
-                Browse all
+                Browse All Plugs
               </div>
             </Link>
           </div>
@@ -382,15 +382,28 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <div className='text-center bg-white py-10'>
+        <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">FOR CLIENTS</span>
+        <h2 className="text-4xl md:text-4xl font-black leading-none mb-6 text-[#162952]">
+          No more random <br /> artisan referrals.
+        </h2>
+        <p className="text-[#123076] text-md mb-6 max-w-3xl w-2/3 flex items-center px-8"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center mr-2 px-4">1</span> Hire verified electricians and plumbers</p>
+        <p className="text-[#123076] text-md mb-6 max-w-3xl w-2/3 flex items-center px-8"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center mr-2 px-4">2</span> Track payments securely</p>
+        <p className="text-[#123076] text-md mb-6 max-w-3xl w-2/3 flex items-center px-8"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center mr-2 px-4">3</span> Get quote transparency</p>
+        <p className="text-[#123076] text-md mb-6 max-w-3xl w-2/3 flex items-center px-8"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center mr-2 px-4">4</span> Raise disputes when necessary</p>
+
+        <Link href="/find" className="bg-[#DBA134] text-[#162952] px-32 py-4 rounded-full font-bold inline-block ">Find a Plug</Link>
+      </div>
+
       {/* Become a Plug CTA */}
       <section className="py-24 px-6 bg-[#0A1529] text-white">
         <div className="max-w-4xl mx-auto text-center">
           <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">For Professionals</span>
-          <h2 className="text-5xl md:text-6xl font-black tracking-tighter leading-none mb-6">
+          <h2 className="text-5xl md:text-6xl font-black tracking-tighter leading-none mb-6 text-[#DBA134]">
             Join the Plugs.
           </h2>
           <p className="text-gray-400 text-lg md:text-xl font-medium mb-12">
-            Grow your business with Plugr. Flexible work, on your terms.
+            Build a reputation clients can trust.
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
