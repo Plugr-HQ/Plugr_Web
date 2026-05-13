@@ -493,8 +493,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-4 gap-12">
           <div className="col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-6">
-              <Image src="/logo.svg" alt="Plugr Logo" width={32} height={32} className="brightness-0 invert" />
-              <span className="text-2xl font-black tracking-tighter">plugr</span>
+              <Image src="/logo_light.svg" alt="Plugr Logo" width={124} height={48} />
             </Link>
             <p className="text-gray-400 font-medium max-w-sm mb-8">
               Pledging allegiance to your success. The trusted network for verified artisans in Lagos.
