@@ -336,51 +336,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-24 px-6 bg-[#F9F6F0]">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-16">
-            <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">What clients say</span>
-            <h2 className="text-4xl md:text-5xl font-black text-[#0A1529] tracking-tighter leading-none">
-              Don't just take <br /> our word for it.
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="p-8 rounded-3xl bg-white shadow-sm border border-gray-100">
-              <div className="flex gap-1 mb-6">
-                {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-4 h-4 text-orange-400" fill="currentColor" />)}
-              </div>
-              <p className="text-lg font-medium text-[#0A1529] mb-6 italic leading-relaxed">
-                "Finally, a platform where I can find real artisans who don't disappear with my money. The escrow feature is a lifesaver."
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600">C</div>
-                <div>
-                  <div className="font-black text-[#0A1529]">Chidi A.</div>
-                  <div className="text-xs text-gray-500 font-bold">Gbagada</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-8 rounded-3xl bg-white shadow-sm border border-gray-100">
-              <div className="flex gap-1 mb-6">
-                {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-4 h-4 text-orange-400" fill="currentColor" />)}
-              </div>
-              <p className="text-lg font-medium text-[#0A1529] mb-6 italic leading-relaxed">
-                "Obi was super professional. Fixed my wiring issue in an hour and cleaned up afterwards. Will definitely use Plugr again."
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center font-bold text-purple-600">S</div>
-                <div>
-                  <div className="font-black text-[#0A1529]">Sarah O.</div>
-                  <div className="text-xs text-gray-500 font-bold">Ikeja</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <div className='text-center bg-white py-10'>
         <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">FOR CLIENTS</span>
