@@ -1,7 +1,7 @@
-import { Navbar } from '@/src/components/Navbar'
-import { Footer } from '@/src/components/Footer'
+import Navbar from '@/src/components/Navbar'
+import Footer from '@/src/components/Footer'
 import { Button } from '@/src/components/Button'
-import { Star, Shield, MapPin, Briefcase, Calendar, CheckCircle2 } from 'lucide-react'
+import { Star, MapPin, CheckCircle2 } from 'lucide-react'
 
 export default function PublicProfilePage() {
   // Mock data for a single plug
