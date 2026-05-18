@@ -63,6 +63,16 @@ export default function FindPlugPage() {
   return (
     <main className="flex flex-col min-h-screen bg-bone">
       <Navbar />
+      {/* Main Heading with split color accents */}
+      <h1 className="text-3xl font-display font-black  mb-6 max-w-md mt-30">
+        Find a <span className="text-midnight">verified</span>{' '}
+        <span className="text-gold">Verified Plug.</span>
+      </h1>
+
+      {/* Subtitle Paragraph */}
+      <p className="text-slate text-base md:text-lg font-normal leading-relaxed mb-10 max-w-sm">
+        Plugr doesn't promise you jobs. It gives you the edge to earn them.
+      </p>
 
       {/* Search & Header */}
       <div className="bg-midnight pt-8 pb-12 px-4 shadow-lg">
@@ -98,8 +108,8 @@ export default function FindPlugPage() {
               key={i}
               onClick={() => setSelectedCategory(cat)}
               className={`px-6 py-2 rounded-pill font-medium text-sm transition-colors whitespace-nowrap ${selectedCategory === cat
-                  ? "bg-gold text-midnight"
-                  : "bg-white text-slate border border-slate/10 hover:border-gold/50"
+                ? "bg-gold text-midnight"
+                : "bg-white text-slate border border-slate/10 hover:border-gold/50"
                 }`}
             >
               {/* Pluralize UI text nicely if needed, keeping matching logic exact */}
