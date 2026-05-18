@@ -74,32 +74,19 @@ export default function FindPlugPage() {
         Plugr doesn't promise you jobs. It gives you the edge to earn them.
       </p>
 
-      {/* Search & Header */}
-      <div className="bg-midnight pt-8 pb-12 px-4 shadow-lg">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-display text-white mb-6">Find a verified Plug in Ikeja</h1>
-
-          <div className="flex flex-col md:flex-row gap-3">
-            <div className="relative grow">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate w-5 h-5" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for an electrician or plumber..."
-                className="w-full bg-white rounded-pill py-3 pl-12 pr-4 text-midnight font-sans placeholder:text-slate focus:outline-none focus:ring-2 focus:ring-gold"
-              />
-            </div>
-            <button className="flex items-center justify-center gap-2 bg-deep-blue text-white rounded-pill px-6 py-3 border border-white/10 hover:bg-white/10 transition-colors">
-              <MapPin className="w-5 h-5 text-gold" />
-              <span>Ikeja, Lagos</span>
-            </button>
-          </div>
-        </div>
+      <div className="relative w-[90%] max-w-7xl mx-auto">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate w-5 h-5" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search by name or trade..."
+          className="w-full bg-white rounded-lg py-3 pl-12 pr-4 text-midnight font-sans placeholder:text-slate focus:outline-none focus:ring-2 focus:ring-gold"
+        />
       </div>
 
       {/* Filters & Content */}
-      <div className="max-w-7xl mx-auto w-full px-4 py-8">
+      <div className="max-w-7xl mx-auto w-full px-2 py-5">
 
         {/* Category Chips & Dropdown Wrapper */}
         <div className="relative flex items-center gap-2 mb-8 overflow-x-auto no-scrollbar py-1">
@@ -125,7 +112,6 @@ export default function FindPlugPage() {
                 }`}
             >
               <Filter className="w-4 h-4" />
-              <span className="text-sm font-medium">More filters</span>
               <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
