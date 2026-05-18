@@ -14,9 +14,9 @@ export function Navbar() {
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.svg" alt="Plugr Logo" width={120} height={60} />
         </Link>
-        <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-[#0A1529]">
-          <Link href="/auth" className="hover:text-[#DBA134] transition-colors">Log in</Link>
-          <Link href="/become-a-plug" className="bg-[#DBA134] text-white px-6 py-3 rounded-full hover:bg-[#DBA134]/90 transition-colors">Sign up</Link>
+        <div className="flex flex-row items-center gap-6 text-sm font-semibold text-[#0A1529]">
+          <Link href="/auth" className="text-[#DBA134] px-12 py-4 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Log in</Link>
+          <Link href="/become-a-plug" className="bg-[#DBA134] text-white px-12 py-4 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Sign up</Link>
         </div>
         <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           {isMobileMenuOpen ? <X className="w-6 h-6 text-[#0A1529]" /> : <Menu className="w-6 h-6 text-[#0A1529]" />}
