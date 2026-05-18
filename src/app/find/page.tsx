@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import { Navbar } from '@/src/components/Navbar'
-import { Footer } from '@/src/components/Footer'
+import Navbar from '@/src/components/Navbar'
+import Footer from '@/src/components/Footer'
 import { PlugCard, Plug } from '@/src/components/PlugCard'
 import { Search, Filter, MapPin } from 'lucide-react'
 
