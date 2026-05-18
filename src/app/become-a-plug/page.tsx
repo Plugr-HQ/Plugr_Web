@@ -154,15 +154,25 @@ export default function BecomeAPlugSection() {
           Your journey to<br />becoming a Plug.
         </h2>
 
-        <div className="relative border-l-2 border-gold/30 ml-3 pl-8 space-y-10">
+        <div className="relative border-l-2 border-gold/30 ml-4 pl-8 space-y-10">
           {steps.map((step, index) => (
-            <div key={index} className="relative">
-              {/* Timeline Bullet Node */}
-              <div className="absolute left-[43px] top-1 bg-gold text-midnight text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center ring-4 ring-bone">
+            <div key={index} className="relative flex flex-col justify-center min-h-[24px]">
+
+              {/* Timeline Bullet Node - Placed exactly over the left border line */}
+              <div className="ml-[-45px] top-0 bg-gold text-midnight text-xs font-black w-6 h-6 rounded-full flex items-center justify-center ring-4 ring-bone">
                 {step.num}
               </div>
-              <h3 className="text-lg font-black tracking-tight mb-1">{step.num}. {step.title}</h3>
-              <p className="text-slate text-sm leading-relaxed">{step.desc}</p>
+
+              {/* Step Heading - Removed duplicate step number prefix */}
+              <h3 className="text-lg font-black tracking-tight mb-1 text-midnight leading-none">
+                {step.title}
+              </h3>
+
+              {/* Step Description */}
+              <p className="text-slate text-sm leading-relaxed">
+                {step.desc}
+              </p>
+
             </div>
           ))}
         </div>
