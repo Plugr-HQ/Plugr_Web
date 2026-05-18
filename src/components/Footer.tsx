@@ -1,49 +1,59 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { Mail, Phone } from 'lucide-react'
+import SocialIcons from '@/src/components/SocialIcons'
 
 
-export function Footer() {
+
+function Footer() {
   return (
-    <footer className="bg-bone pt-16 pb-8 px-4 border-t border-slate/10">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-          <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <Image src="/logo.svg" alt="Plugr Logo" width={32} height={32} />
-              <span className="text-2xl font-black tracking-tighter text-midnight">plugr</span>
-            </Link>
-            <p className="text-slate text-sm">
-              Nigeria's first verified skills identity platform for artisans.
-            </p>
+    <footer className="bg-[#0A1529] text-white py-16 px-6">
+      <div className="max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-4 gap-12">
+        <div className="col-span-2">
+          <Link href="/" className="flex items-center gap-2 mb-6">
+            <Image src="/logo_light.svg" alt="Plugr Logo" width={124} height={48} />
+          </Link>
+          <p className="text-gray-400 font-medium max-w-sm mb-8">
+            Pledging allegiance to your success. The trusted network for verified artisans in Lagos.
+          </p>
+          <div className="flex flex-row gap-4 items-center transition-colors cursor-pointer">
+            <Mail className="w-5 h-5 text-[#DBA134]" />
+            <a href="mailto:[EMAIL_ADDRESS]">hello@getplugr.com</a>
+          </div> <br />
+          <div className="flex flex-row gap-4 items-center transition-colors cursor-pointer">
+            <Phone className="w-5 h-5 text-[#DBA134]" /> <a href="tel:+2348180147857">+2348180147857</a>
           </div>
-          <div>
-            <h4 className="font-bold text-midnight mb-4">Platform</h4>
-            <ul className="space-y-2 text-sm text-slate">
-              <li><Link href="/#how-it-works" className="hover:text-gold transition-colors">How It Works</Link></li>
-              <li><Link href="/find" className="hover:text-gold transition-colors">Find a Plug</Link></li>
-              <li><Link href="/become-a-plug" className="hover:text-gold transition-colors">Become a Plug</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold text-midnight mb-4">Support</h4>
-            <ul className="space-y-2 text-sm text-slate">
-              <li><a href="#" className="hover:text-gold transition-colors">Help Center</a></li>
-              <li><a href="#" className="hover:text-gold transition-colors">Safety</a></li>
-              <li><a href="#" className="hover:text-gold transition-colors">Disputes</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold text-midnight mb-4">Legal</h4>
-            <ul className="space-y-2 text-sm text-slate">
-              <li><a href="#" className="hover:text-gold transition-colors">Terms</a></li>
-              <li><a href="#" className="hover:text-gold transition-colors">Privacy</a></li>
-            </ul>
-          </div>
+          <SocialIcons />
         </div>
-        <div className="pt-8 border-t border-slate/10 text-center text-slate text-xs">
-          &copy; {new Date().getFullYear()} Plugr. All rights reserved.
-        </div>
+
+
+        <section className="flex flex-row gap-14">
+          <div>
+            <h5 className="uppercase text-xs tracking-widest text-[white] mb-6 font-bold">Quick Links</h5>
+            <ul className="space-y-4 font-medium text-gray-400">
+              <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
+              <li><Link href="/#how-it-works" className="hover:text-white transition-colors">How it Works</Link></li>
+              <li><Link href="/find" className="hover:text-white transition-colors">Find a Plug</Link></li>
+              <li><Link href="/become-a-plug" className="hover:text-white transition-colors">Become a Plug</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 className="uppercase text-xs tracking-widest text-[white] mb-6 font-bold">Legal</h5>
+            <ul className="space-y-4 font-medium text-gray-400">
+              <li><Link href="#" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link href="#" className="hover:text-white transition-colors">Dispute Policy</Link></li>
+            </ul>
+          </div>
+        </section>
+      </div>
+
+      <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col items-center gap-4 text-xs font-bold text-gray-500 uppercase tracking-widest">
+        <span>&copy; 2026 ALHAZEN. All rights reserved.</span>
       </div>
     </footer>
   )
 }
+
+export default Footer;
