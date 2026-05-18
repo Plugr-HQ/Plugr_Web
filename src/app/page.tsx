@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import SocialIcons from '@/src/components/SocialIcons';
 import {
   CheckCircle2,
   ChevronRight,
@@ -17,7 +18,8 @@ import {
   DollarSign,
   Award,
   Search,
-  Bell,
+  Mail,
+  Phone,
   Menu,
   X,
   MessageCircle,
@@ -399,7 +401,7 @@ export default function LandingPage() {
 
       {/* FAQ */}
       <section id="faq" className="py-24 px-6 max-w-3xl mx-auto">
-        <div className="text-center mb-16">
+        <div className="text-left mb-16">
           <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">FAQ</span>
           <h2 className="text-4xl md:text-5xl font-black text-[#0A1529] tracking-tighter">
             Common Questions.
@@ -419,7 +421,7 @@ export default function LandingPage() {
           ))}
         </div>
 
-        <div className="mt-12 p-8 rounded-3xl bg-[#F8E8C1]/30 border border-[#F8E8C1] text-center">
+        <div className="mt-12 p-8 rounded-3xl bg-gray-50 border border-gray-200 text-center">
           <p className="font-bold text-[#0A1529] mb-4">Still have questions? We're happy to help.</p>
           <button className="px-8 py-4 bg-[#DBA134] text-white rounded-full font-bold">
             Contact Support
@@ -453,10 +455,16 @@ export default function LandingPage() {
             <p className="text-gray-400 font-medium max-w-sm mb-8">
               Pledging allegiance to your success. The trusted network for verified artisans in Lagos.
             </p>
-            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors cursor-pointer">
-              <Bell className="w-5 h-5 text-[#DBA134]" />
+            <div className="flex flex-row gap-4 items-center transition-colors cursor-pointer">
+              <Mail className="w-5 h-5 text-[#DBA134]" />
+              <a href="mailto:[EMAIL_ADDRESS]">hello@getplugr.com</a>
+            </div> <br />
+            <div className="flex flex-row gap-4 items-center transition-colors cursor-pointer">
+              <Phone className="w-5 h-5 text-[#DBA134]" /> <a href="tel:+2348180147857">+2348180147857</a>
             </div>
+            <SocialIcons />
           </div>
+
 
           <section className="flex flex-row gap-14">
             <div>
