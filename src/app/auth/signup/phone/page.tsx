@@ -1,20 +1,21 @@
 'use client'
 
 import Image from 'next/image'
-
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { Button } from '@/src/components/Button'
 import { ArrowLeft } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function PhoneEntryPage() {
+function PhoneEntryContent() {
   const [phoneNumber, setPhoneNumber] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const role = searchParams.get('role') || 'client'
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (phoneNumber.length >= 10) {
-      router.push('/auth/otp')
+      router.push(`/auth/signup/otp?role=${role}`)
     }
   }
 
@@ -58,5 +59,13 @@ export default function PhoneEntryPage() {
         </p>
       </div>
     </main>
+  )
+}
+
+export default function PhoneEntryPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PhoneEntryContent />
+    </Suspense>
   )
 }

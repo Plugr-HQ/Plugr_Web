@@ -1,13 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from '@/src/components/Button'
 import { ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
-export default function OtpVerificationPage() {
+export default function LoginOtpPage() {
   const [otp, setOtp] = useState(['', '', '', ''])
   const inputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)]
   const router = useRouter()
@@ -19,7 +18,6 @@ export default function OtpVerificationPage() {
     newOtp[index] = value
     setOtp(newOtp)
 
-    // Move to next input
     if (value !== '' && index < 3) {
       inputRefs[index + 1].current?.focus()
     }
@@ -35,14 +33,9 @@ export default function OtpVerificationPage() {
 
   const handleVerify = () => {
     if (isComplete) {
-      // In a real app, verify OTP here
-      // For now, redirect to onboarding based on role (mocked)
-      const role = 'plug' // This would be fetched from state or query
-      if (role === 'plug') {
-        router.push('/onboarding/plug/setup')
-      } else {
-        router.push('/onboarding/client/setup')
-      }
+      // In a real app, verify OTP here and check user role
+      // For now, redirect to a default dashboard
+      router.push('/client/dashboard')
     }
   }
 
