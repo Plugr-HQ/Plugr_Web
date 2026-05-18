@@ -1,36 +1,40 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Menu } from 'lucide-react'
-import { Button } from './Button'
+import { Menu, X } from 'lucide-react'
+import { useState } from 'react'
 
 export function Navbar() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
-    <nav className="sticky top-0 z-50 bg-midnight px-6 py-3 flex items-center justify-between bg-[#F5F1EC] ">
-      {/* 1. Logo Section */}
-      <div className="flex items-center">
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.svg" alt="Plugr Logo" width={32} height={32} className="brightness-0 invert" />
-        </Link>
+    <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#F5F1EC]">
+      <Link href="/" className="flex items-center gap-2">
+        <Image src="/logo.svg" alt="Plugr Logo" width={120} height={60} />
+      </Link>
+      <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-[#0A1529]">
+        <Link href="#how-it-works" className="hover:text-[#DBA134] transition-colors">How it Works</Link>
+        <Link href="#trades" className="hover:text-[#DBA134] transition-colors">Trades</Link>
+        <Link href="#faq" className="hover:text-[#DBA134] transition-colors">FAQ</Link>
       </div>
+      <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+        {isMobileMenuOpen ? <X className="w-6 h-6 text-[#0A1529]" /> : <Menu className="w-6 h-6 text-[#0A1529]" />}
+      </button>
+    </nav>
 
-      {/* 2. Navigation Section */}
-      <div className="hidden md:flex items-center gap-8 text-white text-sm font-medium">
-        <Link href="/" className="hover:text-gold transition-colors">Home</Link>
-        <Link href="/#how-it-works" className="hover:text-gold transition-colors">How It Works</Link>
-        <Link href="/find" className="hover:text-gold transition-colors">Find a Plug</Link>
-        <Link href="/become-a-plug" className="hover:text-gold transition-colors">Become a Plug</Link>
-      </div>
-
-      {/* 3. Auth Buttons Section */}
-      <div className="flex items-center gap-4">
-        <button className="text-white md:hidden">
-          <Menu className="w-6 h-6" />
-        </button>
-        <div className="hidden md:flex items-center gap-4 sticky right-0">
-          <Button variant="ghost" href="/auth" className="text-white hover:text-gold min-w-0 px-4">Log In</Button>
-          <Button href="/auth" className="min-w-0 px-6 py-2">Sign Up</Button>
+  ); {
+    isMobileMenuOpen && (
+      <div className="fixed inset-0 top-[73px] z-40 bg-white md:hidden flex flex-col p-6 space-y-6">
+        <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">How it Works</Link>
+        <Link href="#trades" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">Trades</Link>
+        <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">FAQ</Link>
+        <Link href="/find" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">Find a Plug</Link>
+        <div className="pt-6 border-t border-gray-100 flex flex-col gap-4">
+          <Link href="/auth" className="w-full py-4 text-center border-2 border-[#0A1529] text-[#0A1529] rounded-full font-bold">Log in</Link>
+          <Link href="/become-a-plug" className="w-full py-4 text-center bg-[#DBA134] text-white rounded-full font-bold">Become a Plug</Link>
         </div>
       </div>
-    </nav>
-  )
+    )
+  }
 }
+
+export default Navbar;
