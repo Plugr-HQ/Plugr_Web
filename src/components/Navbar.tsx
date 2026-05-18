@@ -24,7 +24,7 @@ export function Navbar() {
       </nav>
 
       {isMobileMenuOpen && (
-        <div className="fixed top-[73px] right-0 bottom-0 w-[280px] z-40 h-fit rounded-3xl bg-white/50 backdrop-blur-md md:hidden flex flex-col p-6 border-l border-gray-100 shadow-2xl animate-in slide-in-from-right duration-200">
+        <div className="fixed top-[80px] right-0 bottom-0 w-[280px] z-40 h-fit rounded-3xl bg-white/50 backdrop-blur-md md:hidden flex flex-col p-6 border-l border-gray-100 shadow-2xl animate-in slide-in-from-right duration-200">
           <div className="pt-6 flex flex-col gap-4 items-center">
             <Link
               href="/"
