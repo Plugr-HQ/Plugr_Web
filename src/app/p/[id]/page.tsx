@@ -1,127 +1,205 @@
-import Navbar from '@/src/components/Navbar'
-import Footer from '@/src/components/Footer'
-import { Button } from '@/src/components/Button'
-import { Star, MapPin, CheckCircle2 } from 'lucide-react'
+'use client'
 
-export default function PublicProfilePage() {
-  // Mock data for a single plug
-  const plug = {
-    name: "Suleiman Yusuf",
-    trade: "Electrician",
-    rating: 4.8,
-    reviews: 24,
-    status: "Verified",
-    badge: "Verified",
-    bio: "Senior Electrician with over 8 years of experience in residential and commercial wiring. Specialist in solar installations and inverter systems.",
-    location: "Ikeja, Lagos",
-    experience: "8 years",
-    completedJobs: 142
-  }
+import { Star, MessageSquare, CheckCircle2, ShieldCheck } from 'lucide-react'
+import Link from 'next/link'
+import Image from 'next/image'
+
+interface Review {
+  id: string
+  stars: number
+  comment: string
+  author: string
+  location: string
+}
+
+export default function PlugProfileDetails() {
+  const skills = [
+    "Fault Finding",
+    "House Wiring",
+    "Solar Installation",
+    "Inverter Repairs"
+  ]
+
+  const reviews: Review[] = [
+    {
+      id: "1",
+      stars: 5,
+      comment: "Seun fixed our inverter issue in record time. Very professional and tidy.",
+      author: "Chidinma O.",
+      location: "Ikeja"
+    },
+    {
+      id: "2",
+      stars: 4,
+      comment: "Great work on the house wiring, though he arrived a bit later than scheduled.",
+      author: "Kunle A.",
+      location: "Maryland"
+    }
+  ]
+  const verifications = [
+    "Phone OTP",
+    "Liveness Confirmed",
+    "NIN verified",
+    "Skills Assessed"
+  ]
 
   return (
-    <main className="flex flex-col min-h-screen bg-bone">
-      <Navbar />
+    <div className="bg-bone min-h-screen font-sans antialiased text-midnight pb-32">
+      <div className="max-w-xl mx-auto px-6 py-8 space-y-6">
 
-      <div className="max-w-4xl mx-auto w-full px-4 py-8">
-        {/* Profile Card */}
-        <div className="bg-white rounded-card shadow-sm p-6 mb-6">
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            <div className="w-24 h-24 md:w-32 md:h-32 bg-bone rounded-full flex items-center justify-center font-display font-bold text-3xl text-midnight shrink-0">
-              SY
+        {/* --- CENTERING WRAPPER FOR PROFILE HEADER --- */}
+        <div className="flex flex-col items-center text-center pt-4 pb-2">
+
+          {/* Profile Avatar Wrapper */}
+          <div className="relative w-32 h-32 mb-5">
+            {/* Main User Image */}
+            <div className="w-full h-full rounded-full overflow-hidden border-2 border-transparent bg-linear-to-b from-orange-400 to-amber-600 relative shadow-inner">
+              <Image
+                src="/images/test_avatar.jpg"
+                alt="Oluwaseun Adewale"
+                fill
+                className="object-cover object-top scale-105"
+                priority
+              />
             </div>
-            <div className="grow">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl md:text-3xl font-display text-midnight">{plug.name}</h1>
-                <div className="bg-gold text-midnight text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">
-                  {plug.badge}
-                </div>
-              </div>
-              <p className="text-slate text-lg mb-4">{plug.trade}</p>
 
-              <div className="flex items-center gap-6 mb-6">
-                <div className="flex items-center gap-1">
-                  <Star className="w-5 h-5 fill-gold text-gold" />
-                  <span className="font-bold text-midnight">{plug.rating}</span>
-                  <span className="text-slate text-sm">({plug.reviews} reviews)</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate">
-                  <MapPin className="w-4 h-4" />
-                  <span>{plug.location}</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                <div className="p-3 bg-bone rounded-card">
-                  <div className="text-xs text-slate mb-1">Experience</div>
-                  <div className="font-bold text-midnight">{plug.experience}</div>
-                </div>
-                <div className="p-3 bg-bone rounded-card">
-                  <div className="text-xs text-slate mb-1">Jobs Done</div>
-                  <div className="font-bold text-midnight">{plug.completedJobs}</div>
-                </div>
-                <div className="p-3 bg-bone rounded-card hidden lg:block">
-                  <div className="text-xs text-slate mb-1">Response Time</div>
-                  <div className="font-bold text-midnight">&lt; 2 hours</div>
-                </div>
-              </div>
-
-              <h2 className="font-bold text-midnight mb-2">About</h2>
-              <p className="text-slate leading-relaxed mb-8">
-                {plug.bio}
-              </p>
+            {/* Absolute Overlapping Verification Seal Badge */}
+            <div className="absolute bottom-1 right-1 bg-gold text-midnight w-7 h-7 rounded-full flex items-center justify-center shadow-md ring-4 ring-bone">
+              <ShieldCheck className="w-4 h-4 fill-midnight text-gold stroke-[2.5]" />
             </div>
           </div>
+
+          {/* Profile Details Name & Title */}
+          <h2 className="text-xl font-black tracking-tight text-midnight mb-1">
+            Oluwaseun Adewale
+          </h2>
+          <p className="text-slate/70 font-medium text-base mb-4">
+            Master Electrician
+          </p>
+
+          {/* Meta Status Badges Line */}
+          <div className="flex items-center justify-center gap-3">
+            {/* Status Pill Indicator */}
+            <div className="inline-flex items-center gap-1.5 bg-[#E2F5EC] text-[#0D7A4A] px-4 py-1.5 rounded-full text-xs font-bold tracking-wide">
+              <span className="w-2 h-2 rounded-full bg-[#0D7A4A] animate-pulse" />
+              Available Now
+            </div>
+
+            {/* Stars & Reviews Metadata */}
+            <div className="flex items-center gap-1.5 text-sm">
+              <Star className="w-4 h-4 fill-gold text-gold" />
+              <span className="font-black text-midnight">4.9</span>
+              <span className="text-slate/50 font-medium">(42 reviews)</span>
+            </div>
+          </div>
+
+        </div>
+        {/* --- END PROFILE HEADER --- */}
+
+        {/* CARD 1: About Section */}
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100/50">
+          <h4 className="text-xs font-black tracking-widest text-gold uppercase mb-3">
+            About
+          </h4>
+          <p className="text-sm md:text-base font-normal text-midnight leading-relaxed">
+            Over 8 years of experience in residential and commercial electrical systems
+            across Ikeja and mainland Lagos. Specializing in fault finding, smart home
+            integrations, and safe solar panel installations.
+          </p>
         </div>
 
-        {/* Verification Stack */}
-        <div className="bg-white rounded-card shadow-sm p-6 mb-6">
-          <h2 className="font-bold text-midnight mb-4">Verification Stack</h2>
-          <div className="space-y-4">
-            {[
-              { label: "NIN Verified", status: true },
-              { label: "Liveness Check", status: true },
-              { label: "BVN Linked", status: true },
-              { label: "Phone Number Verified", status: true },
-              { label: "Skills Assessment", status: true }
-            ].map((item, i) => (
-              <div key={i} className="flex items-center justify-between py-2 border-b border-bone last:border-0">
-                <span className="text-midnight font-medium">{item.label}</span>
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
-              </div>
+        {/* CARD 2: Verified Identity Checklist */}
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100/50">
+          <h4 className="text-xs font-black tracking-widest text-gold uppercase mb-5">
+            Verified Identity
+          </h4>
+
+          <ul className="space-y-4">
+            {verifications.map((item, index) => (
+              <li key={index} className="flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-gold fill-gold stroke-white" />
+                <span className="text-sm md:text-base font-medium text-midnight">
+                  {item}
+                </span>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
 
-        {/* Reviews (Placeholder) */}
-        <div className="bg-white rounded-card shadow-sm p-6">
-          <h2 className="font-bold text-midnight mb-6">Recent Reviews</h2>
-          <div className="space-y-8">
-            {[1, 2].map((_, i) => (
-              <div key={i} className="border-b border-bone last:border-0 pb-6 last:pb-0">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1 font-bold">
-                    <Star className="w-3 h-3 fill-gold text-gold" />
-                    <Star className="w-3 h-3 fill-gold text-gold" />
-                    <Star className="w-3 h-3 fill-gold text-gold" />
-                    <Star className="w-3 h-3 fill-gold text-gold" />
-                    <Star className="w-3 h-3 fill-gold text-gold" />
+        {/* CARD CONTAINER: Skills & Ratings */}
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 space-y-8">
+
+          {/* SECTION: Skills & Services */}
+          <div>
+            <h4 className="text-xs font-black tracking-widest text-gold uppercase mb-4">
+              Skills & Services
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {skills.map((skill, index) => (
+                <span
+                  key={index}
+                  className="px-4 py-2 bg-bone text-midnight font-medium text-sm rounded-full border border-slate-100"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* SECTION: Ratings & Reviews */}
+          <div>
+            <h4 className="text-xs font-black tracking-widest text-gold uppercase mb-4">
+              Ratings
+            </h4>
+            <div className="space-y-6">
+              {reviews.map((review, idx) => (
+                <div key={review.id} className="space-y-2">
+                  <div className="flex items-center gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-4 h-4 ${i < review.stars
+                          ? "fill-gold text-gold"
+                          : "text-slate/20"
+                          }`}
+                      />
+                    ))}
                   </div>
-                  <span className="text-xs text-slate">Oct 2023</span>
+
+                  <p className="text-midnight text-sm md:text-base font-medium leading-relaxed">
+                    "{review.comment}"
+                  </p>
+
+                  <p className="text-slate text-xs font-medium">
+                    — {review.author}, {review.location}
+                  </p>
+
+                  {idx < reviews.length - 1 && (
+                    <hr className="border-slate-100 pt-2 mt-4" />
+                  )}
                 </div>
-                <p className="text-midnight text-sm mb-2">"Great work. Suleiman fixed my faulty DB board quickly and explained what was wrong. Very professional."</p>
-                <span className="text-xs text-slate font-bold">— Funke A.</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+
         </div>
-      </div>
 
-      {/* Sticky Booking Bar (Mobile only is done with md:relative patterns) */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-bone md:relative md:bg-transparent md:border-0 md:max-w-4xl md:mx-auto md:px-0 md:pb-12">
-        <Button href="/client/pay" fullWidth className="h-14 md:h-12">Request this Plug</Button>
-      </div>
+        {/* BOTTOM ACTION STACK */}
+        <div className="flex flex-col items-center justify-center gap-4 pt-4">
+          <button className="w-full bg-gold hover:bg-gold/95 active:scale-[0.99] text-midnight font-bold py-4 px-6 rounded-full shadow-md flex items-center justify-center gap-2 transition-all">
+            <MessageSquare className="w-5 h-5 fill-midnight text-midnight" />
+            <span>Request This Plug</span>
+          </button>
 
-      <Footer />
-    </main>
+          <p className="text-sm text-slate font-medium">
+            Are you an artisan?{' '}
+            <Link href="/become-a-plug" className="text-gold font-bold hover:underline">
+              Become a Plug
+            </Link>
+          </p>
+        </div>
+
+      </div>
+    </div>
   )
 }
