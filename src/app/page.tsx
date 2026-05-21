@@ -22,8 +22,9 @@ import {
   Phone,
   Menu,
   X,
-  MessageCircle,
 } from 'lucide-react';
+import { PlugCard } from '@/src/components/PlugCard';
+import { FaWhatsapp } from 'react-icons/fa';
 
 // Common colors based on screenshots
 const colors = {
@@ -139,7 +140,7 @@ export default function LandingPage() {
             {/* WhatsApp Features */}
             <div className="flex items-center gap-3">
               <div className="shrink-0">
-                <MessageCircle className="w-5 h-5 text-[#E8A020]" />
+                <FaWhatsapp className="w-5 h-5 text-[#E8A020]" />
               </div>
               <span className="text-[13px] md:text-sm font-semibold text-[#0F1F3D] whitespace-nowrap">
                 WhatsApp Features
