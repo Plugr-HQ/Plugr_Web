@@ -10,10 +10,10 @@ import { Search, Filter, MapPin, ChevronDown } from 'lucide-react'
 export default function FindPlugPage() {
   // Mock data for initial plugs
   const initialPlugs: Plug[] = [
-    { id: '1', name: "Suleiman Yusuf", trade: "Electrician", rating: 4.8, reviewCount: 28, status: "Verified", badge: "Verified" },
+    { id: '1', name: "Suleiman Yusuf", trade: "Electrician", rating: 4.8, reviewCount: 28, status: "Busy", badge: "Verified" },
     { id: '2', name: "John Okoro", trade: "Plumber", rating: 4.9, reviewCount: 45, status: "Available", badge: "Pro" },
     { id: '3', name: "Tunde Williams", trade: "Electrician", rating: 4.7, reviewCount: 19, status: "Busy", badge: "Verified" },
-    { id: '4', name: "Blessing Adebayo", trade: "Plumber", rating: 4.6, reviewCount: 12, status: "Verified", badge: "Basic" },
+    { id: '4', name: "Blessing Adebayo", trade: "Plumber", rating: 4.6, reviewCount: 12, status: "Available", badge: "Basic" },
     { id: '5', name: "David Nwosu", trade: "Electrician", rating: 4.9, reviewCount: 32, status: "Available", badge: "Pro" },
     { id: '6', name: "Emeka Obi", trade: "Plumber", rating: 4.5, reviewCount: 7, status: "Busy", badge: "Verified" },
   ]

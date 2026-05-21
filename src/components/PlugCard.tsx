@@ -9,7 +9,7 @@ export interface Plug {
   trade: string
   rating: number
   reviewCount: number
-  status: 'Available Now' | 'Busy' | string
+  status: 'Available' | 'Busy'
   badge: 'Basic' | 'Verified' | 'Pro'
 }
 
