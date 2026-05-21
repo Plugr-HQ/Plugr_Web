@@ -23,7 +23,7 @@ import {
   Menu,
   X,
 } from 'lucide-react';
-import { PlugCard } from '@/src/components/PlugCard';
+import { PlugCard, Plug } from '@/src/components/PlugCard';
 import { FaWhatsapp } from 'react-icons/fa';
 
 // Common colors based on screenshots
@@ -300,34 +300,12 @@ export default function LandingPage() {
 
           {/* 2. Added pt-6 to prevent badge clipping and flex-nowrap to force horizontal layout */}
           <div className="no-scrollbarsnap-x snap-mandatory flex overflow-x-auto gap-8 pb-10 pt-6 no-scrollbar flex-nowrap">
-            {[
-              { id: "1", name: "Obi Nwosu", trade: "Electrician", rating: 4.9, img: "..." },
-              { id: "2", name: "Amaka Okafor", trade: "Plumber", rating: 4.8, img: "..." }
-            ].map((plug) => (
-              <Link
-                key={plug.id}
-                href={`/p/${plug.id}`}
-                className="relative group block cursor-pointer hover:-translate-y-1 transition-transform shrink-0 min-w-[300px] snap-center"
-              >
-                <div className="absolute -top-4 right-4 z-10 px-3 py-2 rounded-full bg-green-500 text-white text-[10px] font-black uppercase tracking-widest">
-                  Available Now
-                </div>
-                <div className="p-8 rounded-[2.5rem] bg-[#F9F6F0] border border-gray-100 flex flex-col items-center text-center group-hover:border-[#DBA134] transition-colors">
-                  <div className="w-32 h-32 rounded-full overflow-hidden mb-6 ring-4 ring-white shadow-lg bg-white">
-                    <img src='/logo.svg' alt={plug.name} className="w-full h-full object-cover" />
-                  </div>
-                  <h4 className="text-2xl font-black text-[#0A1529] mb-1">{plug.name}</h4>
-                  <p className="text-gray-500 font-bold text-sm mb-4">{plug.trade}</p>
-                  <div className="flex items-center gap-4 w-full pt-4 border-t border-gray-200">
-                    <div className="flex-1 flex items-center gap-1 text-green-600 font-black text-xs uppercase">
-                      <CheckCircle2 className="w-4 h-4" /> Verified
-                    </div>
-                    <div className="flex items-center gap-1 font-black text-[#0A1529]">
-                      <Star className="w-4 h-4 text-orange-400" fill="currentColor" /> {plug.rating}
-                    </div>
-                  </div>
-                </div>
-              </Link>
+            {([
+              { id: '1', name: "Suleiman Yusuf", trade: "Electrician", rating: 4.8, reviewCount: 28, status: "Busy", badge: "Verified" },
+              { id: '2', name: "John Okoro", trade: "Plumber", rating: 4.9, reviewCount: 45, status: "Available", badge: "Pro" },
+              { id: '3', name: "Tunde Williams", trade: "Electrician", rating: 4.7, reviewCount: 19, status: "Busy", badge: "Verified" },
+            ] as Plug[]).map((plug) => (
+              <PlugCard key={plug.id} plug={plug} />
             ))}
 
             {/* Remember to remove 'hidden' if you want it to show up in the scroll list */}
