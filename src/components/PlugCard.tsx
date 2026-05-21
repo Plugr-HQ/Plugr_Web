@@ -20,7 +20,7 @@ interface PlugCardProps {
 
 export function PlugCard({ plug, className }: PlugCardProps) {
   return (
-    <div className={cn("bg-white rounded-3xl shadow-sm p-5 border border-gray-100 max-w-[420px] items-center justify-center", className)}>
+    <div className={cn("w-full bg-white rounded-3xl shadow-sm p-5 border border-gray-100 max-w-[420px]", className)}>
       {/* Top Profile Content Block */}
       <div className="flex gap-4 items-start relative mb-4">
         {/* Profile Avatar Frame */}
