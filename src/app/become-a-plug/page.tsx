@@ -89,7 +89,7 @@ export default function BecomeAPlugSection() {
             {/* Primary CTA Button */}
             <Link
               href="/auth/signup"
-              className="w-full bg-gold text-midnight font-bold py-4 px-8 rounded-full shadow-sm hover:bg-gold/95 transition-all text-center border border-transparent"
+              className="w-full bg-gold text-white font-bold py-4 px-8 rounded-full shadow-sm hover:bg-gold/95 transition-all text-center border border-transparent"
             >
               Become a Plug
             </Link>
