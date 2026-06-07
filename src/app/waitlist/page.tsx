@@ -26,7 +26,7 @@ export default function WaitlistPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [successCount, setSuccessCount] = useState(0);
 
-  // Fetch live count on mount
+  // Fetch live count on mount and subscribe to real-time updates
   useEffect(() => {
     async function updateLiveCount() {
       try {
@@ -44,6 +44,25 @@ export default function WaitlistPage() {
       }
     }
     updateLiveCount();
+
+    // Subscribe to real-time updates for new sign‑ups
+    const channel = supabase
+      .channel('public:Plugr Waitlist')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'Plugr Waitlist' },
+        (payload) => {
+          console.log('New waitlist entry', payload);
+          // Increment the live count when a new record is inserted
+          setLiveCount((prev) => (prev ?? 0) + 1);
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // WhatsApp Channel navigation helper
