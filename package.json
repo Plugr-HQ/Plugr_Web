@@ -38,5 +38,12 @@
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.3"
+  },
+  "allowScripts": {
+    "sharp@0.34.5": true,
+    "esbuild@0.28.0": true,
+    "esbuild@0.25.12": true,
+    "protobufjs@7.5.9": true,
+    "@google/genai@1.52.0": true
   }
 }
