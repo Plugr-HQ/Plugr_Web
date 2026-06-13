@@ -86,7 +86,7 @@ export default function FindPlugPage() {
       </div>
 
       {/* Filters & Content */}
-      <div className="max-w-7xl mx-auto w-full px-6">
+      <div className="max-w-7xl mx-auto w-full px-6 no-scrollbar">
 
         {/* Category Chips & Dropdown Wrapper */}
         <div className="relative flex items-center gap-2 mb-8 overflow-x-auto no-scrollbar">
