@@ -64,7 +64,7 @@ export default function FindPlugPage() {
     <main className="flex flex-col min-h-screen bg-bone">
       <Navbar />
       {/* Main Heading with split color accents */}
-      <h1 className="text-3xl p-6 font-display font-black max-w-md mt-20">
+      <h1 className="text-3xl p-6 font-display font-black max-w-md mt-10">
         Find a <span className="text-midnight">verified</span>{' '}
         <span className="text-gold">Verified Plug.</span>
       </h1>

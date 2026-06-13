@@ -70,7 +70,7 @@ export default function BecomeAPlugSection() {
 
       <Navbar />
 
-      <section className="bg-bone pt-24 min-h-[60vh] flex flex-col justify-start items-left px-6 py-16 text-left font-sans antialiased text-midnight">
+      <section className="bg-bone pt-15 min-h-[60vh] flex flex-col justify-start items-left px-6 py-16 text-left font-sans antialiased text-midnight">
         <div className="max-w-xl mx-auto flex flex-col items-center">
 
           {/* Main Heading with split color accents */}
@@ -107,7 +107,7 @@ export default function BecomeAPlugSection() {
       </section>
 
       {/* SECTION: Features / Built for the modern artisan */}
-      <section className="max-w-xl mx-auto px-6 pt-16 pb-12">
+      <section className="max-w-xl mx-auto px-6 pb-12">
         <h2 className="text-3xl md:text-4xl font-display font-black tracking-tight mb-8 leading-tight">
           Built for the modern<br />artisan.
         </h2>
@@ -149,7 +149,7 @@ export default function BecomeAPlugSection() {
       </section>
 
       {/* SECTION: Onboarding Journey Steps */}
-      <section className="max-w-xl mx-auto px-6 py-12">
+      <section className="max-w-xl mx-auto px-6">
         <h2 className="text-2xl md:text-3xl font-display font-black tracking-tight mb-10 leading-tight">
           Your journey to<br />becoming a Plug.
         </h2>
