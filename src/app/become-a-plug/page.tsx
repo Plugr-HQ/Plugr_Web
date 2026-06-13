@@ -88,10 +88,10 @@ export default function BecomeAPlugSection() {
           <div className="w-full sm:w-auto flex flex-col gap-3 min-w-[280px] sm:min-w-[340px]">
             {/* Primary CTA Button */}
             <Link
-              href="/auth/signup"
+              href="auth/signup/phone?role=plug"
               className="w-full bg-gold text-white font-bold py-4 px-8 rounded-full shadow-sm hover:bg-gold/95 transition-all text-center border border-transparent"
             >
-              Become a Plug
+              Sign Up
             </Link>
 
             {/* Secondary Outline Button */}
@@ -149,7 +149,7 @@ export default function BecomeAPlugSection() {
       </section>
 
       {/* SECTION: Onboarding Journey Steps */}
-      <section className="max-w-xl mx-auto px-6">
+      <section className="max-w-xl mx-auto px-6" id="how-it-works">
         <h2 className="text-2xl md:text-3xl font-display font-black tracking-tight mb-10 leading-tight">
           Your journey to<br />becoming a Plug.
         </h2>
