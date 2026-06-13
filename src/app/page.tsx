@@ -80,10 +80,6 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="px-6 max-w-4xl mx-auto text-left" style={{ backgroundColor: colors.bone }}>
         <div className="space-y-6 pt-16 pb-10">
-          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-[#FFFFFF] text-[#162952] text-xs font-bold uppercase tracking-widest border-[#DBA134]">
-            <span className="w-2 h-2 rounded-full bg-[#F5C86A] animate-pulse" />
-            Verified Plugs in Lagos
-          </div>
           <h1 className="text-[32px] font-bold md:text-7xl font-black text-[#162952]">
             Hire Verified Artisans you can actually <br></br>
             <span className="text-[#DBA134]">trust.</span>
