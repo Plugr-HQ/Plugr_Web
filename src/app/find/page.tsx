@@ -64,37 +64,37 @@ export default function FindPlugPage() {
     <main className="flex flex-col min-h-screen bg-bone">
       <Navbar />
       {/* Main Heading with split color accents */}
-      <h1 className="text-3xl font-display font-black  mb-6 max-w-md mt-30">
+      <h1 className="text-3xl p-6 font-display font-black max-w-md mt-20">
         Find a <span className="text-midnight">verified</span>{' '}
         <span className="text-gold">Verified Plug.</span>
       </h1>
 
       {/* Subtitle Paragraph */}
-      <p className="text-slate text-base md:text-lg font-normal leading-relaxed mb-10 max-w-sm">
+      <p className="px-6 py-1 text-slate text-base md:text-lg font-normal leading-relaxed max-w-sm">
         Plugr doesn't promise you jobs. It gives you the edge to earn them.
       </p>
 
-      <div className="relative w-[90%] max-w-7xl mx-auto">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate w-5 h-5" />
+      <div className="relative bg-white rounded-lg px-4 my-6 py-2.5 w-[85%] max-w-7xl flex items-center gap-2 mx-auto text-[14px]">
+        <Search className="text-slate w-4 h-4" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search by name or trade..."
-          className="w-full bg-white rounded-lg py-3 pl-12 pr-4 text-midnight font-sans placeholder:text-slate focus:outline-none focus:ring-2 focus:ring-gold"
+          className="w-full bg-white rounded-lg text-midnight font-sans placeholder:text-slate focus:outline-none focus:ring-2 focus:ring-gold"
         />
       </div>
 
       {/* Filters & Content */}
-      <div className="max-w-7xl mx-auto w-full px-2 py-5">
+      <div className="max-w-7xl mx-auto w-full px-6">
 
         {/* Category Chips & Dropdown Wrapper */}
-        <div className="relative flex items-center gap-2 mb-8 overflow-x-auto no-scrollbar py-1">
+        <div className="relative flex items-center gap-2 mb-8 overflow-x-auto no-scrollbar">
           {fixedCategories.map((cat, i) => (
             <button
               key={i}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-6 py-2 rounded-pill font-medium text-sm transition-colors whitespace-nowrap ${selectedCategory === cat
+              className={`px-4 py-1 rounded-pill font-medium text-[12px] transition-colors whitespace-nowrap ${selectedCategory === cat
                 ? "bg-gold text-midnight"
                 : "bg-white text-slate border border-slate/10 hover:border-gold/50"
                 }`}
@@ -108,11 +108,11 @@ export default function FindPlugPage() {
           <div className="ml-auto relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className={`flex items-center gap-2 text-slate hover:text-midnight bg-white px-4 py-2 rounded-pill border transition-all ${isDropdownOpen ? "border-gold text-midnight" : "border-slate/10"
+              className={`flex items-center gap-1 text-slate hover:text-midnight bg-white px-4 py-2 rounded-pill border transition-all ${isDropdownOpen ? "border-gold text-midnight" : "border-slate/10"
                 }`}
             >
-              <Filter className="w-4 h-4" />
-              <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              <Filter className="w-3 h-3" />
+              <ChevronDown className={`w-3 h-3   transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {/* API Dropdown Menu */}
@@ -163,7 +163,7 @@ export default function FindPlugPage() {
         )}
 
         {/* Dynamic Pagination Info */}
-        <div className="mt-12 text-center">
+        <div className="py-8 text-center">
           <p className="text-slate text-sm mb-4">Showing {filteredPlugs.length} Plugs in your area</p>
           {filteredPlugs.length > 0 && (
             <button className="text-gold font-bold hover:underline">Load more</button>

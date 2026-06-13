@@ -78,14 +78,14 @@ export default function LandingPage() {
       )}
 
       {/* Hero Section */}
-      <section className="pt-32 pb-16 px-6 max-w-4xl mx-auto text-left" style={{ backgroundColor: colors.bone }}>
+      <section className="py-16 px-6 max-w-4xl mx-auto text-left" style={{ backgroundColor: colors.bone }}>
         <div className="space-y-6 pt-10 pb-20">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FFFFFF] text-[#162952] text-xs font-bold uppercase tracking-widest border-[#DBA134]">
             <span className="w-2 h-2 rounded-full bg-[#F5C86A] animate-pulse" />
             Verified Plugs in Lagos
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-[#162952]">
-            Hire Verified Artisans <br />you can actually <br></br>
+          <h1 className="text-[32px] font-bold md:text-7xl font-black text-[#162952]">
+            Hire Verified Artisans you can actually <br></br>
             <span className="text-[#DBA134]">trust.</span>
           </h1>
           <p className="text-gray-400 text-lg md:text-xl max-w-xl mx-auto font-medium">
@@ -192,7 +192,7 @@ export default function LandingPage() {
       </section>
 
       {/* Why Built Different */}
-      <section className="py-24 px-6 bg-[#F5F1EC] text-white">
+      <section className="py-15 px-6 bg-[#F5F1EC] text-white">
         <div className="max-w-7xl mx-auto">
           <div className="mb-16">
             <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">Why Plugr</span>
@@ -250,7 +250,7 @@ export default function LandingPage() {
       </section>
 
       {/* Trades Section */}
-      <section id="trades" className="py-24 px-6 max-w-7xl mx-auto">
+      <section id="trades" className="py-10 px-6 max-w-7xl mx-auto">
         <div className="mb-16">
           <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">What we fix</span>
           <h2 className="text-4xl md:text-5xl font-black text-[#0A1529] tracking-tighter leading-none">
@@ -258,8 +258,8 @@ export default function LandingPage() {
           </h2>
         </div>
 
-        <div className="flex flex-row gap-6">
-          <div className="p-8 rounded-3xl bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
+        <div className="w-full flex md:flex-row flex-col gap-6">
+          <div className="w-full p-8 rounded-3xl bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
             <div className="w-14 h-14 rounded-2xl bg-yellow-50 flex items-center justify-center mb-6 group-hover:bg-yellow-400 transition-colors">
               <Zap className="w-7 h-7 text-yellow-600 group-hover:text-white" fill="currentColor" />
             </div>
@@ -270,7 +270,7 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          <div className="p-8 rounded-3xl bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
+          <div className="w-full p-8 rounded-3xl bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
             <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-6 group-hover:bg-blue-400 transition-colors">
               <Droplet className="w-7 h-7 text-blue-600 group-hover:text-white" fill="currentColor" />
             </div>
@@ -282,11 +282,11 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <p className="text-center mt-12 text-gray-400 font-bold uppercase text-xs tracking-widest">More trades coming soon</p>
+        <p className="text-center mt-5 text-gray-400 font-bold uppercase text-xs tracking-widest">More trades coming soon</p>
       </section>
 
       {/* Featured Plugs */}
-      <section className="py-24 px-6 bg-white">
+      <section className="py-15 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           {/* 1. Moved text to left by changing text-center to text-left */}
           <div className="text-left mb-16">
@@ -299,7 +299,7 @@ export default function LandingPage() {
           </div>
 
           {/* 2. Added pt-6 to prevent badge clipping and flex-nowrap to force horizontal layout */}
-          <div className="no-scrollbarsnap-x snap-mandatory flex overflow-x-auto gap-8 pb-10 pt-6 no-scrollbar">
+          <div className="no-scrollbarsnap-x snap-mandatory flex overflow-x-auto gap-8 pb-4 no-scrollbar">
             {([
               { id: '1', name: "Suleiman Yusuf", trade: "Electrician", rating: 4.8, reviewCount: 28, status: "Busy", badge: "Verified" },
               { id: '2', name: "John Okoro", trade: "Plumber", rating: 4.9, reviewCount: 45, status: "Available", badge: "Pro" },
@@ -322,17 +322,17 @@ export default function LandingPage() {
       </section>
 
 
-      <div className='text-center bg-white py-10'>
+      <div className='w-full p-8 bg-white'>
         <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">FOR CLIENTS</span>
-        <h2 className="text-4xl md:text-4xl font-black leading-none mb-6 text-[#162952]">
-          No more random <br /> artisan referrals.
+        <h2 className="text-3xl md:text-4xl font-black leading-none mb-6 text-[#162952]">
+          No more random artisan referrals.
         </h2>
-        <p className="text-[#123076] text-md mb-6 max-w-3xl w-2/3 flex items-center px-8"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center mr-2 px-4">1</span> Hire verified electricians and plumbers</p>
-        <p className="text-[#123076] text-md mb-6 max-w-3xl w-2/3 flex items-center px-8"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center mr-2 px-4">2</span> Track payments securely</p>
-        <p className="text-[#123076] text-md mb-6 max-w-3xl w-2/3 flex items-center px-8"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center mr-2 px-4">3</span> Get quote transparency</p>
-        <p className="text-[#123076] text-md mb-6 max-w-3xl w-2/3 flex items-center px-8"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center mr-2 px-4">4</span> Raise disputes when necessary</p>
+        <p className="text-[#123076] text-md mb-6 max-w-3xl w-full flex items-center gap-2 px-4"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center px-4">1</span><span> Hire verified electricians and plumbers</span></p>
+        <p className="text-[#123076] text-md mb-6 max-w-3xl w-full flex items-center gap-2 px-4"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center px-4">2</span><span> Track payments securely</span></p>
+        <p className="text-[#123076] text-md mb-6 max-w-3xl w-full flex items-center gap-2 px-4"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center px-4">3</span><span> Get quote transparency</span></p>
+        <p className="text-[#123076] text-md mb-6 max-w-3xl w-full flex items-center gap-2 px-4"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center px-4">4</span><span> Raise disputes when necessary</span></p>
 
-        <Link href="/find" className="bg-[#DBA134] text-[#162952] px-32 py-4 rounded-full font-bold inline-block ">Find a Plug</Link>
+        <Link href="/find" className="bg-[#DBA134] text-[#162952] w-full text-center p-6 rounded-full font-bold inline-block ">Find a Plug</Link>
       </div>
 
       {/* Become a Plug CTA */}

@@ -10,13 +10,14 @@ export function Navbar() {
 
   return (
     <> {/* <--- Open React Fragment here */}
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#F5F1EC]">
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.svg" alt="Plugr Logo" width={120} height={60} />
+      <nav className="fixed top-0 w-full z-50 px-6 py-3 flex justify-between items-center bg-[#F5F1EC]">
+        <Link href="/" className="flex items-center relative gap-2 md:w-[120px] md:h-[60px] w-[90px] h-[40px]">
+
+          <Image src="/logo.svg" alt="Plugr Logo" fill className="bg-cover" />
         </Link>
-        <div className="flex flex-row items-center gap-6 text-sm font-semibold text-[#0A1529]">
-          <Link href="/auth/login" className="text-[#DBA134] px-6 py-3 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Log in</Link>
-          <Link href="/auth/signup" className="bg-[#DBA134] text-white px-6 py-3 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Sign up</Link>
+        <div className="flex flex-row items-center gap-1.5 text-sm font-semibold text-[#0A1529]">
+          <Link href="/auth/login" className="text-[#DBA134] px-2 py-1 rounded-[16px] hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Log in</Link>
+          <Link href="/auth/signup" className="bg-[#DBA134] text-white px-2 py-1 rounded-[16px] hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Sign up</Link>
         </div>
         <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           {isMobileMenuOpen ? <X className="w-6 h-6 text-[#0A1529]" /> : <Menu className="w-6 h-6 text-[#0A1529]" />}
