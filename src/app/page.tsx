@@ -299,7 +299,7 @@ export default function LandingPage() {
           </div>
 
           {/* 2. Added pt-6 to prevent badge clipping and flex-nowrap to force horizontal layout */}
-          <div className="no-scrollbarsnap-x snap-mandatory flex overflow-x-auto gap-8 pb-4 no-scrollbar">
+          <div className="no-scrollbarsnap-x snap-mandatory w-full flex overflow-x-auto gap-8 pb-4 no-scrollbar">
             {([
               { id: '1', name: "Suleiman Yusuf", trade: "Electrician", rating: 4.8, reviewCount: 28, status: "Busy", badge: "Verified" },
               { id: '2', name: "John Okoro", trade: "Plumber", rating: 4.9, reviewCount: 45, status: "Available", badge: "Pro" },

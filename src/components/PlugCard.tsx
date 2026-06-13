@@ -20,36 +20,37 @@ interface PlugCardProps {
 
 export function PlugCard({ plug, className }: PlugCardProps) {
   return (
-    <div className={cn("w-full bg-white rounded-3xl shadow-sm p-5 border border-gray-100 max-w-[420px]", className)}>
+    <div className={cn("w-full bg-white rounded-3xl shadow-sm p-5 border border-gray-100 min-w-[270px]", className)}>
       {/* Top Profile Content Block */}
-      <div className="flex flex-col gap-3 items-start relative mb-4">
+      <div className="w-full flex flex-col gap-3 items-start relative mb-4">
         {/* Profile Avatar Frame */}
-        <div className="flex justify-between gap-2 items-center">
-          <div className="md:w-[72px] w-[48px] md:h-[72px] h-[48px] bg-midnight/10 rounded-full overflow-hidden flex-shrink-0">
+        <div className="flex justify-between gap-2 items-start w-full">
+          <div className="w-[72px] h-[72px] bg-midnight/10 rounded-full overflow-hidden flex-shrink-0">
             <div className="w-full h-full bg-slate-900 flex items-center justify-center text-white font-bold text-xl">
               {plug.name[0]}
             </div>
           </div>
-          <h3 className="text-xl font-bold text-[#0A1529] leading-tight tracking-tight">
-            {plug.name}
-          </h3>
           <StatusChip status={plug.status} />
         </div>
 
         {/* Details Alignment Column */}
-        <div className="flex flex-col items-start gap-1.5 min-w-0 pr-24">
-          <Badge badge={plug.badge} />
+        <div className="w-full flex flex-col items-start gap-1.5">
+          
+          <h3 className="text-xl font-bold text-[#0A1529] leading-tight tracking-tight">
+            {plug.name}
+          </h3>
           <div className="flex items-center gap-1.5 text-base text-[#0A1529]/80 font-medium mt-1">
             <Zap className="w-4 h-4 fill-current text-[#0A1529]" />
             <span>{plug.trade}</span>
           </div>
 
-          <div className="flex items-center gap-4 mt-0.5">
+          <div className="flex items-center gap-4 mt-0.5 w-full justify-between"> 
+            <Badge badge={plug.badge} />
             <div className="flex items-center gap-[5px]">
               <Star className="w-4 h-4 fill-[#E8A020] text-[#E8A020]" />
               <span className="text-sm font-bold text-[#0A1529]">{plug.rating.toFixed(1)}</span>
             </div>
-            <span className="text-sm w-full text-slate-400 flex items-center gap-[8px]"><>({plug.reviewCount}</><span>reviews)</span></span>
+            <span className="text-sm w-full hidden text-slate-400 flex items-center gap-[8px]"><>({plug.reviewCount}</><span>reviews)</span></span>
           </div>
         </div>
 
