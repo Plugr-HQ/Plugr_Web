@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { 
-  ChevronLeft, Search, Wrench, Smartphone, Check, HelpCircle, Info, Lock, 
+import {
+  ChevronLeft, Search, Wrench, Smartphone, Check, HelpCircle, Info, Lock,
   Camera, UploadCloud, X, Sparkles, ArrowRight, ShieldCheck, Key, RefreshCw, Eye
 } from 'lucide-react';
-import PlugrLogo from './components/PlugrLogo';
-import FlowProgress from './components/FlowProgress';
-import LivenessScanner from './components/LivenessScanner';
-import ClientDashboard from './components/ClientDashboard';
-import PlugDashboard from './components/PlugDashboard';
+import FlowProgress from '@/src/components/FlowProgress';
+import LivenessScanner from '@/src/components/LivenessScanner';
+import ClientDashboard from '@/src/components/ClientDashboard';
+import PlugDashboard from '@/src/components/PlugDashboard';
 import { FlowStep, UserRole, TradeType, PlugProfile } from './types';
 
 // Array of premium professional client and plug predefined mock avatars
@@ -22,7 +21,7 @@ const PRESET_AVATARS = [
 export default function App() {
   const [step, setStep] = useState<FlowStep>('splash');
   const [selectedRole, setSelectedRole] = useState<UserRole>('client');
-  
+
   // Phone OTP Flow states
   const [phone, setPhone] = useState('');
   const [otpArray, setOtpArray] = useState<string[]>(['', '', '', '', '', '']);
@@ -204,7 +203,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F6F5F0] text-[#181C25] flex flex-col items-center justify-center font-sans tracking-normal relative selection:bg-[#EB9E27]/30" id="plugr-parent-container">
-      
+
       {/* Dynamic Bypass Onboarding Utility Bar */}
       <div className="absolute top-3 right-3 z-30">
         <button
@@ -225,14 +224,14 @@ export default function App() {
               <h2 className="font-display font-extrabold text-slate-800 text-sm flex items-center gap-2">
                 <Sparkles className="h-4.5 w-4.5 text-[#EB9E27]" /> Instant Dashboard Access
               </h2>
-              <button 
+              <button
                 onClick={() => setShowBypassDrawer(false)}
                 className="p-1 rounded-full hover:bg-slate-100 text-slate-400"
               >
                 <X className="h-4.5 w-4.5" />
               </button>
             </div>
-            
+
             <p className="text-xs text-slate-500 leading-relaxed">
               Bypass the identity verification forms to test the interactive client searches or the provider dashboard wallets instantly!
             </p>
@@ -246,7 +245,7 @@ export default function App() {
                 <span>🔍 Inspect Client Dashboard</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
-              
+
               <button
                 onClick={() => bypassOnboarding('plug')}
                 id="bypass-access-plug"
@@ -256,7 +255,7 @@ export default function App() {
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
-            
+
             <span className="text-[9px] font-mono text-center text-slate-400 uppercase tracking-widest block">
               Developed securely under standard specifications
             </span>
@@ -274,7 +273,7 @@ export default function App() {
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center justify-center"
           >
-            <PlugrLogo size="xl" showText={true} />
+            <img src="/logo_light.png" alt="Plugr Logo" width={500} height={500} />
           </motion.div>
         </div>
       )}
@@ -283,7 +282,7 @@ export default function App() {
         <div className="w-full max-w-md min-h-screen max-h-[850px] bg-[#F6F5F0] p-6 flex flex-col justify-between" id="screen-role-selection">
           {/* Logo segment */}
           <div className="flex justify-center pt-6 shrink-0">
-            <PlugrLogo size="md" />
+            <img src="/logo_light.png" alt="Plugr Logo" width={500} height={500} />
           </div>
 
           {/* Heading intro text layout */}
@@ -302,11 +301,10 @@ export default function App() {
             <div
               onClick={() => setSelectedRole('client')}
               id="role-card-client"
-              className={`bg-white rounded-[28px] p-5 border-2 transition-all cursor-pointer flex gap-4 items-center relative ${
-                selectedRole === 'client' 
-                  ? 'border-[#EB9E27] shadow-md shadow-[#EB9E27]/5' 
+              className={`bg-white rounded-[28px] p-5 border-2 transition-all cursor-pointer flex gap-4 items-center relative ${selectedRole === 'client'
+                  ? 'border-[#EB9E27] shadow-md shadow-[#EB9E27]/5'
                   : 'border-white hover:border-slate-100 shadow-sm'
-              }`}
+                }`}
             >
               <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-[#EB9E27] shrink-0">
                 <Search className="h-5 w-5 stroke-[2.5]" />
@@ -315,9 +313,8 @@ export default function App() {
                 <h3 className="font-bold text-[#181C25] text-md leading-snug">I'm looking for a Plug</h3>
                 <p className="text-slate-400 text-xs mt-1 leading-normal font-medium">Find verified electricians and plumbers.</p>
               </div>
-              <div className={`w-5.5 h-5.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                selectedRole === 'client' ? 'border-[#EB9E27] bg-[#EB9E27] text-white' : 'border-slate-200 bg-white'
-              }`}>
+              <div className={`w-5.5 h-5.5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedRole === 'client' ? 'border-[#EB9E27] bg-[#EB9E27] text-white' : 'border-slate-200 bg-white'
+                }`}>
                 {selectedRole === 'client' && <Check className="h-3 w-3 stroke-[3.5]" />}
               </div>
             </div>
@@ -326,11 +323,10 @@ export default function App() {
             <div
               onClick={() => setSelectedRole('plug')}
               id="role-card-plug"
-              className={`bg-white rounded-[28px] p-5 border-2 transition-all cursor-pointer flex gap-4 items-center relative ${
-                selectedRole === 'plug' 
-                  ? 'border-[#EB9E27] shadow-md shadow-[#EB9E27]/5' 
+              className={`bg-white rounded-[28px] p-5 border-2 transition-all cursor-pointer flex gap-4 items-center relative ${selectedRole === 'plug'
+                  ? 'border-[#EB9E27] shadow-md shadow-[#EB9E27]/5'
                   : 'border-white hover:border-slate-100 shadow-sm'
-              }`}
+                }`}
             >
               <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-800 shrink-0">
                 <Wrench className="h-5 w-5 stroke-[2.5]" />
@@ -339,9 +335,8 @@ export default function App() {
                 <h3 className="font-bold text-[#181C25] text-md leading-snug">I am a Plug</h3>
                 <p className="text-slate-400 text-xs mt-1 leading-normal font-medium">Build your professional identity and find work.</p>
               </div>
-              <div className={`w-5.5 h-5.5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                selectedRole === 'plug' ? 'border-[#EB9E27] bg-[#EB9E27] text-white' : 'border-slate-200 bg-white'
-              }`}>
+              <div className={`w-5.5 h-5.5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedRole === 'plug' ? 'border-[#EB9E27] bg-[#EB9E27] text-white' : 'border-slate-200 bg-white'
+                }`}>
                 {selectedRole === 'plug' && <Check className="h-3 w-3 stroke-[3.5]" />}
               </div>
             </div>
@@ -358,7 +353,7 @@ export default function App() {
             </button>
             <p className="text-xs text-slate-400 font-medium">
               Already have an account?{' '}
-              <button 
+              <button
                 onClick={() => bypassOnboarding(selectedRole)}
                 className="text-[#EB9E27] font-bold hover:underline"
               >
@@ -373,7 +368,7 @@ export default function App() {
         <div className="w-full max-w-md min-h-screen max-h-[850px] bg-[#F6F5F0] p-6 flex flex-col justify-between" id="screen-phone-entry">
           {/* Header row details */}
           <div className="flex justify-between items-center pt-3 shrink-0">
-            <button 
+            <button
               onClick={() => setStep('role_selection')}
               id="back-phone-entry"
               className="p-2 bg-white rounded-full border border-slate-100 hover:bg-slate-50 transition shadow-xs text-slate-700"
@@ -400,14 +395,14 @@ export default function App() {
               <label className="text-[10.5px] font-mono font-extrabold text-slate-500 uppercase tracking-widest block pl-1">
                 Phone Number
               </label>
-              
+
               <div className="flex gap-2">
                 {/* Simulated Nigeria +234 Dropdown selector */}
                 <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-2xl px-4 py-4 text-slate-700 font-mono font-bold text-sm shadow-inner shrink-0 select-none">
                   <span>🇳🇬</span>
                   <span>+234</span>
                 </div>
-                
+
                 {/* Actual layout input box */}
                 <input
                   type="text"
@@ -443,10 +438,10 @@ export default function App() {
             >
               Send Code
             </button>
-            
+
             <p className="text-[10.5px] leading-relaxed text-slate-400 font-medium max-w-[280px] mx-auto text-balance">
               By continuing, you agree to our{' '}
-              <button 
+              <button
                 onClick={() => alert("Terms of Service:\n\n1. Verification matches identity numbers.\n2. Escrow funds hold client securities securely.\n3. Abuse yields automatic system locks.")}
                 className="font-bold text-[#EB9E27] underline"
               >
@@ -461,7 +456,7 @@ export default function App() {
         <div className="w-full max-w-md min-h-screen max-h-[850px] bg-[#F6F5F0] p-6 flex flex-col justify-between" id="screen-otp-code">
           {/* Header detail menu */}
           <div className="flex justify-between items-center pt-3 shrink-0">
-            <button 
+            <button
               onClick={() => setStep('phone_entry')}
               id="back-otp-code"
               className="p-2 bg-white rounded-full border border-slate-100 hover:bg-slate-50 transition shadow-xs text-slate-700"
@@ -487,7 +482,7 @@ export default function App() {
 
           {/* Digit Inputs grid area */}
           <form onSubmit={submitOtpForm} className="space-y-8 my-auto flex flex-col items-center">
-            
+
             {/* Visual alert toast providing code clue for the tester */}
             {showOtpHint && (
               <div className="bg-amber-100/50 border border-[#EB9E27]/30 text-amber-900 px-4 py-3 rounded-2xl flex items-center justify-between text-xs w-full mb-2.5 animate-bounce">
@@ -547,11 +542,11 @@ export default function App() {
 
       {step === 'profile_setup' && (
         <div className="w-full max-w-md min-h-screen max-h-[850px] bg-[#F6F5F0] p-6 flex flex-col justify-between overflow-y-auto" id="screen-profile-setup">
-          
+
           {/* Progress row setup header */}
           <div className="shrink-0 space-y-4">
             <div className="flex justify-between items-center pt-3">
-              <button 
+              <button
                 onClick={() => setStep('verification_code')}
                 className="p-2 bg-white rounded-full border border-slate-100 hover:bg-slate-50 transition shadow-xs text-slate-700"
               >
@@ -566,7 +561,7 @@ export default function App() {
           </div>
 
           <div className="space-y-5 my-6">
-            
+
             {/* Card segment 1: Name Details */}
             <div className="bg-white rounded-[24px] p-4.5 border border-slate-150 space-y-3 shadow-xs">
               <span className="text-[9px] font-mono font-bold text-slate-400 tracking-wider block uppercase">
@@ -628,16 +623,15 @@ export default function App() {
                   YOUR TRADE
                 </span>
                 <p className="text-xs text-slate-500 font-medium pb-1">What is your primary skill?</p>
-                
+
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   {/* Option Plumber */}
                   <div
                     onClick={() => setTrade('electrician')}
-                    className={`p-4 rounded-2xl border-2 cursor-pointer flex flex-col items-center gap-2 transition text-center ${
-                      trade === 'electrician' 
-                        ? 'border-[#EB9E27] bg-[#EB9E27]/5 text-amber-900' 
+                    className={`p-4 rounded-2xl border-2 cursor-pointer flex flex-col items-center gap-2 transition text-center ${trade === 'electrician'
+                        ? 'border-[#EB9E27] bg-[#EB9E27]/5 text-amber-900'
                         : 'border-slate-100 bg-slate-50 text-slate-500'
-                    }`}
+                      }`}
                   >
                     <span className="text-lg">⚡</span>
                     <span className="font-bold">Electrician</span>
@@ -645,11 +639,10 @@ export default function App() {
 
                   <div
                     onClick={() => setTrade('plumber')}
-                    className={`p-4 rounded-2xl border-2 cursor-pointer flex flex-col items-center gap-2 transition text-center ${
-                      trade === 'plumber' 
-                        ? 'border-[#EB9E27] bg-[#EB9E27]/5 text-amber-900' 
+                    className={`p-4 rounded-2xl border-2 cursor-pointer flex flex-col items-center gap-2 transition text-center ${trade === 'plumber'
+                        ? 'border-[#EB9E27] bg-[#EB9E27]/5 text-amber-900'
                         : 'border-slate-100 bg-slate-50 text-slate-500'
-                    }`}
+                      }`}
                   >
                     <span className="text-lg">💧</span>
                     <span className="font-bold">Plumber</span>
@@ -674,9 +667,9 @@ export default function App() {
                 >
                   {selectedAvatar ? (
                     <>
-                      <img 
-                        src={selectedAvatar} 
-                        alt="Selected Avatar Profile" 
+                      <img
+                        src={selectedAvatar}
+                        alt="Selected Avatar Profile"
                         className="w-full h-full object-cover rounded-full"
                         referrerPolicy="no-referrer"
                       />
@@ -702,9 +695,8 @@ export default function App() {
                         <div
                           key={i}
                           onClick={() => handleAvatarSelect(url)}
-                          className={`w-12 h-12 rounded-xl overflow-hidden cursor-pointer border-2 transition ${
-                            selectedAvatar === url ? 'border-[#EB9E27] scale-105 shadow-md' : 'border-slate-200 opacity-80'
-                          }`}
+                          className={`w-12 h-12 rounded-xl overflow-hidden cursor-pointer border-2 transition ${selectedAvatar === url ? 'border-[#EB9E27] scale-105 shadow-md' : 'border-slate-200 opacity-80'
+                            }`}
                         >
                           <img src={url} alt="Profile option" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                         </div>
@@ -741,18 +733,18 @@ export default function App() {
 
       {step === 'nin_verification' && (
         <div className="w-full max-w-md min-h-screen max-h-[850px] bg-[#F6F5F0] p-6 flex flex-col justify-between overflow-y-auto" id="screen-nin-verify">
-          
+
           {/* Progress tracking layout menu */}
           <div className="shrink-0 space-y-4">
             <div className="flex justify-between items-center pt-3">
-              <button 
+              <button
                 onClick={() => setStep('profile_setup')}
                 className="p-2 bg-white rounded-full border border-slate-100 hover:bg-slate-50 transition shadow-xs text-slate-700"
               >
                 <ChevronLeft className="h-4.5 w-4.5" />
               </button>
               <span className="font-display font-bold text-sm text-slate-800">Verify your identity</span>
-              
+
               <button
                 onClick={() => alert("Verification is performed against NIN records to secure the database. Only verified applicants can list profiles on Plugr.")}
                 className="text-xs font-bold text-[#EB9E27] font-mono hover:underline uppercase"
@@ -838,11 +830,10 @@ export default function App() {
                 setStep('liveness_check');
               }}
               id="continue-nin-verify"
-              className={`w-full font-semibold py-4.5 px-6 rounded-full shadow-lg transition flex items-center justify-center gap-2 ${
-                ninVerified 
-                  ? 'bg-[#EB9E27] hover:bg-[#D68B1D] text-white' 
+              className={`w-full font-semibold py-4.5 px-6 rounded-full shadow-lg transition flex items-center justify-center gap-2 ${ninVerified
+                  ? 'bg-[#EB9E27] hover:bg-[#D68B1D] text-white'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-90'
-              }`}
+                }`}
               disabled={!ninVerified}
             >
               Continue
@@ -853,18 +844,18 @@ export default function App() {
 
       {step === 'liveness_check' && (
         <div className="w-full max-w-md min-h-screen max-h-[850px] bg-[#F6F5F0] p-6 flex flex-col justify-between overflow-y-auto" id="screen-biometrics">
-          
+
           {/* Header row tracking details */}
           <div className="shrink-0 space-y-4">
             <div className="flex justify-between items-center pt-3">
-              <button 
+              <button
                 onClick={() => setStep('nin_verification')}
                 className="p-2 bg-white rounded-full border border-slate-100 hover:bg-slate-50 transition shadow-xs text-slate-700"
               >
                 <ChevronLeft className="h-4.5 w-4.5" />
               </button>
               <span className="font-display font-bold text-sm text-slate-800">Verify your identity</span>
-              
+
               <button
                 onClick={() => alert("Liveness scanners perform high density neural mapping to identify genuine live presence.")}
                 className="text-xs font-bold text-[#EB9E27] font-mono hover:underline uppercase"
@@ -898,11 +889,10 @@ export default function App() {
                 setStep('dashboard');
               }}
               id="finalize-onboarding-biometrics"
-              className={`w-full font-semibold py-4.5 px-6 rounded-full shadow-lg transition flex items-center justify-center gap-2 ${
-                livenessDocVerified 
-                  ? 'bg-[#EB9E27] hover:bg-[#D68B1D] text-white' 
+              className={`w-full font-semibold py-4.5 px-6 rounded-full shadow-lg transition flex items-center justify-center gap-2 ${livenessDocVerified
+                  ? 'bg-[#EB9E27] hover:bg-[#D68B1D] text-white'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-90'
-              }`}
+                }`}
               disabled={!livenessDocVerified}
             >
               Continue
