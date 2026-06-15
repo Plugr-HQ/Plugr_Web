@@ -28,7 +28,7 @@ function SocialIcons() {
 
             {/* Instagram */}
             <a
-                href="#"
+                href="https://www.instagram.com/p/DZjv8BJDUvK/?igsh=NnNnd2h1NmhtZW02"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-[#333230] flex items-center justify-center text-white hover:bg-[#444341] transition-colors duration-200"
