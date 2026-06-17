@@ -275,7 +275,7 @@ export default function App() {
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center justify-center"
           >
-            <img src="/logo_light.svg" alt="Plugr Logo" width={500} height={500} />
+            <img src="/logo.svg" alt="Plugr Logo" width={500} height={500} />
           </motion.div>
         </div>
       )}
@@ -284,7 +284,7 @@ export default function App() {
         <div className="w-full max-w-md min-h-screen max-h-[850px] bg-[#F6F5F0] p-6 flex flex-col justify-between" id="screen-role-selection">
           {/* Logo segment */}
           <div className="flex justify-center pt-6 shrink-0">
-            <img src="/logo_light.svg" alt="Plugr Logo" width={500} height={500} />
+            <img src="/logo.svg" alt="Plugr Logo" width={500} height={500} />
           </div>
 
           {/* Heading intro text layout */}
