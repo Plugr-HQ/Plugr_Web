@@ -608,7 +608,7 @@ export default function App() {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   id="profile-city-field"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:bg-white focus:outline-none focus:border-[#EB9E27] font-medium transition"
+                  className="w-full border border-slate-200 rounded-full px-3 py-2.5 text-slate-800 focus:bg-white focus:outline-none focus:border-[#EB9E27] font-medium transition"
                   required
                 />
               </div>
@@ -626,9 +626,9 @@ export default function App() {
                   {/* Option Plumber */}
                   <div
                     onClick={() => setTrade('electrician')}
-                    className={`p-4 rounded-2xl border-2 cursor-pointer flex flex-col items-center gap-2 transition text-center ${trade === 'electrician'
+                    className={`p-4 rounded-3xl border-2 cursor-pointer flex flex-col items-center gap-2 transition text-center ${trade === 'electrician'
                       ? 'border-[#EB9E27] bg-[#EB9E27]/5 text-amber-900'
-                      : 'border-slate-100 bg-slate-50 text-slate-500'
+                      : 'border-slate-100 text-slate-500'
                       }`}
                   >
                     <span className="text-lg">⚡</span>
@@ -637,9 +637,9 @@ export default function App() {
 
                   <div
                     onClick={() => setTrade('plumber')}
-                    className={`p-4 rounded-2xl border-2 cursor-pointer flex flex-col items-center gap-2 transition text-center ${trade === 'plumber'
+                    className={`p-4 rounded-3xl border-2 cursor-pointer flex flex-col items-center gap-2 transition text-center ${trade === 'plumber'
                       ? 'border-[#EB9E27] bg-[#EB9E27]/5 text-amber-900'
-                      : 'border-slate-100 bg-slate-50 text-slate-500'
+                      : 'border-slate-100 text-slate-500'
                       }`}
                   >
                     <span className="text-lg">💧</span>
@@ -650,6 +650,7 @@ export default function App() {
             )}
 
             {/* Card segment 4: User custom headshot matcher */}
+
             <div className="bg-white rounded-[24px] p-4.5 border border-slate-150 space-y-3.5 shadow-xs">
               <span className="text-[9px] font-mono font-bold text-slate-400 tracking-wider block uppercase">
                 YOUR PHOTO
@@ -677,6 +678,16 @@ export default function App() {
                     </>
                   ) : (
                     <div className="text-center flex flex-col items-center justify-center gap-1">
+                      <input hidden type="file" accept="image/*" onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setSelectedAvatar(reader.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }} />
                       <UploadCloud className="h-5 w-5 text-slate-400" />
                       <span className="text-[10px] font-mono">Tap upload</span>
                     </div>
