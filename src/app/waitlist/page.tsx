@@ -1,386 +1,310 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { createClient } from '@supabase/supabase-js';
+import React, { useRef, useState } from 'react';
 import './waitlist.css';
-
-// Initialize Supabase Client
-const supabaseUrl = 'https://rzxajmbgwwcmwxltcgeb.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6eGFqbWJnd3djbXd4bHRjZ2ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NTk5NDAsImV4cCI6MjA5MTMzNTk0MH0.l7iJ_585GkaJc7auSlUxzcG2hV85kiG0mmNvQsfnnok';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 const WA_CHANNEL = 'https://whatsapp.com/channel/0029Vb7c8SrLNSZyrvYXE60M';
 
+type UserType = 'client' | 'artisan';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function WaitlistPage() {
-  const [currentType, setCurrentType] = useState<'plug' | 'client'>('plug');
-  const [liveCount, setLiveCount] = useState<number>(0);
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const formRef = useRef<HTMLElement>(null);
+
+  const [userType, setUserType] = useState<UserType | null>(null);
   const [email, setEmail] = useState('');
-  const [location, setLocation] = useState('');
-  const [trade, setTrade] = useState('');
-  
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [successCount, setSuccessCount] = useState(0);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-  // Fetch live count on mount and subscribe to real-time updates
-  useEffect(() => {
-    async function updateLiveCount() {
-      try {
-        const { count, error } = await supabase
-          .from('Plugr Waitlist')
-          .select('*', { count: 'exact', head: true });
-
-        if (error) {
-          console.error('Supabase Error:', error.message);
-          return;
-        }
-        setLiveCount(count || 0);
-      } catch (err) {
-        console.error('Connection Error:', err);
-      }
-    }
-    updateLiveCount();
-
-    // Subscribe to real-time updates for new sign‑ups
-    const channel = supabase
-      .channel('public:Plugr Waitlist')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'Plugr Waitlist' },
-        (payload) => {
-          console.log('New waitlist entry', payload);
-          // Increment the live count when a new record is inserted
-          setLiveCount((prev) => (prev ?? 0) + 1);
-        }
-      )
-      .subscribe();
-
-    // Cleanup subscription on unmount
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  // WhatsApp Channel navigation helper
-  const handleJoinChannel = (e: React.MouseEvent) => {
-    e.preventDefault();
-    window.open(WA_CHANNEL, '_blank');
+  const scrollToForm = () => {
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  // Submit form data
+  const canSubmit = userType !== null && email.trim().length > 0 && status !== 'loading';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg('');
 
-    if (!name.trim() || !phone.trim() || !email.trim() || !location.trim()) {
-      setErrorMsg('Please fill in all required fields.');
+    if (!userType || !EMAIL_RE.test(email.trim())) {
+      setStatus('error');
       return;
     }
 
-    if (currentType === 'plug' && !trade) {
-      setErrorMsg('Please select your trade.');
-      return;
-    }
-
-    setIsSubmitting(true);
+    setStatus('loading');
 
     try {
-      const { error } = await supabase
-        .from('Plugr Waitlist')
-        .insert([{
-          'Type': currentType,
-          'Full Name': name.trim(),
-          'Phone Number': phone.trim(),
-          'Email': email.trim(),
-          'Location': location.trim(),
-          'Skill': currentType === 'plug' ? trade : null,
-        }]);
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), userType }),
+      });
 
-      if (error) {
-        console.error('Insert error:', error);
-        if (error.code === '23505') {
-          setErrorMsg('This email or phone is already on the waitlist.');
-        } else {
-          setErrorMsg(error.message || 'Something went wrong. Try again.');
-        }
-        setIsSubmitting(false);
+      if (!res.ok) {
+        setStatus('error');
         return;
       }
 
-      // Fetch updated count
-      const { count } = await supabase
-        .from('Plugr Waitlist')
-        .select('*', { count: 'exact', head: true });
-
-      const totalSignups = count || 1;
-      setIsSuccess(true);
-      
-      // Ticking animation for success state
-      let currentDisplay = 0;
-      setSuccessCount(0);
-      const interval = setInterval(() => {
-        if (currentDisplay >= totalSignups) {
-          clearInterval(interval);
-          return;
-        }
-        currentDisplay++;
-        setSuccessCount(currentDisplay);
-      }, 100);
-
-    } catch (err) {
-      console.error('Signup error:', err);
-      setErrorMsg('Could not connect. Check your internet and try again.');
-      setIsSubmitting(false);
+      setStatus('success');
+    } catch {
+      setStatus('error');
     }
   };
 
   return (
-    <div className="waitlist-body">
-      <div className="waitlist-col-divider"></div>
-      <div className="waitlist-vert-text">Launching in Ikeja, Lagos &mdash; Nigeria</div>
+    <main className="wl">
+      {/* ============ SECTION 1 — HERO ============ */}
+      <section className="wl-hero">
+        <div className="wl-hero-inner">
+          {/* Dev team replaces wordmark with the actual SVG logo later */}
+          <p className="wl-wordmark">Plugr</p>
+          <p className="wl-tagline">Pledging allegiance to your success.</p>
 
-      <div className="waitlist-page">
-        {/* NAV */}
-        <nav className="waitlist-nav">
-          <div className="waitlist-logo">
-            <Image src="/logo.svg" className="waitlist-logo-dot" alt="Plugr Logo" width={145} height={35} priority />
-          </div>
-          <div className="waitlist-nav-tag">Early Access</div>
-        </nav>
+          <h1 className="wl-hero-h1">The artisan lottery ends here.</h1>
 
-        {/* HERO LEFT */}
-        <section className="waitlist-hero-left">
-          <div className="waitlist-badge">
-            <div className="waitlist-badge-dot"></div>
-            <span>Now accepting early sign-ups</span>
-          </div>
-
-          <h1 className="waitlist-h1">
-            Your skill<br />
-            <span className="accent">deserves</span> to<br />
-            <span className="outline">be seen.</span>
-          </h1>
-
-          <p className="waitlist-hero-desc">
-            Plugr gives Nigerian artisans a verified professional identity — making them visible, credible, and trusted.
-            Clients find reliable tradespeople they can actually trust.
+          <p className="wl-hero-sub">
+            Lagos&rsquo;s first platform that verifies artisans before they knock on your
+            door &mdash; and gives skilled tradespeople a professional identity that opens doors.
           </p>
 
-          <div className="waitlist-stats">
-            <div className="waitlist-stat">
-              <div className="waitlist-stat-num">Ikeja<span className="g">,</span></div>
-              <div className="waitlist-stat-label">Launch City</div>
+          <p className="wl-hero-accent">
+            Launching in Ikeja &middot; Electricians &amp; Plumbers first &middot; 2026
+          </p>
+
+          <button type="button" className="wl-cta" onClick={scrollToForm}>
+            Join the waitlist &rarr;
+          </button>
+        </div>
+      </section>
+
+      {/* ============ SECTION 2 — THE PROBLEM ============ */}
+      <section className="wl-section wl-problem">
+        <div className="wl-inner">
+          <p className="wl-label">The Problem</p>
+          <h2 className="wl-section-h2">Two sides of the same broken system.</h2>
+
+          <div className="wl-two-col">
+            {/* For Clients */}
+            <div className="wl-card">
+              <p className="wl-card-label">If you&rsquo;ve ever hired an artisan in Lagos&hellip;</p>
+              <ul className="wl-pain-list">
+                <li>You asked your neighbour. That was the entire vetting process.</li>
+                <li>They quoted one price on the phone. A different price at your door.</li>
+                <li>They didn&rsquo;t show up. No call. No explanation.</li>
+                <li>You let a stranger into your home with no way to know who they were.</li>
+                <li>The work was wrong. They didn&rsquo;t answer when you called back.</li>
+              </ul>
+              <p className="wl-card-close">
+                This is not bad luck. It&rsquo;s the absence of infrastructure.
+              </p>
             </div>
-            <div className="waitlist-stat-divider"></div>
-            <div className="waitlist-stat">
-              <div className="waitlist-stat-num"><span className="g">2</span></div>
-              <div className="waitlist-stat-label">Trades First</div>
+
+            {/* For Artisans */}
+            <div className="wl-card">
+              <p className="wl-card-label">If you&rsquo;re a skilled artisan in Lagos&hellip;</p>
+              <ul className="wl-pain-list">
+                <li>You have years of experience. No way to prove it to a stranger.</li>
+                <li>Your reputation lives in your street. Invisible everywhere else.</li>
+                <li>New clients don&rsquo;t trust you until you&rsquo;ve already done the job.</li>
+                <li>Some clients disappear after the work is done.</li>
+                <li>Banks won&rsquo;t give you credit. You have no financial record.</li>
+              </ul>
+              <p className="wl-card-close">
+                The problem was never your skill. It was that nobody could see it.
+              </p>
             </div>
-            <div className="waitlist-stat-divider"></div>
-            <div className="waitlist-stat">
-              <div className="waitlist-stat-num"><span className="g">0</span> fraud</div>
-              <div className="waitlist-stat-label">Our promise</div>
-            </div>
-          </div>
-
-          <div className="waitlist-proof">
-            <div className="waitlist-avatars">
-              <div className="waitlist-av waitlist-av1">A</div>
-              <div className="waitlist-av waitlist-av2">K</div>
-              <div className="waitlist-av waitlist-av3">T</div>
-              <div className="waitlist-av waitlist-av4">F</div>
-            </div>
-            <div className="waitlist-proof-text">
-              <strong>{liveCount}</strong>+ people already on the waitlist.<br />
-              Artisans &amp; clients both welcome.
-            </div>
-          </div>
-        </section>
-
-        {/* HERO RIGHT */}
-        <section className="waitlist-hero-right">
-          <div className="waitlist-form-card">
-            {!isSuccess ? (
-              <div id="form-content">
-                <div className="waitlist-form-eyebrow">Join the waitlist</div>
-                <div className="waitlist-form-title">Get your edge first.</div>
-                <div className="waitlist-form-sub">
-                  Be among the first verified on Plugr when we launch.
-                  Connecting plugs to clients and clients to plugs
-                </div>
-
-                <div className="waitlist-toggle-wrap">
-                  <button
-                    type="button"
-                    className={`waitlist-toggle-btn ${currentType === 'plug' ? 'active' : ''}`}
-                    onClick={() => setCurrentType('plug')}
-                  >
-                    I&rsquo;m a Plug
-                  </button>
-                  <button
-                    type="button"
-                    className={`waitlist-toggle-btn ${currentType === 'client' ? 'active' : ''}`}
-                    onClick={() => setCurrentType('client')}
-                  >
-                    I need a Plug
-                  </button>
-                </div>
-
-                <form id="signup-form" onSubmit={handleSubmit}>
-                  <div className="waitlist-field-group">
-                    <div className="waitlist-field">
-                      <label className="waitlist-label">Full Name</label>
-                      <input
-                        type="text"
-                        className="waitlist-input"
-                        placeholder="Your name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className="waitlist-field">
-                      <label className="waitlist-label">WhatsApp Number</label>
-                      <input
-                        type="tel"
-                        className="waitlist-input"
-                        placeholder="+234 — your active number"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className="waitlist-field">
-                      <label className="waitlist-label">Email Address</label>
-                      <input
-                        type="email"
-                        className="waitlist-input"
-                        placeholder="you@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className="waitlist-field">
-                      <label className="waitlist-label">Location in Lagos</label>
-                      <input
-                        type="text"
-                        className="waitlist-input"
-                        placeholder="e.g. Ikeja, Surulere, Yaba"
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className={`waitlist-field waitlist-skill-row ${currentType === 'plug' ? 'visible' : ''}`}>
-                      <label className="waitlist-label">Your Trade</label>
-                      <select
-                        id="trade-select"
-                        className="waitlist-select"
-                        value={trade}
-                        onChange={(e) => setTrade(e.target.value)}
-                        required={currentType === 'plug'}
-                      >
-                        <option value="" disabled>Select your trade</option>
-                        <option value="Electrician">Electrician</option>
-                        <option value="Plumber">Plumber</option>
-                        <option value="Carpenter">Carpenter</option>
-                        <option value="Painter">Painter</option>
-                        <option value="Tiler">Tiler</option>
-                        <option value="Welder">Welder</option>
-                        <option value="AC Technician">AC Technician</option>
-                        <option value="Generator Technician">Generator Technician</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <button type="submit" className="waitlist-btn-submit" id="submit-btn" disabled={isSubmitting}>
-                    {isSubmitting
-                      ? 'Submitting\u2026'
-                      : currentType === 'plug'
-                        ? 'Join as a Plug \u2192'
-                        : 'Join as a Client \u2192'}
-                  </button>
-
-                  {errorMsg && (
-                    <p
-                      id="form-error"
-                      style={{
-                        fontFamily: 'Satoshi, sans-serif',
-                        fontSize: '12px',
-                        color: '#E8A020',
-                        marginTop: '8px',
-                        textAlign: 'center',
-                        lineHeight: '1.4',
-                      }}
-                    >
-                      {errorMsg}
-                    </p>
-                  )}
-                </form>
-
-                <a href="#" className="waitlist-btn-wa" onClick={handleJoinChannel} style={{ marginTop: '12px' }}>
-                  <svg className="waitlist-wa-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                  </svg>
-                  Join our WhatsApp channel for updates
-                </a>
-
-                <p className="waitlist-form-note">No spam. No fake promises. Real updates as we build.</p>
-              </div>
-            ) : (
-              /* Success State */
-              <div className="waitlist-success-state visible" id="success-state">
-                <div className="waitlist-success-icon">&#10003;</div>
-                <div className="waitlist-success-title">You&rsquo;re on the list.</div>
-                <div className="waitlist-success-sub">
-                  We&rsquo;ll reach out before launch day. Join our WhatsApp channel to watch us build in real time.
-                </div>
-                <div>
-                  <div className="waitlist-success-count" id="counter">{successCount}</div>
-                  <div className="waitlist-success-count-label">people ahead of the curve</div>
-                </div>
-                <a href="#" className="waitlist-btn-wa" style={{ marginTop: '8px' }} onClick={handleJoinChannel}>
-                  <svg className="waitlist-wa-icon" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                  </svg>
-                  Join WhatsApp Channel
-                </a>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* BOTTOM STRIP */}
-        <div className="waitlist-bottom-strip">
-          <div className="waitlist-features-row">
-            <div className="waitlist-feature-pill">
-              <div className="dot"></div>NIN-verified profiles
-            </div>
-            <div className="waitlist-feature-pill">
-              <div className="dot"></div>Naira-based payments
-            </div>
-            <div className="waitlist-feature-pill">
-              <div className="dot"></div>Electricians &amp; Plumbers first
-            </div>
-            <div className="waitlist-feature-pill">
-              <div className="dot"></div>Built for Nigeria
-            </div>
-          </div>
-          <div className="waitlist-launch-tag">
-            Launching in Ikeja &middot; 2026
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+
+      {/* ============ SECTION 3 — THE CONTEXT ============ */}
+      <section className="wl-section wl-context">
+        <div className="wl-inner">
+          <div className="wl-stats">
+            <div>
+              <p className="wl-stat-num">93%</p>
+              <p className="wl-stat-label">of Nigeria&rsquo;s workforce operates informally (NBS, 2024)</p>
+            </div>
+            <div>
+              <p className="wl-stat-num">4M+</p>
+              <p className="wl-stat-label">artisans in Nigeria&rsquo;s construction trades alone</p>
+            </div>
+            <div>
+              <p className="wl-stat-num">58%</p>
+              <p className="wl-stat-label">of Nigeria&rsquo;s GDP comes from the informal sector</p>
+            </div>
+          </div>
+
+          <p className="wl-context-foot">
+            Millions of skilled hands building this country. Almost none of them visible,
+            verified, or financially recognised.
+          </p>
+        </div>
+      </section>
+
+      {/* ============ SECTION 4 — THE SOLUTION ============ */}
+      <section className="wl-section wl-solution">
+        <div className="wl-inner">
+          <p className="wl-label">The Solution</p>
+          <h2 className="wl-section-h2">Plugr fixes both sides.</h2>
+          <p className="wl-section-sub">
+            Not a job board. Not a referral app. A verified identity platform &mdash; built for
+            the artisan, trusted by the client.
+          </p>
+
+          <div className="wl-two-col">
+            {/* For Clients */}
+            <div className="wl-card">
+              <p className="wl-card-label">For Clients</p>
+              <ol className="wl-steps">
+                <li>Browse verified Plugs by trade &mdash; electricians, plumbers</li>
+                <li>View their verified badge, ratings, and completed job history</li>
+                <li>Book directly. Pay safely through escrow.</li>
+                <li>Confirm the job is done right before payment releases.</li>
+                <li>Rate your Plug. Build the record.</li>
+              </ol>
+              <p className="wl-card-close wl-muted">
+                No more guessing. No more strangers. A Plug you already know before they arrive.
+              </p>
+            </div>
+
+            {/* For Plugs */}
+            <div className="wl-card">
+              <p className="wl-card-label">For Plugs</p>
+              <ol className="wl-steps">
+                <li>Complete identity verification &mdash; NIN, liveness check, guarantor</li>
+                <li>Earn your Verified Plug badge</li>
+                <li>Get matched with clients in your area</li>
+                <li>Complete the job. Payment lands in your Plugr wallet.</li>
+                <li>Build a professional record that follows you everywhere.</li>
+              </ol>
+              <p className="wl-card-close wl-muted">
+                Your skill was always there. Now the proof is too.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ SECTION 5 — WAITLIST FORM ============ */}
+      <section className="wl-section wl-form-section" ref={formRef}>
+        <div className="wl-form-inner">
+          {status !== 'success' ? (
+            <>
+              <p className="wl-label">Early Access</p>
+              <h2 className="wl-section-h2">Get early access.</h2>
+              <p className="wl-section-sub">
+                Be among the first when we launch in Ikeja. No spam. Real updates only.
+              </p>
+
+              <form className="wl-form" onSubmit={handleSubmit} noValidate>
+                <div className="wl-type-grid">
+                  <button
+                    type="button"
+                    className={`wl-type-card ${userType === 'client' ? 'selected' : ''}`}
+                    aria-pressed={userType === 'client'}
+                    onClick={() => setUserType('client')}
+                  >
+                    <p className="wl-type-card-title">I need a Plug</p>
+                    <p className="wl-type-card-desc">I&rsquo;m a client looking for verified artisans</p>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`wl-type-card ${userType === 'artisan' ? 'selected' : ''}`}
+                    aria-pressed={userType === 'artisan'}
+                    onClick={() => setUserType('artisan')}
+                  >
+                    <p className="wl-type-card-title">I am a Plug</p>
+                    <p className="wl-type-card-desc">I&rsquo;m an artisan ready to get verified</p>
+                  </button>
+                </div>
+
+                <input
+                  type="email"
+                  className="wl-email"
+                  placeholder="Your email address"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (status === 'error') setStatus('idle');
+                  }}
+                  autoComplete="email"
+                />
+
+                <button type="submit" className="wl-submit" disabled={!canSubmit}>
+                  {status === 'loading' ? 'Joining…' : 'Join the waitlist →'}
+                </button>
+
+                {status === 'error' && (
+                  <p className="wl-error">Something went wrong. Try again.</p>
+                )}
+              </form>
+            </>
+          ) : (
+            <div className="wl-success">
+              <h2 className="wl-success-h2">You&rsquo;re on the list.</h2>
+              <p className="wl-success-body">
+                We&rsquo;ll reach out when early access opens in Ikeja. In the meantime, follow
+                along as we build.
+              </p>
+              <a
+                className="wl-wa-link"
+                href={WA_CHANNEL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Join our WhatsApp channel for live updates &rarr;
+              </a>
+            </div>
+          )}
+
+          {/* Always visible — not part of the success swap */}
+          <div className="wl-follow">
+            <p className="wl-follow-q">Already want to follow along?</p>
+            <a
+              className="wl-wa-link"
+              href={WA_CHANNEL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Join our WhatsApp channel for updates &rarr;
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ SECTION 6 — FOOTER ============ */}
+      <footer className="wl-footer">
+        {/* Dev team replaces wordmark with the actual SVG logo later */}
+        <p className="wl-wordmark">Plugr</p>
+        <p className="wl-tagline">Pledging allegiance to your success.</p>
+
+        {/* Placeholder social links — dev team wires up real URLs + branded icons */}
+        <div className="wl-social">
+          <a href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16zm0 1.95c-3.15 0-3.52.01-4.76.07-.92.04-1.42.2-1.75.33-.44.17-.75.37-1.08.7-.33.33-.53.64-.7 1.08-.13.33-.29.83-.33 1.75-.06 1.24-.07 1.61-.07 4.76s.01 3.52.07 4.76c.04.92.2 1.42.33 1.75.17.44.37.75.7 1.08.33.33.64.53 1.08.7.33.13.83.29 1.75.33 1.24.06 1.61.07 4.76.07s3.52-.01 4.76-.07c.92-.04 1.42-.2 1.75-.33.44-.17.75-.37 1.08-.7.33-.33.53-.64.7-1.08.13-.33.29-.83.33-1.75.06-1.24.07-1.61.07-4.76s-.01-3.52-.07-4.76c-.04-.92-.2-1.42-.33-1.75a2.9 2.9 0 0 0-.7-1.08 2.9 2.9 0 0 0-1.08-.7c-.33-.13-.83-.29-1.75-.33-1.24-.06-1.61-.07-4.76-.07zm0 3.32a4.57 4.57 0 1 1 0 9.14 4.57 4.57 0 0 1 0-9.14zm0 7.54a2.97 2.97 0 1 0 0-5.94 2.97 2.97 0 0 0 0 5.94zm5.82-7.76a1.07 1.07 0 1 1-2.14 0 1.07 1.07 0 0 1 2.14 0z" />
+            </svg>
+          </a>
+          <a href="#" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.66l-5.214-6.817-5.967 6.817H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644z" />
+            </svg>
+          </a>
+          <a href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.8 0 0 .78 0 1.74v20.52C0 23.22.8 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.74V1.74C24 .78 23.2 0 22.22 0z" />
+            </svg>
+          </a>
+        </div>
+
+        <p className="wl-footer-line">
+          Plugr Technologies &middot; Under Alhazen &middot; Ikeja, Lagos &middot; getplugr.com
+        </p>
+        <p className="wl-footer-fine">
+          Nigeria&rsquo;s first verified artisan identity platform &middot; &copy; 2026
+        </p>
+      </footer>
+    </main>
   );
 }
