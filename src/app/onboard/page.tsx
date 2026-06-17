@@ -569,28 +569,26 @@ export default function App() {
               <span className="text-[9px] font-mono font-bold text-slate-400 tracking-wider block uppercase">
                 YOUR NAME
               </span>
-              <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="space-y-4 text-xs">
                 <div>
-                  <label className="text-slate-400 font-bold block mb-1">First name</label>
                   <input
                     type="text"
-                    placeholder="e.g. Joy"
+                    placeholder="First Name"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     id="profile-firstname-field"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:bg-white focus:outline-none focus:border-[#EB9E27] font-medium transition"
+                    className="w-full border border-slate-200 rounded-full px-3 py-2.5 text-slate-800 focus:bg-white focus:outline-none focus:border-[#EB9E27] font-medium transition"
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-slate-400 font-bold block mb-1">Last name</label>
                   <input
                     type="text"
-                    placeholder="e.g. Chibuzor"
+                    placeholder="Last Name"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     id="profile-lastname-field"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:bg-white focus:outline-none focus:border-[#EB9E27] font-medium transition"
+                    className="w-full border border-slate-200 rounded-full px-3 py-2.5 text-slate-800 focus:bg-white focus:outline-none focus:border-[#EB9E27] font-medium transition"
                     required
                   />
                 </div>
@@ -604,17 +602,15 @@ export default function App() {
               </span>
               <div className="text-xs">
                 <label className="text-slate-400 font-bold block mb-1">City</label>
-                <select
+                <input
+                  type="text"
+                  placeholder="City"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  id="profile-city-select"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:bg-white focus:outline-none focus:border-[#EB9E27] font-semibold transition"
-                >
-                  <option value="Lagos">Lagos, Nigeria 🇳🇬</option>
-                  <option value="Abuja">Abuja, Nigeria 🇳🇬</option>
-                  <option value="Port Harcourt">Port Harcourt, Nigeria 🇳🇬</option>
-                  <option value="Ibadan">Ibadan, Nigeria 🇳🇬</option>
-                </select>
+                  id="profile-city-field"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 focus:bg-white focus:outline-none focus:border-[#EB9E27] font-medium transition"
+                  required
+                />
               </div>
             </div>
 
