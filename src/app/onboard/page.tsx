@@ -275,7 +275,7 @@ export default function App() {
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center justify-center"
           >
-            <img src="/logo_light.png" alt="Plugr Logo" width={500} height={500} />
+            <img src="/logo_light.svg" alt="Plugr Logo" width={500} height={500} />
           </motion.div>
         </div>
       )}
@@ -284,7 +284,7 @@ export default function App() {
         <div className="w-full max-w-md min-h-screen max-h-[850px] bg-[#F6F5F0] p-6 flex flex-col justify-between" id="screen-role-selection">
           {/* Logo segment */}
           <div className="flex justify-center pt-6 shrink-0">
-            <img src="/logo_light.png" alt="Plugr Logo" width={500} height={500} />
+            <img src="/logo_light.svg" alt="Plugr Logo" width={500} height={500} />
           </div>
 
           {/* Heading intro text layout */}
@@ -304,8 +304,8 @@ export default function App() {
               onClick={() => setSelectedRole('client')}
               id="role-card-client"
               className={`bg-white rounded-[28px] p-5 border-2 transition-all cursor-pointer flex gap-4 items-center relative ${selectedRole === 'client'
-                  ? 'border-[#EB9E27] shadow-md shadow-[#EB9E27]/5'
-                  : 'border-white hover:border-slate-100 shadow-sm'
+                ? 'border-[#EB9E27] shadow-md shadow-[#EB9E27]/5'
+                : 'border-white hover:border-slate-100 shadow-sm'
                 }`}
             >
               <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-[#EB9E27] shrink-0">
@@ -326,8 +326,8 @@ export default function App() {
               onClick={() => setSelectedRole('plug')}
               id="role-card-plug"
               className={`bg-white rounded-[28px] p-5 border-2 transition-all cursor-pointer flex gap-4 items-center relative ${selectedRole === 'plug'
-                  ? 'border-[#EB9E27] shadow-md shadow-[#EB9E27]/5'
-                  : 'border-white hover:border-slate-100 shadow-sm'
+                ? 'border-[#EB9E27] shadow-md shadow-[#EB9E27]/5'
+                : 'border-white hover:border-slate-100 shadow-sm'
                 }`}
             >
               <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-800 shrink-0">
@@ -631,8 +631,8 @@ export default function App() {
                   <div
                     onClick={() => setTrade('electrician')}
                     className={`p-4 rounded-2xl border-2 cursor-pointer flex flex-col items-center gap-2 transition text-center ${trade === 'electrician'
-                        ? 'border-[#EB9E27] bg-[#EB9E27]/5 text-amber-900'
-                        : 'border-slate-100 bg-slate-50 text-slate-500'
+                      ? 'border-[#EB9E27] bg-[#EB9E27]/5 text-amber-900'
+                      : 'border-slate-100 bg-slate-50 text-slate-500'
                       }`}
                   >
                     <span className="text-lg">⚡</span>
@@ -642,8 +642,8 @@ export default function App() {
                   <div
                     onClick={() => setTrade('plumber')}
                     className={`p-4 rounded-2xl border-2 cursor-pointer flex flex-col items-center gap-2 transition text-center ${trade === 'plumber'
-                        ? 'border-[#EB9E27] bg-[#EB9E27]/5 text-amber-900'
-                        : 'border-slate-100 bg-slate-50 text-slate-500'
+                      ? 'border-[#EB9E27] bg-[#EB9E27]/5 text-amber-900'
+                      : 'border-slate-100 bg-slate-50 text-slate-500'
                       }`}
                   >
                     <span className="text-lg">💧</span>
@@ -833,8 +833,8 @@ export default function App() {
               }}
               id="continue-nin-verify"
               className={`w-full font-semibold py-4.5 px-6 rounded-full shadow-lg transition flex items-center justify-center gap-2 ${ninVerified
-                  ? 'bg-[#EB9E27] hover:bg-[#D68B1D] text-white'
-                  : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-90'
+                ? 'bg-[#EB9E27] hover:bg-[#D68B1D] text-white'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-90'
                 }`}
               disabled={!ninVerified}
             >
@@ -892,8 +892,8 @@ export default function App() {
               }}
               id="finalize-onboarding-biometrics"
               className={`w-full font-semibold py-4.5 px-6 rounded-full shadow-lg transition flex items-center justify-center gap-2 ${livenessDocVerified
-                  ? 'bg-[#EB9E27] hover:bg-[#D68B1D] text-white'
-                  : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-90'
+                ? 'bg-[#EB9E27] hover:bg-[#D68B1D] text-white'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-90'
                 }`}
               disabled={!livenessDocVerified}
             >
