@@ -566,7 +566,7 @@ export default function App() {
 
             {/* Card segment 1: Name Details */}
             <div className="bg-white rounded-[24px] p-4.5 border border-slate-150 space-y-3 shadow-xs">
-              <span className="text-[9px] font-mono font-bold text-slate-400 tracking-wider block uppercase">
+              <span className="text-[14px] font-bold text-[#E8A020] tracking-wider block uppercase">
                 YOUR NAME
               </span>
               <div className="space-y-4 text-xs">
@@ -597,11 +597,10 @@ export default function App() {
 
             {/* Card segment 2: City Location details */}
             <div className="bg-white rounded-[24px] p-4.5 border border-slate-150 space-y-3 shadow-xs">
-              <span className="text-[9px] font-mono font-bold text-slate-400 tracking-wider block uppercase">
+              <span className="text-[12px] font-bold text-[#E8A020] tracking-wider block uppercase">
                 LOCATION
               </span>
               <div className="text-xs">
-                <label className="text-slate-400 font-bold block mb-1">City</label>
                 <input
                   type="text"
                   placeholder="City"
@@ -617,7 +616,7 @@ export default function App() {
             {/* Card segment 3: Professional selection layout if selected role is plug */}
             {selectedRole === 'plug' && (
               <div className="bg-white rounded-[24px] p-4.5 border border-slate-150 space-y-3 shadow-xs">
-                <span className="text-[9px] font-mono font-bold text-slate-400 tracking-wider block uppercase">
+                <span className="text-[12px] font-bold text-[#E8A020] tracking-wider block uppercase">
                   YOUR TRADE
                 </span>
                 <p className="text-xs text-slate-500 font-medium pb-1">What is your primary skill?</p>
@@ -626,7 +625,7 @@ export default function App() {
                   {/* Option Plumber */}
                   <div
                     onClick={() => setTrade('electrician')}
-                    className={`p-4 rounded-3xl border-2 cursor-pointer flex flex-col items-center gap-2 transition text-center ${trade === 'electrician'
+                    className={`p-2 rounded-3xl border-2 cursor-pointer flex flex-col items-center gap-1 transition text-center ${trade === 'electrician'
                       ? 'border-[#EB9E27] bg-[#EB9E27]/5 text-amber-900'
                       : 'border-slate-100 text-slate-500'
                       }`}
@@ -637,7 +636,7 @@ export default function App() {
 
                   <div
                     onClick={() => setTrade('plumber')}
-                    className={`p-4 rounded-3xl border-2 cursor-pointer flex flex-col items-center gap-2 transition text-center ${trade === 'plumber'
+                    className={`p-2 rounded-3xl border-2 cursor-pointer flex flex-col items-center gap-1 transition text-center ${trade === 'plumber'
                       ? 'border-[#EB9E27] bg-[#EB9E27]/5 text-amber-900'
                       : 'border-slate-100 text-slate-500'
                       }`}
