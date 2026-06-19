@@ -474,16 +474,16 @@ export default function App() {
             <h1 className="font-display font-bold text-[#181C25] text-2xl tracking-tight leading-snug">
               Verify your phone
             </h1>
-            <p className="text-slate-400 text-xs leading-normal font-medium">
+            <p className="text-slate-400 text-[11px] leading-normal font-medium">
               Enter the 6-digit code we sent to{' '}
               <span className="font-mono text-[#181C25] font-bold">
-                +234 {phone || '803 000 0000'}
+                {'+234 ' + phone || '803 000 0000'}
               </span>.
             </p>
           </div>
 
           {/* Digit Inputs grid area */}
-          <form onSubmit={submitOtpForm} className="space-y-8 my-auto flex flex-col items-center">
+          <form onSubmit={submitOtpForm} className="space-y-8 mt-2 mb-auto flex flex-col items-center">
 
             {/* Visual alert toast providing code clue for the tester */}
             {showOtpHint && (
@@ -534,7 +534,7 @@ export default function App() {
             <button
               onClick={submitOtpForm}
               id="submit-otp-verification"
-              className="w-full bg-[#EB9E27] hover:bg-[#D68B1D] text-white font-semibold py-4.5 px-6 rounded-full shadow-lg shadow-[#EB9E27]/10 active:scale-99 transition flex items-center justify-center gap-2"
+              className="w-full bg-[#EB9E27] hover:bg-[#D68B1D] text-white text-sm font-semibold py-4 px-6 rounded-full shadow-lg shadow-[#EB9E27]/10 active:scale-99 transition flex items-center justify-center gap-2"
             >
               Verify
             </button>
