@@ -383,16 +383,16 @@ export default function App() {
 
           {/* Main title layout */}
           <div className="space-y-2 mt-8 mb-auto">
-            <h1 className="font-display font-extrabold text-[#181C25] text-3xl tracking-tight leading-snug">
+            <h1 className="font-display font-bold text-[#181C25] text-2xl tracking-tight leading-snug">
               What's your number?
             </h1>
-            <p className="text-slate-400 text-xs leading-relaxed font-semibold">
+            <p className="text-slate-500 text-xs leading-relaxed">
               We'll send a 6-digit code to verify your account registration.
             </p>
           </div>
 
           {/* Interactive Phone Form area */}
-          <form onSubmit={submitPhoneForm} className="space-y-6 my-auto">
+          <form onSubmit={submitPhoneForm} className="mb-36">
             <div className="space-y-2">
               <label className="text-[10.5px] font-mono font-extrabold text-slate-500 uppercase tracking-widest block pl-1">
                 Phone Number
@@ -421,7 +421,7 @@ export default function App() {
           </form>
 
           {/* Submit action panel and guidelines agreement footer links */}
-          <div className="space-y-5 pt-4 shrink-0 pb-6 text-center">
+          <div className="space-y-5 shrink-0 pb-6 text-center">
             {/* Display code clue floating banner for ease of use in visual reviews */}
             <div className="bg-amber-50 rounded-2xl p-3 border border-amber-100 flex items-center justify-between text-left text-xs text-amber-800 font-sans shadow-xs">
               <div className="flex items-center gap-2">
@@ -436,7 +436,7 @@ export default function App() {
             <button
               onClick={submitPhoneForm}
               id="submit-phone-number"
-              className="w-full bg-[#EB9E27] hover:bg-[#D68B1D] text-white font-semibold py-4.5 px-6 rounded-full shadow-lg shadow-[#EB9E27]/10 active:scale-99 transition flex items-center justify-center gap-2"
+              className="w-full bg-[#EB9E27] hover:bg-[#D68B1D] text-white text-xs font-semibold py-4 px-6 rounded-full shadow-lg shadow-[#EB9E27]/10 active:scale-99 transition flex items-center justify-center gap-2"
             >
               Send Code
             </button>
@@ -471,10 +471,10 @@ export default function App() {
 
           {/* Header main instructions */}
           <div className="space-y-2 mt-8 mb-auto">
-            <h1 className="font-display font-extrabold text-[#181C25] text-3xl tracking-tight leading-snug">
+            <h1 className="font-display font-bold text-[#181C25] text-2xl tracking-tight leading-snug">
               Verify your phone
             </h1>
-            <p className="text-slate-400 text-xs leading-relaxed font-semibold">
+            <p className="text-slate-400 text-xs leading-normal font-medium">
               Enter the 6-digit code we sent to{' '}
               <span className="font-mono text-[#181C25] font-bold">
                 +234 {phone || '803 000 0000'}
