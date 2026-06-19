@@ -47,10 +47,11 @@ export default function LandingPage() {
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 px-6 py-3 flex justify-between items-center bg-[#F5F1EC]/85">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.svg" alt="Plugr Logo" width={120} height={60} />
+          <Image src="/logo.svg" alt="Plugr Logo" width={90} height={45} />
         </Link>
-        <Link href="/onboard" className="bg-[#DBA134] text-white justify-center items-center flex w-auto text-sm font-semibold px-2.5 py-1.5 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Use Plugr</Link>
-
+        <div className="flex items-center gap-1.5 text-sm font-semibold text-[#0A1529]">
+          <Link href="/onboard" className="bg-[#DBA134] text-white px-4 py-2 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Use Plugr</Link>
+        </div>
 
         <div className="hidden md:flex flex-row items-center gap-12 text-sm font-semibold text-[#0A1529]">
           <Link href="#how-it-works" className="hover:text-[#DBA134] transition-colors">How it Works</Link>
