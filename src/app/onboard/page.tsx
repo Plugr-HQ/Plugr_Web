@@ -272,10 +272,10 @@ export default function App() {
           <motion.div
             initial={{ y: 150, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center justify-center"
           >
-            <img src="/logo.svg" alt="Plugr Logo" width={350} height={350} />
+            <img src="/logo.svg" alt="Plugr Logo" width={150} height={150} />
           </motion.div>
         </div>
       )}
@@ -284,21 +284,21 @@ export default function App() {
         <div className="w-full max-w-md min-h-screen max-h-[850px] bg-[#F6F5F0] p-6 flex flex-col justify-between" id="screen-role-selection">
           {/* Logo segment */}
           <div className="flex justify-center pt-6 shrink-0">
-            <img src="/logo.svg" alt="Plugr Logo" width={300} height={300} />
+            <img src="/logo.svg" alt="Plugr Logo" width={150} height={150} />
           </div>
 
           {/* Heading intro text layout */}
           <div className="space-y-3.5 text-center px-4 my-auto">
-            <h1 className="font-display font-extrabold text-[#181C25] text-4xl leading-tight tracking-tight">
+            <h1 className="font-display font-bold text-[#181C25] text-xl leading-tight tracking-tight">
               Pledging allegiance to your success.
             </h1>
-            <p className="text-slate-500 font-sans text-sm font-medium leading-relaxed max-w-[280px] mx-auto text-balance">
+            <p className="text-slate-500 font-sans text-xs leading-relaxed max-w-sm mx-auto text-balance">
               Join a community of verified professionals and trusted clients.
             </p>
-          </div>
+          </div><br />
 
           {/* Dual Options Card selection widget */}
-          <div className="space-y-4 my-auto">
+          <div className="space-y-2 my-auto">
             {/* Card 1: Client */}
             <div
               onClick={() => setSelectedRole('client')}
@@ -308,11 +308,11 @@ export default function App() {
                 : 'border-white hover:border-slate-100 shadow-sm'
                 }`}
             >
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-[#EB9E27] shrink-0">
-                <Search className="h-5 w-5 stroke-[2.5]" />
+              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-[#EB9E27] shrink-0">
+                <Search className="h-4 w-4 stroke-[2.5]" />
               </div>
-              <div className="flex-1 min-w-0 pr-6">
-                <h3 className="font-bold text-[#181C25] text-md leading-snug">I'm looking for a Plug</h3>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-[#181C25] text-sm leading-snug">I'm looking for a Plug</h3>
                 <p className="text-slate-400 text-xs mt-1 leading-normal font-medium">Find verified electricians and plumbers.</p>
               </div>
               <div className={`w-5.5 h-5.5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedRole === 'client' ? 'border-[#EB9E27] bg-[#EB9E27] text-white' : 'border-slate-200 bg-white'
@@ -330,11 +330,11 @@ export default function App() {
                 : 'border-white hover:border-slate-100 shadow-sm'
                 }`}
             >
-              <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-800 shrink-0">
-                <Wrench className="h-5 w-5 stroke-[2.5]" />
+              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-[#EB9E27] shrink-0">
+                <Wrench className="h-4 w-4 stroke-[2.5]" />
               </div>
-              <div className="flex-1 min-w-0 pr-6">
-                <h3 className="font-bold text-[#181C25] text-md leading-snug">I am a Plug</h3>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-[#181C25] text-sm leading-snug">I am a Plug</h3>
                 <p className="text-slate-400 text-xs mt-1 leading-normal font-medium">Build your professional identity and find work.</p>
               </div>
               <div className={`w-5.5 h-5.5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedRole === 'plug' ? 'border-[#EB9E27] bg-[#EB9E27] text-white' : 'border-slate-200 bg-white'
