@@ -345,15 +345,15 @@ export default function App() {
           </div>
 
           {/* Continue button & Already have logged account footer */}
-          <div className="space-y-4 pt-4 shrink-0 pb-6 text-center">
+          <div className="space-y-2 pt-4 shrink-0 pb-6 text-center">
             <button
               onClick={() => setStep('phone_entry')}
               id="continue-role-selection"
-              className="w-full bg-[#EB9E27] hover:bg-[#D68B1D] text-white font-semibold py-4.5 px-6 rounded-full shadow-lg shadow-[#EB9E27]/10 active:scale-99 transition flex items-center justify-center gap-2"
+              className="w-full bg-[#EB9E27] hover:bg-[#D68B1D] text-white text-xs font-semibold py-3 px-6 rounded-full shadow-lg shadow-[#EB9E27]/10 active:scale-99 transition flex items-center justify-center gap-1"
             >
               Continue
             </button>
-            <p className="text-xs text-slate-400 font-medium">
+            <p className="text-xs text-slate-400 font-semibold">
               Already have an account?{' '}
               <button
                 onClick={() => bypassOnboarding(selectedRole)}
