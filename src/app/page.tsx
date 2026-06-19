@@ -45,18 +45,19 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen font-sans" style={{ backgroundColor: colors.bone }}>
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-[#F5F1EC]">
+      <nav className="fixed top-0 w-full z-50 px-6 py-3 flex justify-between items-center bg-[#F5F1EC]/85">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.svg" alt="Plugr Logo" width={120} height={60} />
         </Link>
+        <Link href="/onboard" className="bg-[#DBA134] text-white justify-center items-center flex w-auto text-sm font-semibold px-2.5 py-1.5 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Use Plugr</Link>
+
+
         <div className="hidden md:flex flex-row items-center gap-12 text-sm font-semibold text-[#0A1529]">
           <Link href="#how-it-works" className="hover:text-[#DBA134] transition-colors">How it Works</Link>
           <Link href="#trades" className="hover:text-[#DBA134] transition-colors">Trades</Link>
           <Link href="#faq" className="hover:text-[#DBA134] transition-colors">FAQ</Link>
-          <div className="flex flex-row items-center gap-6 text-sm font-semibold text-[#0A1529] ml-24">
-            <Link href="/auth/login" className="text-[#DBA134] px-6 py-3 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Log in</Link>
-            <Link href="/become-a-plug" className="bg-[#DBA134] text-white px-6 py-3 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Become a Plug</Link>
-          </div>
+          <Link href="/become-a-plug" className="hover:text-[#DBA134] transition-colors">Become a Plug</Link>
+
         </div>
         <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           {isMobileMenuOpen ? <X className="w-6 h-6 text-[#0A1529]" /> : <Menu className="w-6 h-6 text-[#0A1529]" />}
@@ -66,13 +67,13 @@ export default function LandingPage() {
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div className="fixed top-[73px] right-0 bottom-0 w-[280px] z-40 h-fit rounded-3xl bg-white/50 backdrop-blur-md md:hidden flex flex-col p-6 gap-2 border-l border-gray-100 shadow-2xl animate-in slide-in-from-top-10 duration-1000">
-          <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">How it Works</Link>
-          <Link href="#trades" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">Trades</Link>
-          <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">FAQ</Link>
-          <Link href="/find" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">Find a Plug</Link>
+          <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-sm text-[#0A1529] ">How it Works</Link>
+          <Link href="#trades" onClick={() => setIsMobileMenuOpen(false)} className="text-sm text-[#0A1529] ">Trades</Link>
+          <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="text-sm text-[#0A1529] ">FAQ</Link>
+          <Link href="/find" onClick={() => setIsMobileMenuOpen(false)} className="text-sm text-[#0A1529] ">Find a Plug</Link>
+          <Link href="/become-a-plug" onClick={() => setIsMobileMenuOpen(false)} className="text-sm text-[#0A1529] ">Become a Plug</Link>
           <div className="pt-6 border-t border-gray-100 flex flex-col gap-4">
-            <Link href="/auth/login" className="w-full py-4 text-center border-2 border-[#0A1529] text-[#0A1529] rounded-full font-bold">Log in</Link>
-            <Link href="/become-a-plug" className="w-full py-4 text-center bg-[#DBA134] text-white rounded-full font-bold">Become a Plug</Link>
+
           </div>
         </div>
       )}

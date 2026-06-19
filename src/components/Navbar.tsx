@@ -15,9 +15,8 @@ export function Navbar() {
 
           <Image src="/logo.svg" alt="Plugr Logo" fill className="bg-cover" />
         </Link>
-        <div className="flex flex-row items-center gap-1.5 text-sm font-semibold text-[#0A1529]">
-          <Link href="/auth/login" className="text-[#DBA134] px-4 py-2 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Log in</Link>
-          <Link href="/auth/signup" className="bg-[#DBA134] text-white px-4 py-2 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Sign up</Link>
+        <div className="flex items-center gap-1.5 text-sm font-semibold text-[#0A1529]">
+          <Link href="/onboard" className="bg-[#DBA134] text-white px-4 py-2 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Use Plugr</Link>
         </div>
         <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           {isMobileMenuOpen ? <X className="w-6 h-6 text-[#0A1529]" /> : <Menu className="w-6 h-6 text-[#0A1529]" />}
