@@ -4,9 +4,17 @@ import { Client } from 'pg';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: Request) {
+  // 1. Pre-flight Check: Prevent unhandled connection string parse crashes
+  const connectionString = process.env.DATABASE_URL;
+
+  if (!connectionString) {
+    console.error('CRITICAL: DATABASE_URL environment variable is completely missing or empty.');
+    return NextResponse.json({ error: 'Database configuration missing.' }, { status: 500 });
+  }
+
   let body: { email?: unknown; userType?: unknown };
 
-  // 1. Parse Request Body Safely
+  // 2. Parse Request Body Safely
   try {
     body = await request.json();
   } catch {
@@ -16,7 +24,7 @@ export async function POST(request: Request) {
   const email = typeof body.email === 'string' ? body.email.trim() : '';
   const userType = body.userType;
 
-  // 2. Validate Fields
+  // 3. Validate Fields
   if (!EMAIL_RE.test(email)) {
     return NextResponse.json({ error: 'A valid email is required.' }, { status: 400 });
   }
@@ -25,17 +33,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'userType must be "client" or "artisan".' }, { status: 400 });
   }
 
-  // Map userType vocabulary onto existing "Type" column ("plug" | "client")
   const dbType = userType === 'artisan' ? 'plug' : 'client';
 
-  // 3. Initialize Short-lived Client Connection for Serverless Environment
-  const client = new Client({
-    connectionString: process.env.DATABASE_URL,
-    // Direct connections to Supabase from Vercel require SSL
-    ssl: {
-      rejectUnauthorized: false
-    }
-  });
+  // 4. Initialize Short-lived Client Connection safely
+  let client: Client;
+  try {
+    client = new Client({
+      connectionString: connectionString,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    });
+  } catch (configError: any) {
+    console.error('CRITICAL: Node-postgres failed to parse connection string structure:', configError.message);
+    return NextResponse.json({ error: 'Internal configuration error.' }, { status: 500 });
+  }
 
   try {
     // Open connection
@@ -47,14 +59,14 @@ export async function POST(request: Request) {
       [dbType, email]
     );
 
+    return NextResponse.json({ ok: true }, { status: 201 });
+
   } catch (error: any) {
-    // Treat duplicate email (unique constraint violation code 23505) as success
     if (error && error.code === '23505') {
       return NextResponse.json({ ok: true }, { status: 200 });
     }
 
-    // Comprehensive logs to pinpoint exact issues in Vercel
-    console.error('Waitlist database insert error details:', {
+    console.error('Waitlist database execution error details:', {
       message: error.message,
       code: error.code,
       detail: error.detail,
@@ -63,9 +75,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Could not join the waitlist.' }, { status: 500 });
 
   } finally {
-    // CRITICAL: Always close the connection in a serverless function
-    await client.end();
+    // Ensure cleanup only runs if client was successfully constructed and connected
+    if (client) {
+      try {
+        await client.end();
+      } catch (endError) {
+        console.error('Failed to close database client cleanly:', endError);
+      }
+    }
   }
-
-  return NextResponse.json({ ok: true }, { status: 201 });
 }
