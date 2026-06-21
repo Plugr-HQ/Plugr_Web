@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Existing Supabase project (anon key — same one the page used previously).
-const supabaseUrl = 'https://rzxajmbgwwcmwxltcgeb.supabase.co';
-const supabaseKey =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6eGFqbWJnd3djbXd4bHRjZ2ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NTk5NDAsImV4cCI6MjA5MTMzNTk0MH0.l7iJ_585GkaJc7auSlUxzcG2hV85kiG0mmNvQsfnnok';
-
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { Pool } from 'pg';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Initialize the database pool using DATABASE_URL from environment variables.
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
 export async function POST(request: Request) {
   let body: { email?: unknown; userType?: unknown };
@@ -33,18 +31,20 @@ export async function POST(request: Request) {
   // Map the new userType vocabulary onto the existing "Type" column ("plug" | "client").
   const dbType = userType === 'artisan' ? 'plug' : 'client';
 
-  const { error } = await supabase
-    .from('Plugr Waitlist')
-    .insert([{ Type: dbType, Email: email }]);
-
-  if (error) {
-    // Treat a duplicate email as success — they're already on the list.
-    if (error.code === '23505') {
+  try {
+    await pool.query(
+      'INSERT INTO "Plugr Waitlist" ("Type", "Email") VALUES ($1, $2)',
+      [dbType, email]
+    );
+  } catch (error: any) {
+    // Treat a duplicate email (unique constraint violation code 23505) as success — they're already on the list.
+    if (error && error.code === '23505') {
       return NextResponse.json({ ok: true }, { status: 200 });
     }
-    console.error('Waitlist insert error:', error);
+    console.error('Waitlist database insert error:', error);
     return NextResponse.json({ error: 'Could not join the waitlist.' }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true }, { status: 201 });
 }
+
