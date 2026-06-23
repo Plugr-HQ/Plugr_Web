@@ -211,8 +211,8 @@ export default function WaitlistPage() {
                   <button
                     type="button"
                     className={`wl-type-card ${userType === 'artisan' ? 'selected' : ''}`}
-                    aria-pressed={userType === 'client'}
-                    onClick={() => setUserType('client')}
+                    aria-pressed={userType === 'artisan'}
+                    onClick={() => setUserType('artisan')}
                   >
                     <p className="wl-type-card-title">I am a Plug</p>
                     <p className="wl-type-card-desc">I&rsquo;m an artisan ready to get verified</p>
