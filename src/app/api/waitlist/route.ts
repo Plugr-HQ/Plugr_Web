@@ -58,9 +58,11 @@ export async function POST(request: Request) {
     await client.connect();
 
     // Execute Query
+    // Table requires NOT NULL on: Full Name, Phone Number, Email, Location, Type
+    // Waitlist form only collects email + userType, so we default the rest to empty strings
     await client.query(
-      'INSERT INTO "Plugr Waitlist" ("Type", "Email") VALUES ($1, $2)',
-      [dbType, email]
+      'INSERT INTO "Plugr Waitlist" ("Type", "Email", "Full Name", "Phone Number", "Location") VALUES ($1, $2, $3, $4, $5)',
+      [dbType, email, '', '', '']
     );
 
     return NextResponse.json({ ok: true }, { status: 201 });
