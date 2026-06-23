@@ -911,13 +911,7 @@ export default function App() {
 
       {step === 'dashboard' && (
         selectedRole === 'client' ? (
-          <ClientDashboard
-            clientName={`${firstName || 'Joy'} ${lastName || 'Chibuzor'}`}
-            clientCity={city}
-            clientPhone={phone || '0803 111 2222'}
-            avatarUrl={selectedAvatar}
-            onLogout={handleLogout}
-          />
+          <h1>Client Dashboard</h1>
         ) : (
           <PlugDashboard
             profile={{
