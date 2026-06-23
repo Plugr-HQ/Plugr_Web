@@ -58,17 +58,20 @@ export async function POST(request: Request) {
     await client.connect();
 
     // Execute Query
-    // Table requires NOT NULL on: Full Name, Phone Number, Email, Location, Type
-    // Waitlist form only collects email + userType, so we default the rest to empty strings
+    // Table has UNIQUE constraints on both Email and Phone Number.
+    // Waitlist form only collects email + userType. For the fields it doesn't
+    // collect, we use unique placeholders to avoid UNIQUE constraint collisions.
+    const placeholder = `waitlist-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     await client.query(
       'INSERT INTO "Plugr Waitlist" ("Type", "Email", "Full Name", "Phone Number", "Location") VALUES ($1, $2, $3, $4, $5)',
-      [dbType, email, '', '', '']
+      [dbType, email, '', placeholder, '']
     );
 
     return NextResponse.json({ ok: true }, { status: 201 });
 
   } catch (error: any) {
-    if (error && error.code === '23505') {
+    // Only treat duplicate Email as "already signed up" — not other constraint violations
+    if (error && error.code === '23505' && error.detail?.includes('Email')) {
       return NextResponse.json({ ok: true }, { status: 200 });
     }
 
