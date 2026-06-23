@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     // Table has UNIQUE constraints on both Email and Phone Number.
     // Waitlist form only collects email + userType. For the fields it doesn't
     // collect, we use unique placeholders to avoid UNIQUE constraint collisions.
-    const placeholder = `waitlist-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const placeholder = `waitlist-phone-number`;
     await client.query(
       'INSERT INTO "Plugr Waitlist" ("Type", "Email", "Full Name", "Phone Number", "Location") VALUES ($1, $2, $3, $4, $5)',
       [dbType, email, '', placeholder, '']
