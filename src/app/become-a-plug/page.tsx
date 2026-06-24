@@ -66,7 +66,7 @@ export default function BecomeAPlugSection() {
   ]
 
   return (
-    <div className="bg-bone font-sans antialiased text-midnight">
+    <div className="py-8  bg-bone font-sans antialiased text-midnight">
 
       <Navbar />
 
