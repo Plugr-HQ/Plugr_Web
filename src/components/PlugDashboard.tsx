@@ -1,10 +1,12 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, MapPin, Star, Briefcase, Phone, CheckCircle2, 
   Wallet, X, MessageSquare, Power, ArrowRight, TrendingUp, HelpCircle, AlertCircle, Banknote, RefreshCw, Loader2
 } from 'lucide-react';
-import { PlugProfile, Booking, ChatMessage } from '../types';
-import { INITIAL_BOOKINGS, FAQ_LIST } from '../data';
+import { PlugProfile, Booking, ChatMessage } from '../app/onboard/types';
+import { INITIAL_BOOKINGS, FAQ_LIST } from '../app/onboard/data';
 
 interface PlugDashboardProps {
   profile: PlugProfile;

@@ -1,11 +1,13 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { 
   Search, Sliders, ShieldCheck, MapPin, Star, Briefcase, Phone, 
   ChevronRight, ArrowLeft, Send, CheckCircle2, Clock, ThumbsUp, Wallet, X,
   BadgeAlert, Sparkles, MessageSquare, Loader2
 } from 'lucide-react';
-import { PlugProfile, Booking, ChatMessage } from '../types';
-import { MOCK_PLUGS } from '../data';
+import { PlugProfile, Booking, ChatMessage } from '../app/onboard/types';
+import { MOCK_PLUGS } from '../app/onboard/data';
 
 interface ClientDashboardProps {
   clientName: string;

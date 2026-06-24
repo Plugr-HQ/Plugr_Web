@@ -94,7 +94,7 @@ export default function FindPlugPage() {
             <button
               key={i}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-1 rounded-pill font-medium text-[12px] transition-colors whitespace-nowrap ${selectedCategory === cat
+              className={`px-4 py-1 rounded-full font-medium text-[12px] transition-colors whitespace-nowrap ${selectedCategory === cat
                 ? "bg-gold text-midnight"
                 : "bg-white text-slate border border-slate/10 hover:border-gold/50"
                 }`}

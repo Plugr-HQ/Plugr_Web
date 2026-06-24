@@ -1,9 +1,12 @@
 import type { Metadata } from 'next'
-import '../index.css'
+import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Plugr | Verified Skills Identity for Artisans',
   description: "Nigeria's first verified skills identity platform for artisans.",
+  icons: {
+    icon: '/plugr.svg'
+  }
 }
 
 export default function RootLayout({
