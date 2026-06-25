@@ -67,15 +67,12 @@ export default function LandingPage() {
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed top-[73px] right-0 bottom-0 w-[280px] z-40 h-fit rounded-3xl bg-white/50 backdrop-blur-md md:hidden flex flex-col p-6 gap-2 border-l border-gray-100 shadow-2xl animate-in slide-in-from-top-10 duration-1000">
-          <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-sm text-[#0A1529] ">How it Works</Link>
-          <Link href="#trades" onClick={() => setIsMobileMenuOpen(false)} className="text-sm text-[#0A1529] ">Trades</Link>
-          <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="text-sm text-[#0A1529] ">FAQ</Link>
-          <Link href="/find" onClick={() => setIsMobileMenuOpen(false)} className="text-sm text-[#0A1529] ">Find a Plug</Link>
-          <Link href="/become-a-plug" onClick={() => setIsMobileMenuOpen(false)} className="text-sm text-[#0A1529] ">Become a Plug</Link>
-          <div className="pt-6 border-t border-gray-100 flex flex-col gap-4">
-
-          </div>
+        <div className="fixed top-[73px] right-0 bottom-0 w-[280px] z-40 h-fit rounded-3xl bg-white/50 backdrop-blur-md md:hidden flex flex-col p-6 gap-4 border-l border-gray-100 shadow-2xl animate-in slide-in-from-top-10 duration-1000">
+          <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-md text-[#0A1529] ">How it Works</Link>
+          <Link href="#trades" onClick={() => setIsMobileMenuOpen(false)} className="text-md text-[#0A1529] ">Trades</Link>
+          <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="text-md text-[#0A1529] ">FAQ</Link>
+          <Link href="/find" onClick={() => setIsMobileMenuOpen(false)} className="text-md text-[#0A1529] ">Find a Plug</Link>
+          <Link href="/become-a-plug" onClick={() => setIsMobileMenuOpen(false)} className="text-md text-[#0A1529] ">Become a Plug</Link>
         </div>
       )}
 
