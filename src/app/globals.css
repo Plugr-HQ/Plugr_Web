@@ -1,1 +1,17 @@
 @import "tailwindcss";
+
+@theme {
+    /* Colors */
+    --color-midnight: #0F1F3D;
+    --color-deep-blue: #162952;
+    --color-gold: #E8A020;
+    --color-gold-light: #F5C86A;
+    --color-bone: #F5F1EC;
+    --color-ink: #1A1A1F;
+    --color-steel-blue: #7A9CC8;
+    --color-slate: #8A9DB0;
+
+    /* Fonts */
+    --font-display: 'Clash Display', sans-serif;
+    --font-body: 'Satoshi', sans-serif;
+}
