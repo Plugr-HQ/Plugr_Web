@@ -61,20 +61,20 @@ export default function FindPlugPage() {
   })
 
   return (
-    <main className="flex flex-col min-h-screen bg-bone">
+    <main className="flex px-6 flex-col min-h-screen bg-bone">
       <Navbar />
       {/* Main Heading with split color accents */}
-      <h1 className="text-3xl p-6 font-display font-black max-w-md mt-10">
+      <h1 className="text-3xl pt-12 font-display font-black max-w-md mt-10">
         Find a <span className="text-midnight">verified</span>{' '}
         <span className="text-gold">Verified Plug.</span>
       </h1>
 
       {/* Subtitle Paragraph */}
-      <p className="px-6 py-1 text-slate text-base md:text-lg font-normal leading-relaxed max-w-sm">
+      <p className=" py-1 text-slate text-base md:text-lg font-normal leading-relaxed max-w-sm">
         Plugr doesn't promise you jobs. It gives you the edge to earn them.
       </p>
 
-      <div className="relative bg-white rounded-lg px-4 my-6 py-2.5 w-[85%] max-w-7xl flex items-center gap-2 mx-auto text-[14px]">
+      <div className="w-full bg-white rounded-lg px-4 my-6 py-3 flex items-center gap-2 mx-auto text-[14px]">
         <Search className="text-slate w-4 h-4" />
         <input
           type="text"
@@ -86,10 +86,10 @@ export default function FindPlugPage() {
       </div>
 
       {/* Filters & Content */}
-      <div className="max-w-7xl mx-auto w-full px-6 no-scrollbar">
+      <div className="w-full mx-auto w-full no-scrollbar">
 
         {/* Category Chips & Dropdown Wrapper */}
-        <div className="relative flex items-center gap-2 mb-8 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-2 py-1 mb-8 overflow-x-auto no-scrollbar">
           {fixedCategories.map((cat, i) => (
             <button
               key={i}

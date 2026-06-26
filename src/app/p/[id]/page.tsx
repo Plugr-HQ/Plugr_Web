@@ -1,8 +1,8 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Star, MessageSquare, CheckCircle2, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
-import Image from 'next/image'
 
 interface Review {
   id: string
@@ -12,7 +12,48 @@ interface Review {
   location: string
 }
 
+interface PlugProfile {
+  id: string
+  firstName: string
+  lastName: string
+  trade: string
+  city: string
+  phone: string
+  photoUrl: string
+  nin: string
+  ninVerified: boolean
+  livenessVerified: boolean
+}
+
 export default function PlugProfileDetails() {
+  const [plugProfile, setPlugProfile] = useState<PlugProfile | null>(null)
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('plugProfile')
+      if (raw) setPlugProfile(JSON.parse(raw))
+    } catch {
+      // ignore parse errors
+    }
+  }, [])
+
+  const displayName = plugProfile
+    ? `${plugProfile.firstName} ${plugProfile.lastName}`
+    : 'Oluwaseun Adewale'
+
+  const displayTrade = plugProfile
+    ? plugProfile.trade.charAt(0).toUpperCase() + plugProfile.trade.slice(1)
+    : 'Master Electrician'
+
+  const displayCity = plugProfile?.city || 'Lagos'
+  const displayPhone = plugProfile?.phone || ''
+
+  const avatarSrc = plugProfile?.photoUrl || ''
+
+  const displayAbout = plugProfile
+    ? `${plugProfile.firstName} is a verified ${plugProfile.trade} based in ${plugProfile.city}, Nigeria. Plugr-verified with confirmed identity, liveness check, and NIN validation. Available for residential and commercial jobs.`
+    : 'Over 8 years of experience in residential and commercial electrical systems across Ikeja and mainland Lagos. Specializing in fault finding, smart home integrations, and safe solar panel installations.'
+
   const skills = [
     "Fault Finding",
     "House Wiring",
@@ -53,14 +94,19 @@ export default function PlugProfileDetails() {
           {/* Profile Avatar Wrapper */}
           <div className="relative w-32 h-32 mb-5">
             {/* Main User Image */}
-            <div className="w-full h-full rounded-full overflow-hidden border-2 border-transparent bg-linear-to-b from-orange-400 to-amber-600 relative shadow-inner">
-              <Image
-                src="/images/test_avatar.jpg"
-                alt="Oluwaseun Adewale"
-                fill
-                className="object-cover object-top scale-105"
-                priority
-              />
+            <div className="w-full h-full rounded-full overflow-hidden border-2 border-transparent bg-gradient-to-b from-orange-400 to-amber-600 relative shadow-inner">
+              {avatarSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={avatarSrc}
+                  alt={displayName}
+                  className="w-full h-full object-cover object-top"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white text-4xl font-black">
+                  {displayName.charAt(0)}
+                </div>
+              )}
             </div>
 
             {/* Absolute Overlapping Verification Seal Badge */}
@@ -71,10 +117,15 @@ export default function PlugProfileDetails() {
 
           {/* Profile Details Name & Title */}
           <h2 className="text-xl font-black tracking-tight text-midnight mb-1">
-            Oluwaseun Adewale
+            {displayName}
           </h2>
-          <p className="text-slate/70 font-medium text-base mb-4">
-            Master Electrician
+          <p className="text-slate/70 font-medium text-base mb-1">
+            {displayTrade}
+          </p>
+          {/* City */}
+          <p className="flex items-center justify-center gap-1 text-xs text-slate/50 font-medium mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            {displayCity}, Nigeria
           </p>
 
           {/* Meta Status Badges Line */}
@@ -102,9 +153,7 @@ export default function PlugProfileDetails() {
             About
           </h4>
           <p className="text-sm md:text-base font-normal text-midnight leading-relaxed">
-            Over 8 years of experience in residential and commercial electrical systems
-            across Ikeja and mainland Lagos. Specializing in fault finding, smart home
-            integrations, and safe solar panel installations.
+            {displayAbout}
           </p>
         </div>
 
@@ -123,6 +172,13 @@ export default function PlugProfileDetails() {
                 </span>
               </li>
             ))}
+            {/* Phone number row */}
+            {displayPhone && (
+              <li className="flex items-center gap-3 pt-2 border-t border-slate-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EB9E27" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <span className="text-sm font-medium text-midnight font-mono tracking-wide">{displayPhone}</span>
+              </li>
+            )}
           </ul>
         </div>
 
