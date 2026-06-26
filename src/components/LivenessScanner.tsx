@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Camera, Check, Loader2, RefreshCw, AlertCircle, ShieldCheck } from 'lucide-react';
 
