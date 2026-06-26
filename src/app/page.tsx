@@ -1,14 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import Footer from '@/src/components/Footer';
+import Navbar from '@/src/components/Navbar';
 import {
-  CheckCircle2,
   ChevronRight,
   Star,
-  MapPin,
   ShieldCheck,
   Lock,
   Zap,
@@ -16,12 +14,6 @@ import {
   UserCheck,
   Clock,
   DollarSign,
-  Award,
-  Search,
-  Mail,
-  Phone,
-  Menu,
-  X,
 } from 'lucide-react';
 import { PlugCard, Plug } from '@/src/components/PlugCard';
 import { FaWhatsapp } from 'react-icons/fa';
@@ -40,44 +32,11 @@ const colors = {
 };
 
 export default function LandingPage() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
   return (
     <div className="min-h-screen font-sans" style={{ backgroundColor: colors.bone }}>
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 px-6 py-3 flex justify-between items-center bg-[#F5F1EC]/85">
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.svg" alt="Plugr Logo" width={90} height={45} />
-        </Link>
-        <div className="flex items-center gap-1.5 text-sm font-semibold text-[#0A1529]">
-          <Link href="/onboard" className="bg-[#DBA134] text-white px-4 py-2 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Use Plugr</Link>
-        </div>
-
-        <div className="hidden md:flex flex-row items-center gap-12 text-sm font-semibold text-[#0A1529]">
-          <Link href="#how-it-works" className="hover:text-[#DBA134] transition-colors">How it Works</Link>
-          <Link href="#trades" className="hover:text-[#DBA134] transition-colors">Trades</Link>
-          <Link href="#faq" className="hover:text-[#DBA134] transition-colors">FAQ</Link>
-          <Link href="/become-a-plug" className="hover:text-[#DBA134] transition-colors">Become a Plug</Link>
-
-        </div>
-        <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? <X className="w-6 h-6 text-[#0A1529]" /> : <Menu className="w-6 h-6 text-[#0A1529]" />}
-        </button>
-      </nav>
-
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div className="fixed top-[73px] right-0 bottom-0 w-[280px] z-40 h-fit rounded-3xl bg-white/50 backdrop-blur-md md:hidden flex flex-col p-6 gap-4 border-l border-gray-100 shadow-2xl animate-in slide-in-from-top-10 duration-1000">
-          <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-md text-[#0A1529] ">How it Works</Link>
-          <Link href="#trades" onClick={() => setIsMobileMenuOpen(false)} className="text-md text-[#0A1529] ">Trades</Link>
-          <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="text-md text-[#0A1529] ">FAQ</Link>
-          <Link href="/find" onClick={() => setIsMobileMenuOpen(false)} className="text-md text-[#0A1529] ">Find a Plug</Link>
-          <Link href="/become-a-plug" onClick={() => setIsMobileMenuOpen(false)} className="text-md text-[#0A1529] ">Become a Plug</Link>
-        </div>
-      )}
-
+      <Navbar />
       {/* Hero Section */}
-      <section className="px-6 max-w-4xl mx-auto text-left" style={{ backgroundColor: colors.bone }}>
+      <section className="px-6 py-8 max-w-4xl mx-auto text-left" style={{ backgroundColor: colors.bone }}>
         <div className="space-y-6 pt-16 pb-10">
           <h1 className="text-[32px] font-bold md:text-7xl font-black text-[#162952]">
             Hire Verified Artisans you can actually <br></br>
@@ -99,11 +58,11 @@ export default function LandingPage() {
 
       {/* Trust Badges */}
       <div className="">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="w-full mx-auto px-6 py-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-4">
 
             {/* NIN Verified */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <div className="shrink-0">
                 <UserCheck className="w-5 h-5 text-[#E8A020]" />
               </div>
@@ -113,7 +72,7 @@ export default function LandingPage() {
             </div>
 
             {/* Escrow Protected */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <div className="shrink-0">
                 <Lock className="w-5 h-5 text-[#E8A020]" />
               </div>
@@ -123,7 +82,7 @@ export default function LandingPage() {
             </div>
 
             {/* Rated & Reviewed */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <div className="shrink-0">
                 <Star className="w-5 h-5 text-[#E8A020]" />
               </div>
@@ -133,7 +92,7 @@ export default function LandingPage() {
             </div>
 
             {/* WhatsApp Features */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <div className="shrink-0">
                 <FaWhatsapp className="w-5 h-5 text-[#E8A020]" />
               </div>
