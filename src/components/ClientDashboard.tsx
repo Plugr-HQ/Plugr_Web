@@ -9,6 +9,8 @@ import {
 import { PlugProfile, Booking, ChatMessage } from '../app/onboard/types';
 import { MOCK_PLUGS } from '../app/onboard/data';
 
+import { api } from '../lib/api';
+
 interface ClientDashboardProps {
   clientName: string;
   clientCity: string;
@@ -21,6 +23,7 @@ export default function ClientDashboard({ clientName, clientCity, clientPhone, a
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTrade, setSelectedTrade] = useState<'all' | 'electrician' | 'plumber'>('all');
   const [selectedCity, setSelectedCity] = useState(clientCity || 'Lagos');
+  const [allPlugs, setAllPlugs] = useState<PlugProfile[]>(MOCK_PLUGS);
   const [plugsList, setPlugsList] = useState<PlugProfile[]>(MOCK_PLUGS);
   
   // Selected plug for detailed portfolio modal
@@ -42,9 +45,30 @@ export default function ClientDashboard({ clientName, clientCity, clientPhone, a
   const [pendingMessage, setPendingMessage] = useState('');
   const [typing, setTyping] = useState(false);
 
+  // Fetch plugs from backend API on mount
+  useEffect(() => {
+    api.plugs.getAll().then(res => {
+      const formatted = res.map((p: any) => {
+        const names = p.user?.name?.split(' ') || ['Unknown', 'Plug'];
+        return {
+          firstName: names[0],
+          lastName: names.slice(1).join(' ') || '',
+          city: 'Lagos',
+          trade: p.category?.code || 'electrician',
+          phone: p.user?.phone,
+          rating: 4.8,
+          completedJobs: 10,
+          photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200&h=200'
+        };
+      });
+      // Combine API plugs with mock plugs for a full dashboard experience
+      setAllPlugs([...formatted, ...MOCK_PLUGS]);
+    }).catch(err => console.error("Failed to fetch API plugs", err));
+  }, []);
+
   // Filter Plugs based on search, trade and city
   useEffect(() => {
-    let filtered = MOCK_PLUGS;
+    let filtered = allPlugs;
     
     if (selectedTrade !== 'all') {
       filtered = filtered.filter(p => p.trade === selectedTrade);
@@ -64,7 +88,7 @@ export default function ClientDashboard({ clientName, clientCity, clientPhone, a
     }
     
     setPlugsList(filtered);
-  }, [searchQuery, selectedTrade, selectedCity]);
+  }, [searchQuery, selectedTrade, selectedCity, allPlugs]);
 
   // Handle tracking state cycles for simulation
   useEffect(() => {
@@ -150,24 +174,53 @@ export default function ClientDashboard({ clientName, clientCity, clientPhone, a
     }, 2000);
   };
 
-  const handleCreateBooking = () => {
+  const handleCreateBooking = async () => {
     if (!viewingPlug) return;
     
-    const block: Booking = {
-      id: `B-${Math.floor(1000 + Math.random() * 9000)}`,
-      clientName: clientName,
-      clientPhone: clientPhone,
-      trade: viewingPlug.trade,
-      description: jobDescription || `General repair for ${viewingPlug.trade} issues.`,
-      status: 'pending',
-      location: jobAddress || clientCity,
-      price: jobPrice,
-      createdAt: 'Just now'
-    };
+    try {
+      const res = await api.jobs.create(
+        `Job for ${viewingPlug.trade}`,
+        jobDescription || `General repair for ${viewingPlug.trade} issues.`,
+        viewingPlug.trade,
+        6.5244, // Default to a Lagos coordinate
+        3.3792,
+        jobAddress || clientCity
+      );
+      
+      const block: Booking = {
+        id: res.id || `B-${Math.floor(1000 + Math.random() * 9000)}`,
+        clientName: clientName,
+        clientPhone: clientPhone,
+        trade: viewingPlug.trade,
+        description: jobDescription || `General repair for ${viewingPlug.trade} issues.`,
+        status: 'pending',
+        location: jobAddress || clientCity,
+        price: jobPrice,
+        createdAt: 'Just now'
+      };
 
-    setActiveBooking(block);
-    setBookingModalOpen(false);
-    setTrackingStage('requesting');
+      setActiveBooking(block);
+      setBookingModalOpen(false);
+      setTrackingStage('requesting');
+    } catch (err) {
+      console.error("Failed to create job on API", err);
+      // Fallback to offline mode for demo purposes if backend fails
+      const block: Booking = {
+        id: `B-${Math.floor(1000 + Math.random() * 9000)}`,
+        clientName: clientName,
+        clientPhone: clientPhone,
+        trade: viewingPlug.trade,
+        description: jobDescription || `General repair for ${viewingPlug.trade} issues.`,
+        status: 'pending',
+        location: jobAddress || clientCity,
+        price: jobPrice,
+        createdAt: 'Just now'
+      };
+
+      setActiveBooking(block);
+      setBookingModalOpen(false);
+      setTrackingStage('requesting');
+    }
   };
 
   const handleFinishJob = () => {

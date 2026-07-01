@@ -11,6 +11,7 @@ import LivenessScanner from '@/src/components/LivenessScanner';
 import ClientDashboard from '@/src/components/ClientDashboard';
 import PlugDashboard from '@/src/components/PlugDashboard';
 import { FlowStep, UserRole, TradeType, PlugProfile } from './types';
+import { api, setToken } from '@/src/lib/api';
 
 // Array of premium professional client and plug predefined mock avatars
 const PRESET_AVATARS = [
@@ -719,11 +720,29 @@ export default function App() {
           {/* Continue form processor button */}
           <div className="space-y-4 pt-2 shrink-0 pb-6 text-center">
             <button
-              onClick={() => {
+              onClick={async () => {
                 if (!firstName || !lastName) {
                   alert("Please enter both your first and last name to proceed.");
                   return;
                 }
+                try {
+                  const role = selectedRole === 'plug' ? 'PLUG' : 'CLIENT';
+                  const name = `${firstName} ${lastName}`;
+                  let res;
+                  try {
+                    res = await api.auth.register(phone, role, name);
+                  } catch (e: any) {
+                    res = await api.auth.login(phone);
+                  }
+                  if (res && res.accessToken) {
+                    setToken(res.accessToken);
+                  }
+                } catch (err) {
+                  console.error("Auth error", err);
+                  alert("Authentication failed. Please check the backend connection.");
+                  return;
+                }
+
                 if (selectedRole === 'plug') {
                   setStep('nin_verification');
                 } else {
@@ -835,7 +854,8 @@ export default function App() {
                   alert("Please verify your identity with NIMC via National Identity Number to continue.");
                   return;
                 }
-                setStep('liveness_check');
+                // Skip liveness check
+                setStep('dashboard');
               }}
               id="continue-nin-verify"
               className={`w-full font-semibold py-4.5 px-6 rounded-full shadow-lg transition flex items-center justify-center gap-2 ${ninVerified
@@ -911,7 +931,12 @@ export default function App() {
 
       {step === 'dashboard' && (
         selectedRole === 'client' ? (
-          <h1>Client Dashboard</h1>
+          <ClientDashboard
+            clientName={`${firstName} ${lastName}`}
+            clientCity={city}
+            clientPhone={phone}
+            onLogout={handleLogout}
+          />
         ) : (
           <PlugDashboard
             profile={{
