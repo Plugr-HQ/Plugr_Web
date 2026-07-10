@@ -1,6 +1,8 @@
 // app/privacy/page.tsx
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import Navbar from '@/src/components/Navbar';
+import Footer from '@/src/components/Footer';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Plugr',
@@ -10,8 +12,9 @@ export const metadata: Metadata = {
 export default function PrivacyPolicyPage() {
   return (
     <main className="min-h-screen bg-[#F5F1EC]">
+      <Navbar />
       {/* Header */}
-      <div className="bg-[#0F1F3D] py-16 px-6">
+      <div className="bg-[#0F1F3D] pt-28 pb-16 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold text-white mb-3">Plugr</h1>
           <h2 className="text-2xl font-semibold text-[#D4C5A0] mb-2">Privacy Policy</h2>
@@ -282,16 +285,8 @@ export default function PrivacyPolicyPage() {
           </div>
         </Section>
 
-        {/* Footer */}
-        <div className="border-t border-[#E0E0E0] mt-12 pt-6 text-center">
-          <p className="text-[#999] text-xs">
-            © 2026 Plugr Technologies Limited. All rights reserved.&nbsp;|&nbsp;
-            This document is subject to change.&nbsp;|&nbsp;
-            <a href="/privacy" className="hover:text-[#E8A020] transition">getplugr.com/privacy</a>
-          </p>
-        </div>
-
       </div>
+      <Footer />
     </main>
   );
 }

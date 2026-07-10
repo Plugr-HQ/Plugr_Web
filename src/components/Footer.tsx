@@ -42,7 +42,7 @@ function Footer() {
             <h5 className="uppercase text-xs tracking-widest text-[white] mb-6 font-bold">Legal</h5>
             <ul className="space-y-4 font-medium text-gray-400">
               <li><Link href="#" className="hover:text-white transition-colors">Terms of Service</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link href="#" className="hover:text-white transition-colors">Dispute Policy</Link></li>
             </ul>
           </div>

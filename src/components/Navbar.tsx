@@ -15,7 +15,8 @@ export function Navbar() {
 
           <Image src="/logo.svg" alt="Plugr Logo" fill className="bg-cover" />
         </Link>
-        <div className="flex items-center gap-1.5 text-sm font-semibold text-[#0A1529]">
+        <div className="flex items-center gap-4 text-sm font-semibold text-[#0A1529]">
+          <Link href="/privacy" className="hover:text-[#DBA134] transition-colors hidden md:inline">Privacy</Link>
           <Link href="/onboard" className="bg-[#DBA134] text-white px-4 py-2 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Use Plugr</Link>
         </div>
         <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
@@ -39,6 +40,13 @@ export function Navbar() {
               className="w-full py-3 text-center border-2 border-[#0A1529] text-[#0A1529] rounded-full font-bold text-sm"
             >
               Find A Plug
+            </Link>
+            <Link
+              href="/privacy"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-full py-3 text-center border-2 border-[#0A1529] text-[#0A1529] rounded-full font-bold text-sm"
+            >
+              Privacy Policy
             </Link>
             <Link
               href="/become-a-plug"
