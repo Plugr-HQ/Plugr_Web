@@ -52,13 +52,3 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
 }
-interface JobRequest {
-  id: string;
-  clientName: string;
-  clientPhone: string;
-  trade: TradeType;
-  description: string;
-  location: string;
-  status: 'pending' | 'accepted' | 'declined';
-  createdAt: string;
-}
