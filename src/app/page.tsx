@@ -16,6 +16,7 @@ import {
   BadgeCheck,
   Zap,
   Droplet,
+  Hammer,
   ChevronRight,
   ArrowRight,
   Menu,
@@ -31,6 +32,7 @@ const IMG = {
   hero: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1000&h=1200&fit=crop&q=80&auto=format',
   electrician: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=700&h=460&fit=crop&q=80&auto=format',
   plumber: 'https://images.unsplash.com/photo-1676210133055-eab6ef033ce3?w=700&h=460&fit=crop&q=80&auto=format',
+  furniture: 'https://images.unsplash.com/photo-1631396326646-c06a935ff3a6?w=700&h=460&fit=crop&q=80&auto=format',
 };
 
 const NAV_LINKS = [
@@ -123,8 +125,11 @@ export default function LandingPage() {
               </a>
             ))}
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/demo" className="hidden sm:inline-flex items-center gap-1.5 rounded-pill bg-gold text-midnight text-sm font-bold px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all">
+          <div className="flex items-center gap-4">
+            <Link href="/demo" className="hidden md:inline-flex text-sm font-semibold text-midnight/70 hover:text-gold transition-colors">
+              Try demo
+            </Link>
+            <Link href="/app" className="inline-flex items-center gap-1.5 rounded-pill bg-gold text-midnight text-sm font-bold px-4 sm:px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all">
               Use Plugr <ArrowRight className="w-4 h-4" />
             </Link>
             <button className="md:hidden text-midnight" onClick={() => setMenuOpen((o) => !o)} aria-label="Menu">
@@ -139,8 +144,8 @@ export default function LandingPage() {
                 {l.label}
               </a>
             ))}
-            <Link href="/demo" className={btnGold + ' mt-2'}>
-              Use Plugr <ArrowRight className="w-4 h-4" />
+            <Link href="/demo" onClick={() => setMenuOpen(false)} className="text-midnight font-semibold py-1">
+              Try demo
             </Link>
           </div>
         )}
@@ -161,11 +166,16 @@ export default function LandingPage() {
               professional identity verification, and a WhatsApp-native job flow.
             </motion.p>
             <motion.div variants={heroItem} className="mt-8 flex flex-col sm:flex-row gap-3">
-              <Link href="/demo/browse" className={btnGold}>
+              <Link href="/app/browse" className={btnGold}>
                 Book a Plug <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link href="/demo/auth/plug" className={btnAlt}>
+              <Link href="/app/onboarding" className={btnAlt}>
                 Become a Plug
+              </Link>
+            </motion.div>
+            <motion.div variants={heroItem} className="mt-4">
+              <Link href="/demo" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate hover:text-gold transition-colors">
+                Just exploring? Try the interactive demo <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </motion.div>
             <motion.div variants={heroItem} className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-4">
@@ -290,10 +300,11 @@ export default function LandingPage() {
             <Eyebrow>What we fix</Eyebrow>
             <h2 className="mt-4 font-display text-[2.5rem] md:text-[3rem] leading-[1.02] text-midnight">Your trade, covered.</h2>
           </Reveal>
-          <div className="mt-12 grid md:grid-cols-2 gap-4">
+          <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               { img: IMG.electrician, icon: <Zap className="w-5 h-5" />, title: 'Electrician', body: 'Wiring, sockets, faults, lighting, and general electrical maintenance.', cta: 'Find an electrician' },
               { img: IMG.plumber, icon: <Droplet className="w-5 h-5" />, title: 'Plumber', body: 'Pipes, leaks, fixtures, water heaters, and drainage solutions.', cta: 'Find a plumber' },
+              { img: IMG.furniture, icon: <Hammer className="w-5 h-5" />, title: 'Furniture', body: 'Custom furniture, wardrobes, cabinets, repairs, and finishing.', cta: 'Find a furniture maker' },
             ].map((t, i) => (
               <Reveal key={t.title} delay={i * 0.1}>
                 <div className="group rounded-[24px] overflow-hidden bg-bone border border-midnight/[0.06] hover:border-gold/40 transition-colors">
@@ -304,7 +315,7 @@ export default function LandingPage() {
                   <div className="p-7">
                     <h3 className="font-display text-2xl text-midnight">{t.title}</h3>
                     <p className="mt-2 text-sm text-slate leading-relaxed">{t.body}</p>
-                    <Link href="/demo/browse" className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-gold hover:gap-2.5 transition-all">
+                    <Link href="/app/browse" className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-gold hover:gap-2.5 transition-all">
                       {t.cta} <ChevronRight className="w-4 h-4" />
                     </Link>
                   </div>
@@ -325,7 +336,7 @@ export default function LandingPage() {
                 <Eyebrow>Meet the Plugs</Eyebrow>
                 <h2 className="mt-4 font-display text-[2.5rem] md:text-[3rem] leading-[1.02] text-midnight">Real people. Verified.</h2>
               </div>
-              <Link href="/demo/browse" className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-midnight hover:text-gold transition-colors shrink-0">
+              <Link href="/app/browse" className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-midnight hover:text-gold transition-colors shrink-0">
                 Browse all <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -350,7 +361,7 @@ export default function LandingPage() {
                   <div className="mt-1.5 flex items-center gap-1 text-sm text-midnight font-semibold">
                     <Star className="w-3.5 h-3.5 fill-gold text-gold" /> {p.rating.toFixed(1)}
                   </div>
-                  <Link href="/demo/browse" className="mt-5 flex items-center justify-center gap-1.5 rounded-pill bg-gold text-midnight text-sm font-bold py-2.5 hover:bg-gold-light active:scale-[0.98] transition-all">
+                  <Link href="/app/browse" className="mt-5 flex items-center justify-center gap-1.5 rounded-pill bg-gold text-midnight text-sm font-bold py-2.5 hover:bg-gold-light active:scale-[0.98] transition-all">
                     Request this Plug
                   </Link>
                 </div>
@@ -374,7 +385,7 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
-            <Link href="/demo/browse" className={btnGold + ' mt-8'}>
+            <Link href="/app/browse" className={btnGold + ' mt-8'}>
               Book a Plug <ArrowRight className="w-4 h-4" />
             </Link>
           </Reveal>
@@ -420,7 +431,7 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
-            <Link href="/demo/auth/plug" className={btnGold + ' mt-10 w-full sm:w-auto'}>
+            <Link href="/app/onboarding" className={btnGold + ' mt-10 w-full sm:w-auto'}>
               Become a Plug <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -456,10 +467,10 @@ export default function LandingPage() {
           <h2 className="font-display text-[3rem] md:text-[4rem] leading-[0.98] text-midnight">Ready to find your Plug?</h2>
           <p className="mt-3 text-slate font-semibold">Ikeja, Lagos.</p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/demo/browse" className={btnGold}>
+            <Link href="/app/browse" className={btnGold}>
               Book a Plug <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link href="/demo/auth/plug" className={btnAlt}>
+            <Link href="/app/onboarding" className={btnAlt}>
               Become a Plug
             </Link>
           </div>
@@ -487,9 +498,9 @@ export default function LandingPage() {
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/50 mb-4">Quick links</p>
             <ul className="space-y-2.5 text-sm text-steel-blue">
               <li><a href="#how" className="hover:text-gold transition-colors">How it works</a></li>
-              <li><Link href="/demo/browse" className="hover:text-gold transition-colors">Book a Plug</Link></li>
-              <li><Link href="/demo/auth/plug" className="hover:text-gold transition-colors">Become a Plug</Link></li>
-              <li><Link href="/demo" className="hover:text-gold transition-colors">Use Plugr</Link></li>
+              <li><Link href="/app/browse" className="hover:text-gold transition-colors">Book a Plug</Link></li>
+              <li><Link href="/app/onboarding" className="hover:text-gold transition-colors">Become a Plug</Link></li>
+              <li><Link href="/app/browse" className="hover:text-gold transition-colors">Use Plugr</Link></li>
             </ul>
           </div>
           <div>
