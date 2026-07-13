@@ -23,6 +23,7 @@ export default function PayPage() {
   const [error, setError] = useState<string | null>(null);
   const [paid, setPaid] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [simulating, setSimulating] = useState(false);
   const started = useRef(false);
 
   // Generate the virtual account once on mount.
@@ -142,6 +143,38 @@ export default function PayPage() {
             We’re polling ALATPay every 3s — this flips on its own. Account valid 24h; on stage, pay from the pre-funded
             test account.
           </p>
+
+          <Divider className="my-5" />
+
+          <button
+            onClick={async () => {
+              if (simulating) return;
+              setSimulating(true);
+              setError(null);
+              try {
+                const res = await jsonFetch(`/api/jobs/${jobId}/check-status?simulate=true`);
+                if (res.status === 'paid_escrow') {
+                  setPaid(true);
+                } else {
+                  setError("Simulation completed but job status is: " + res.status);
+                }
+              } catch (e: any) {
+                setError("Failed to simulate payment: " + e.message);
+              } finally {
+                setSimulating(false);
+              }
+            }}
+            disabled={simulating}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-pill border border-dashed border-gold/40 hover:border-gold hover:bg-gold/5 disabled:opacity-50 disabled:pointer-events-none transition-all text-[13px] font-bold text-midnight py-3.5 cursor-pointer"
+          >
+            {simulating ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Simulating payment...
+              </>
+            ) : (
+              "Simulate Sandbox Payment (Bypass)"
+            )}
+          </button>
         </Card>
       ) : (
         !error && (

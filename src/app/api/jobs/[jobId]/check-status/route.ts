@@ -22,6 +22,23 @@ export async function GET(
     return NextResponse.json({ status: 'paid_escrow', note: 'already paid' });
   }
 
+  const { searchParams } = new URL(_request.url);
+  const simulate = searchParams.get('simulate') === 'true';
+
+  if (simulate) {
+    const mockTxId = `sim_${job.id}_${Date.now()}`;
+    await q(
+      `insert into hack_transactions
+         (alatpay_transaction_id, job_id, amount, type, status, raw_webhook_payload)
+       values ($1, $2, $3, 'collection', 'successful', $4)
+       on conflict (alatpay_transaction_id) where alatpay_transaction_id is not null
+       do update set status = 'successful'`,
+      [mockTxId, job.id, job.amount ?? 0, JSON.stringify({ simulated: true })]
+    );
+    await q("update hack_jobs set status = 'paid_escrow' where id = $1", [job.id]);
+    return NextResponse.json({ status: 'paid_escrow', verified: true, simulated: true });
+  }
+
   const tx = await one(
     `select id, alatpay_transaction_id, status from hack_transactions
      where job_id = $1 and alatpay_transaction_id is not null

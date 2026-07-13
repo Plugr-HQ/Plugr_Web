@@ -69,36 +69,39 @@ export default function BrowseClient({ plugs, configError }: { plugs: HackPlug[]
 
       <div className="space-y-3">
         {filtered.map((plug, i) => (
-          <Link key={plug.id} href={`/demo/book/${plug.id}`} className={cn('block group', `demo-rise demo-rise-${Math.min(i + 1, 4)}`)}>
-            <Card className="p-4 transition-all group-hover:border-gold/40 group-hover:-translate-y-0.5">
-              <div className="flex items-center gap-4">
-                <div className="relative shrink-0">
-                  <div className="grid place-items-center h-14 w-14 rounded-2xl bg-midnight text-white font-display text-xl">
-                    {plug.name?.[0] ?? '?'}
-                  </div>
-                  {plug.verified && (
-                    <span className="absolute -bottom-1 -right-1 grid place-items-center h-6 w-6 rounded-full bg-bone">
-                      <BadgeCheck className="w-5 h-5 text-gold fill-gold/20" />
-                    </span>
-                  )}
+          <Card key={plug.id} className={cn('p-4', `demo-rise demo-rise-${Math.min(i + 1, 4)}`)}>
+            <div className="flex items-center gap-4">
+              <div className="relative shrink-0">
+                <div className="grid place-items-center h-14 w-14 rounded-2xl bg-midnight text-white font-display text-xl">
+                  {plug.name?.[0] ?? '?'}
                 </div>
-
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-midnight truncate">{plug.name}</h3>
-                  <p className="text-sm text-slate capitalize">{plug.trade}</p>
-                  <div className="flex items-center gap-3 mt-1.5 text-xs">
-                    <span className="inline-flex items-center gap-1 text-midnight font-semibold">
-                      <Star className="w-3.5 h-3.5 fill-gold text-gold" />
-                      {Number(plug.rating).toFixed(1)}
-                    </span>
-                    <span className="text-slate">{plug.jobs_completed} jobs done</span>
-                  </div>
-                </div>
-
-                <ArrowUpRight className="w-5 h-5 text-slate/50 group-hover:text-gold transition-colors shrink-0" />
+                {plug.verified && (
+                  <span className="absolute -bottom-1 -right-1 grid place-items-center h-6 w-6 rounded-full bg-bone">
+                    <BadgeCheck className="w-5 h-5 text-gold fill-gold/20" />
+                  </span>
+                )}
               </div>
-            </Card>
-          </Link>
+
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-midnight truncate">{plug.name}</h3>
+                <p className="text-sm text-slate capitalize">{plug.trade}</p>
+                <div className="flex items-center gap-3 mt-1.5 text-xs">
+                  <span className="inline-flex items-center gap-1 text-midnight font-semibold">
+                    <Star className="w-3.5 h-3.5 fill-gold text-gold" />
+                    {Number(plug.rating).toFixed(1)}
+                  </span>
+                  <span className="text-slate">{plug.jobs_completed} jobs done</span>
+                </div>
+              </div>
+            </div>
+
+            <Link
+              href={`/demo/auth/client/${plug.id}`}
+              className="mt-4 flex items-center justify-center gap-1.5 rounded-pill bg-gold text-midnight text-sm font-bold py-2.5 hover:bg-gold-light transition-colors"
+            >
+              Request this Plug <ArrowUpRight className="w-4 h-4" />
+            </Link>
+          </Card>
         ))}
       </div>
     </Shell>

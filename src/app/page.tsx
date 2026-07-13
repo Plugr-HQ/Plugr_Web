@@ -1,430 +1,510 @@
+// src/app/page.tsx
+// Plugr landing (hackathon build). Premium bone light-mode marketing page with scroll
+// animations (motion), gold-fill CTAs, and photography. "Use Plugr" (top-right) -> /demo.
+
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import Footer from '@/src/components/Footer';
+import { motion, useReducedMotion, type Variants } from 'motion/react';
 import {
-  CheckCircle2,
-  ChevronRight,
-  Star,
-  MapPin,
   ShieldCheck,
+  Star,
+  UserCheck,
   Lock,
+  Clock,
+  BadgeCheck,
   Zap,
   Droplet,
-  UserCheck,
-  Clock,
-  DollarSign,
-  Award,
-  Search,
-  Mail,
-  Phone,
+  ChevronRight,
+  ArrowRight,
   Menu,
   X,
+  Plus,
+  Mail,
+  Phone,
 } from 'lucide-react';
-import { PlugCard, Plug } from '@/src/components/PlugCard';
 import { FaWhatsapp } from 'react-icons/fa';
+import { PlugrWordmark, PlugrMark } from '@/src/components/Brand';
 
-// Common colors based on screenshots
-const colors = {
-  midnightblue: '#0F1F3D',
-  deepblue: '#162952',
-  gold: '#E8A020',
-  lightGold: '#F5C86A',
-  ink: '1A1A1F',
-  slate: '#8A9DB0',
-  bone: '#F5F1EC',
-  steelBlue: '#7A9CC8',
-  white: '#FFFFFF',
+const IMG = {
+  hero: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1000&h=1200&fit=crop&q=80&auto=format',
+  electrician: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=700&h=460&fit=crop&q=80&auto=format',
+  plumber: 'https://images.unsplash.com/photo-1676210133055-eab6ef033ce3?w=700&h=460&fit=crop&q=80&auto=format',
+};
+
+const NAV_LINKS = [
+  { label: 'How it works', href: '#how' },
+  { label: 'Why Plugr', href: '#why' },
+  { label: 'Trades', href: '#trades' },
+  { label: 'FAQ', href: '#faq' },
+];
+
+const STEPS = [
+  { n: '01', title: 'Find a verified Plug', body: 'Browse by trade, see badge and rating.' },
+  { n: '02', title: 'Book and pay safely', body: 'Job confirmed, payment secured in escrow.' },
+  { n: '03', title: "Job done, you're protected", body: 'Release payment when satisfied — 24hr dispute window.' },
+];
+
+const REASONS = [
+  { title: 'Your money is protected', body: "Payments are held in escrow until you're happy." },
+  { title: 'Vetted experts only', body: 'Strict NIN, BVN, and liveness verification for every artisan.' },
+  { title: 'Something goes wrong?', body: '24hr dispute window and dedicated ops support.' },
+  { title: 'Guaranteed quality', body: 'Every job comes with a 30-day fault guarantee.' },
+  { title: 'Transparent pricing', body: 'Full quote before work starts. Zero surprises.' },
+];
+
+const PLUGS = [
+  { name: 'Tunde Adebayo', trade: 'Electrician', rating: 4.9, status: 'Available', photo: 'https://images.unsplash.com/photo-1562173650-f61426fbe683?w=240&h=240&fit=crop&crop=faces&q=75&auto=format' },
+  { name: 'Emeka Nwosu', trade: 'Plumber', rating: 5.0, status: 'Available', photo: 'https://images.unsplash.com/photo-1657356217673-4f7000f768b4?w=240&h=240&fit=crop&crop=faces&q=75&auto=format' },
+  { name: 'Chidinma Okeke', trade: 'Electrician', rating: 4.7, status: 'Busy', photo: 'https://images.unsplash.com/photo-1613876215075-276fd62c89a4?w=240&h=240&fit=crop&crop=faces&q=75&auto=format' },
+];
+
+const FAQS = [
+  { q: 'How do I pay?', a: 'You pay into escrow via bank transfer to a one-time account. Funds are held securely and only released to the Plug once you confirm the job is done.' },
+  { q: "What if I'm not satisfied?", a: 'You have a 24-hour dispute window after completion. Raise a dispute and our ops team steps in before any funds are released.' },
+  { q: 'How are Plugs verified?', a: 'Every Plug passes NIN and BVN checks plus a liveness scan before they can receive jobs — so you always know who you’re hiring.' },
+];
+
+// Gold = primary. Midnight (solid) = the alternate when two sit side by side.
+const btnGold =
+  'inline-flex items-center justify-center gap-2 rounded-pill bg-gold text-midnight font-bold px-7 py-4 hover:bg-gold-light active:scale-[0.98] transition-all shadow-[0_14px_32px_-16px_rgba(232,160,32,0.75)]';
+const btnAlt =
+  'inline-flex items-center justify-center gap-2 rounded-pill bg-midnight text-white font-bold px-7 py-4 hover:bg-deep-blue active:scale-[0.98] transition-all';
+
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-gold">
+      <span className="h-px w-6 bg-gold/50" />
+      {children}
+    </span>
+  );
+}
+
+function Reveal({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  const reduce = useReducedMotion();
+  return (
+    <motion.div
+      className={className}
+      initial={reduce ? false : { opacity: 0, y: 26 }}
+      whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.6, ease: [0.2, 0.7, 0.2, 1], delay }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+const heroContainer: Variants = { hidden: {}, show: { transition: { staggerChildren: 0.09 } } };
+const heroItem: Variants = {
+  hidden: { opacity: 0, y: 22 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.2, 0.7, 0.2, 1] } },
 };
 
 export default function LandingPage() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const reduce = useReducedMotion();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   return (
-    <div className="min-h-screen font-sans" style={{ backgroundColor: colors.bone }}>
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 px-6 py-3 flex justify-between items-center bg-[#F5F1EC]/85">
-        <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.svg" alt="Plugr Logo" width={90} height={45} />
-        </Link>
-        <div className="flex items-center gap-1.5 text-sm font-semibold text-[#0A1529]">
-          <Link href="/onboard" className="bg-[#DBA134] text-white px-4 py-2 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Use Plugr</Link>
+    <div className="min-h-screen bg-bone text-midnight font-body antialiased overflow-x-hidden">
+      {/* ---------------------------------------------------------------- Nav */}
+      <nav className="fixed top-0 inset-x-0 z-50 bg-bone/80 backdrop-blur border-b border-midnight/[0.06]">
+        <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+          {/* Plain anchor (not next/link) so every click does a full reload of the main page */}
+          <a href="/" className="flex items-center">
+            <PlugrWordmark className="h-6 text-midnight" />
+          </a>
+          <div className="hidden md:flex items-center gap-9 text-sm font-semibold text-midnight/80">
+            {NAV_LINKS.map((l) => (
+              <a key={l.href} href={l.href} className="hover:text-gold transition-colors">
+                {l.label}
+              </a>
+            ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/demo" className="hidden sm:inline-flex items-center gap-1.5 rounded-pill bg-gold text-midnight text-sm font-bold px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all">
+              Use Plugr <ArrowRight className="w-4 h-4" />
+            </Link>
+            <button className="md:hidden text-midnight" onClick={() => setMenuOpen((o) => !o)} aria-label="Menu">
+              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
-
-        <div className="hidden md:flex flex-row items-center gap-12 text-sm font-semibold text-[#0A1529]">
-          <Link href="#how-it-works" className="hover:text-[#DBA134] transition-colors">How it Works</Link>
-          <Link href="#trades" className="hover:text-[#DBA134] transition-colors">Trades</Link>
-          <Link href="#faq" className="hover:text-[#DBA134] transition-colors">FAQ</Link>
-          <Link href="/become-a-plug" className="hover:text-[#DBA134] transition-colors">Become a Plug</Link>
-
-        </div>
-        <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? <X className="w-6 h-6 text-[#0A1529]" /> : <Menu className="w-6 h-6 text-[#0A1529]" />}
-        </button>
+        {menuOpen && (
+          <div className="md:hidden px-5 pb-5 pt-2 flex flex-col gap-3 border-t border-midnight/[0.06] bg-bone">
+            {NAV_LINKS.map((l) => (
+              <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)} className="text-midnight font-semibold py-1">
+                {l.label}
+              </a>
+            ))}
+            <Link href="/demo" className={btnGold + ' mt-2'}>
+              Use Plugr <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
       </nav>
 
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div className="fixed top-[73px] right-0 bottom-0 w-[280px] z-40 h-fit rounded-3xl bg-white/50 backdrop-blur-md md:hidden flex flex-col p-6 gap-4 border-l border-gray-100 shadow-2xl animate-in slide-in-from-top-10 duration-1000">
-          <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-md text-[#0A1529] ">How it Works</Link>
-          <Link href="#trades" onClick={() => setIsMobileMenuOpen(false)} className="text-md text-[#0A1529] ">Trades</Link>
-          <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="text-md text-[#0A1529] ">FAQ</Link>
-          <Link href="/find" onClick={() => setIsMobileMenuOpen(false)} className="text-md text-[#0A1529] ">Find a Plug</Link>
-          <Link href="/become-a-plug" onClick={() => setIsMobileMenuOpen(false)} className="text-md text-[#0A1529] ">Become a Plug</Link>
-        </div>
-      )}
+      {/* --------------------------------------------------------------- Hero */}
+      <header className="pt-28 md:pt-36 pb-16 px-5">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 md:gap-10 items-center">
+          <motion.div variants={heroContainer} initial={reduce ? undefined : 'hidden'} animate={reduce ? undefined : 'show'}>
+            <motion.div variants={heroItem}>
+              <Eyebrow>Verified artisans · Ikeja, Lagos</Eyebrow>
+            </motion.div>
+            <motion.h1 variants={heroItem} className="mt-5 font-display text-[3rem] md:text-[4.25rem] leading-[0.98] text-midnight">
+              Hire artisans you can actually <span className="text-gold">trust.</span>
+            </motion.h1>
+            <motion.p variants={heroItem} className="mt-6 text-[17px] leading-relaxed text-slate max-w-md">
+              Plugr connects you with verified electricians and plumbers across Ikeja — secure escrow payments,
+              professional identity verification, and a WhatsApp-native job flow.
+            </motion.p>
+            <motion.div variants={heroItem} className="mt-8 flex flex-col sm:flex-row gap-3">
+              <Link href="/demo/browse" className={btnGold}>
+                Book a Plug <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link href="/demo/auth/plug" className={btnAlt}>
+                Become a Plug
+              </Link>
+            </motion.div>
+            <motion.div variants={heroItem} className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-4">
+              {[
+                { icon: <UserCheck className="w-4 h-4" />, label: 'NIN Verified' },
+                { icon: <Lock className="w-4 h-4" />, label: 'Escrow Protected' },
+                { icon: <Star className="w-4 h-4" />, label: 'Rated & Reviewed' },
+                { icon: <FaWhatsapp className="w-4 h-4" />, label: 'WhatsApp Native' },
+              ].map((b) => (
+                <div key={b.label} className="flex items-center gap-2 text-midnight">
+                  <span className="text-gold shrink-0">{b.icon}</span>
+                  <span className="text-[13px] font-semibold">{b.label}</span>
+                </div>
+              ))}
+            </motion.div>
+          </motion.div>
 
-      {/* Hero Section */}
-      <section className="px-6 max-w-4xl mx-auto text-left" style={{ backgroundColor: colors.bone }}>
-        <div className="space-y-6 pt-16 pb-10">
-          <h1 className="text-[32px] font-bold md:text-7xl font-black text-[#162952]">
-            Hire Verified Artisans you can actually <br></br>
-            <span className="text-[#DBA134]">trust.</span>
-          </h1>
-          <p className="text-gray-400 text-lg md:text-xl max-w-xl mx-auto font-medium">
-            Plugr helps clients connect with verified artisans, across Ikeja using secure payments, proffessional identity verification and whatsapp-native job flow.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Link href="/find" className="w-full sm:w-auto px-10 py-5 bg-[#DBA134] text-white rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-xl shadow-yellow-900/20 text-center">
-              Find a Plug
+          {/* Hero image + floating escrow mockup */}
+          <motion.div
+            className="relative"
+            initial={reduce ? false : { opacity: 0, scale: 0.96 }}
+            animate={reduce ? undefined : { opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, ease: [0.2, 0.7, 0.2, 1], delay: 0.15 }}
+          >
+            <div className="absolute -inset-6 bg-gold/10 blur-3xl rounded-full" />
+            <div className="relative rounded-[28px] overflow-hidden border border-midnight/[0.06] demo-card-shadow">
+              <img src={IMG.hero} alt="Verified artisan at work" className="w-full h-[420px] md:h-[520px] object-cover" loading="eager" />
+              <div className="absolute inset-0 bg-gradient-to-t from-midnight/40 to-transparent" />
+            </div>
+
+            <motion.div
+              className="absolute left-3 bottom-3 w-[248px] rounded-[22px] bg-white/95 backdrop-blur border border-midnight/[0.06] demo-card-shadow p-5"
+              animate={reduce ? undefined : { y: [0, -10, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-1.5 text-midnight">
+                  <PlugrMark className="w-4 h-4" />
+                  <span className="font-display text-base">Escrow</span>
+                </div>
+                <span className="inline-flex items-center gap-1.5 rounded-pill bg-gold/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[#8a5a08]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" /> Held
+                </span>
+              </div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate">Amount held</p>
+              <p className="mt-0.5 font-display text-[2.25rem] leading-none text-midnight tnum">
+                <span className="text-gold/90">₦</span>7,500
+              </p>
+              <div className="mt-4 flex items-center gap-2 rounded-xl bg-bone px-3 py-2">
+                <ShieldCheck className="w-4 h-4 text-gold shrink-0" />
+                <span className="text-[11px] text-midnight">Safe until you confirm.</span>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </header>
+
+      {/* ------------------------------------------------------------ How it works */}
+      <section id="how" className="py-20 px-5 bg-white border-y border-midnight/[0.06]">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <Eyebrow>How it works</Eyebrow>
+            <h2 className="mt-4 font-display text-[2.5rem] md:text-[3rem] leading-[1.02] text-midnight max-w-md">
+              Three steps to a job done right.
+            </h2>
+          </Reveal>
+          <div className="mt-14 grid md:grid-cols-3 gap-10">
+            {STEPS.map((s, i) => (
+              <Reveal key={s.n} delay={i * 0.1}>
+                <div className="flex gap-4">
+                  <span className="font-display text-xl text-gold shrink-0">{s.n}</span>
+                  <div>
+                    <h3 className="font-bold text-lg text-midnight">{s.title}</h3>
+                    <p className="mt-1.5 text-sm text-slate leading-relaxed">{s.body}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------------------------------------------------------- Why Plugr */}
+      <section id="why" className="py-20 px-5">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <Eyebrow>Why Plugr</Eyebrow>
+            <h2 className="mt-4 font-display text-[2.5rem] md:text-[3rem] leading-[1.02] text-midnight">
+              Built different. <span className="text-slate">WhatsApp layered.</span>
+            </h2>
+          </Reveal>
+          <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {REASONS.map((r, i) => (
+              <Reveal key={r.title} delay={(i % 3) * 0.08}>
+                <div className="h-full rounded-[22px] bg-white border border-midnight/[0.06] demo-card-shadow p-6 hover:-translate-y-1 transition-transform">
+                  <span className="font-display text-sm text-gold">{String(i + 1).padStart(2, '0')}</span>
+                  <h3 className="mt-3 font-bold text-midnight">{r.title}</h3>
+                  <p className="mt-1.5 text-sm text-slate leading-relaxed">{r.body}</p>
+                </div>
+              </Reveal>
+            ))}
+            <Reveal delay={0.16}>
+              <div className="h-full rounded-[22px] bg-midnight text-white p-6 flex flex-col justify-between">
+                <PlugrMark className="w-6 h-6 text-gold" />
+                <div>
+                  <h3 className="mt-4 font-display text-2xl leading-tight">Skilled workers deserve a professional identity.</h3>
+                  <p className="mt-3 text-sm text-steel-blue leading-relaxed">
+                    Plugr turns artisans from anonymous contacts into trusted professionals — visible identity, ratings, and
+                    verified work history.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ Trades */}
+      <section id="trades" className="py-20 px-5 bg-white border-y border-midnight/[0.06]">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <Eyebrow>What we fix</Eyebrow>
+            <h2 className="mt-4 font-display text-[2.5rem] md:text-[3rem] leading-[1.02] text-midnight">Your trade, covered.</h2>
+          </Reveal>
+          <div className="mt-12 grid md:grid-cols-2 gap-4">
+            {[
+              { img: IMG.electrician, icon: <Zap className="w-5 h-5" />, title: 'Electrician', body: 'Wiring, sockets, faults, lighting, and general electrical maintenance.', cta: 'Find an electrician' },
+              { img: IMG.plumber, icon: <Droplet className="w-5 h-5" />, title: 'Plumber', body: 'Pipes, leaks, fixtures, water heaters, and drainage solutions.', cta: 'Find a plumber' },
+            ].map((t, i) => (
+              <Reveal key={t.title} delay={i * 0.1}>
+                <div className="group rounded-[24px] overflow-hidden bg-bone border border-midnight/[0.06] hover:border-gold/40 transition-colors">
+                  <div className="relative h-52 overflow-hidden">
+                    <img src={t.img} alt={t.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                    <span className="absolute top-4 left-4 grid place-items-center h-11 w-11 rounded-2xl bg-white text-gold shadow-lg">{t.icon}</span>
+                  </div>
+                  <div className="p-7">
+                    <h3 className="font-display text-2xl text-midnight">{t.title}</h3>
+                    <p className="mt-2 text-sm text-slate leading-relaxed">{t.body}</p>
+                    <Link href="/demo/browse" className="mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-gold hover:gap-2.5 transition-all">
+                      {t.cta} <ChevronRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+          <p className="mt-6 text-center text-xs font-bold uppercase tracking-[0.2em] text-slate">More trades coming soon</p>
+        </div>
+      </section>
+
+      {/* -------------------------------------------------------------- Meet the plugs */}
+      <section className="py-20 px-5">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <Eyebrow>Meet the Plugs</Eyebrow>
+                <h2 className="mt-4 font-display text-[2.5rem] md:text-[3rem] leading-[1.02] text-midnight">Real people. Verified.</h2>
+              </div>
+              <Link href="/demo/browse" className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-midnight hover:text-gold transition-colors shrink-0">
+                Browse all <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </Reveal>
+          <div className="mt-10 grid sm:grid-cols-3 gap-4">
+            {PLUGS.map((p, i) => (
+              <Reveal key={p.name} delay={i * 0.09}>
+                <div className="rounded-[22px] bg-white border border-midnight/[0.06] demo-card-shadow p-5 hover:-translate-y-1 transition-transform">
+                  <div className="flex items-start justify-between">
+                    <div className="relative">
+                      <img src={p.photo} alt={p.name} className="h-16 w-16 rounded-2xl object-cover" loading="lazy" />
+                      <span className="absolute -bottom-1.5 -right-1.5 grid place-items-center h-6 w-6 rounded-full bg-white">
+                        <BadgeCheck className="w-5 h-5 text-gold" />
+                      </span>
+                    </div>
+                    <span className={'rounded-pill px-2.5 py-1 text-[10.5px] font-bold ' + (p.status === 'Available' ? 'bg-emerald-500/12 text-emerald-700' : 'bg-slate/12 text-slate')}>
+                      {p.status}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 font-bold text-midnight">{p.name}</h3>
+                  <p className="text-sm text-slate">{p.trade}</p>
+                  <div className="mt-1.5 flex items-center gap-1 text-sm text-midnight font-semibold">
+                    <Star className="w-3.5 h-3.5 fill-gold text-gold" /> {p.rating.toFixed(1)}
+                  </div>
+                  <Link href="/demo/browse" className="mt-5 flex items-center justify-center gap-1.5 rounded-pill bg-gold text-midnight text-sm font-bold py-2.5 hover:bg-gold-light active:scale-[0.98] transition-all">
+                    Request this Plug
+                  </Link>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ----------------------------------------------------------------- For clients */}
+      <section className="py-20 px-5 bg-white border-y border-midnight/[0.06]">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          <Reveal>
+            <Eyebrow>For clients</Eyebrow>
+            <h2 className="mt-4 font-display text-[2.5rem] md:text-[3rem] leading-[1.02] text-midnight">No more random referrals.</h2>
+            <div className="mt-8 space-y-4">
+              {['Hire verified electricians and plumbers', 'Track payments securely', 'Get quote transparency', 'Raise disputes when necessary'].map((t, i) => (
+                <div key={t} className="flex items-center gap-3">
+                  <span className="grid place-items-center h-7 w-7 rounded-full bg-gold text-midnight text-xs font-black shrink-0">{i + 1}</span>
+                  <span className="text-midnight font-medium">{t}</span>
+                </div>
+              ))}
+            </div>
+            <Link href="/demo/browse" className={btnGold + ' mt-8'}>
+              Book a Plug <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link href="/become-a-plug" className="w-full sm:w-auto px-10 py-5 bg-white text-[#0A1529] rounded-full font-bold text-lg hover:bg-gray-100 transition-colors text-center">
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="rounded-[28px] bg-bone border border-midnight/[0.06] p-8">
+              <div className="flex items-center gap-2 text-slate mb-6">
+                <Clock className="w-4 h-4 text-gold" />
+                <span className="text-[11px] font-bold uppercase tracking-[0.14em]">Escrow timeline</span>
+              </div>
+              {['Client pays into escrow', 'Plug completes the job', 'Client confirms', 'Funds released'].map((t, i, a) => (
+                <div key={t} className="flex gap-3">
+                  <div className="flex flex-col items-center">
+                    <span className="grid place-items-center h-5 w-5 rounded-full bg-gold">
+                      <span className="h-1.5 w-1.5 rounded-full bg-midnight" />
+                    </span>
+                    {i < a.length - 1 && <span className="w-0.5 flex-1 bg-gold/40 my-1" />}
+                  </div>
+                  <span className="text-sm text-midnight font-medium pb-5">{t}</span>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* -------------------------------------------------------------- For professionals */}
+      <section className="py-20 px-5">
+        <Reveal className="max-w-4xl mx-auto">
+          <div className="rounded-[32px] bg-midnight text-white p-10 md:p-14 text-center">
+            <Eyebrow>For professionals</Eyebrow>
+            <h2 className="mt-5 font-display text-[3rem] md:text-[3.5rem] leading-[0.98] text-gold">Join the Plugs.</h2>
+            <p className="mt-4 text-steel-blue text-lg">Build a reputation clients can trust.</p>
+            <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-5">
+              {[
+                { icon: <BadgeCheck className="w-5 h-5" />, label: 'Set your price' },
+                { icon: <UserCheck className="w-5 h-5" />, label: 'Build identity' },
+                { icon: <Clock className="w-5 h-5" />, label: 'Consistent work' },
+                { icon: <ShieldCheck className="w-5 h-5" />, label: 'Get paid safely' },
+              ].map((b) => (
+                <div key={b.label} className="flex flex-col items-center gap-2.5">
+                  <span className="grid place-items-center h-11 w-11 rounded-xl bg-white/10 text-gold">{b.icon}</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.14em] text-white/90">{b.label}</span>
+                </div>
+              ))}
+            </div>
+            <Link href="/demo/auth/plug" className={btnGold + ' mt-10 w-full sm:w-auto'}>
+              Become a Plug <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* -------------------------------------------------------------------- FAQ */}
+      <section id="faq" className="py-20 px-5">
+        <div className="max-w-2xl mx-auto">
+          <Reveal>
+            <Eyebrow>FAQ</Eyebrow>
+            <h2 className="mt-4 font-display text-[2.5rem] md:text-[3rem] leading-[1.02] text-midnight">Common questions.</h2>
+          </Reveal>
+          <div className="mt-10 space-y-3">
+            {FAQS.map((f, i) => (
+              <Reveal key={f.q} delay={i * 0.06}>
+                <div className="rounded-[18px] bg-white border border-midnight/[0.06] overflow-hidden">
+                  <button onClick={() => setOpenFaq((o) => (o === i ? null : i))} className="w-full flex items-center justify-between gap-4 p-5 text-left">
+                    <span className="font-bold text-midnight">{f.q}</span>
+                    <Plus className={'w-5 h-5 text-gold shrink-0 transition-transform ' + (openFaq === i ? 'rotate-45' : '')} />
+                  </button>
+                  {openFaq === i && <p className="px-5 pb-5 -mt-1 text-sm text-slate leading-relaxed">{f.a}</p>}
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* -------------------------------------------------------------- Final CTA */}
+      <section className="py-24 px-5 bg-white border-t border-midnight/[0.06] text-center">
+        <Reveal>
+          <h2 className="font-display text-[3rem] md:text-[4rem] leading-[0.98] text-midnight">Ready to find your Plug?</h2>
+          <p className="mt-3 text-slate font-semibold">Ikeja, Lagos.</p>
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/demo/browse" className={btnGold}>
+              Book a Plug <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link href="/demo/auth/plug" className={btnAlt}>
               Become a Plug
             </Link>
           </div>
-        </div>
+        </Reveal>
       </section>
 
-      {/* Trust Badges */}
-      <div className="">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-4">
-
-            {/* NIN Verified */}
-            <div className="flex items-center gap-3">
-              <div className="shrink-0">
-                <UserCheck className="w-5 h-5 text-[#E8A020]" />
-              </div>
-              <span className="text-[13px] md:text-sm font-semibold text-[#0F1F3D] whitespace-nowrap">
-                NIN Verified
-              </span>
+      {/* ----------------------------------------------------------------- Footer */}
+      <footer className="bg-midnight text-white px-5 py-14">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-[1.4fr_1fr_1fr] gap-10">
+          <div>
+            <PlugrWordmark className="h-6 text-white" />
+            <p className="mt-4 text-sm text-steel-blue max-w-xs leading-relaxed">
+              Pledging allegiance to your success. The trusted network for verified artisans in Lagos.
+            </p>
+            <div className="mt-5 space-y-2 text-sm text-steel-blue">
+              <a href="mailto:hello@getplugr.com" className="flex items-center gap-2 hover:text-gold transition-colors">
+                <Mail className="w-4 h-4" /> hello@getplugr.com
+              </a>
+              <a href="tel:+2348180147857" className="flex items-center gap-2 hover:text-gold transition-colors">
+                <Phone className="w-4 h-4" /> +234 818 014 7857
+              </a>
             </div>
-
-            {/* Escrow Protected */}
-            <div className="flex items-center gap-3">
-              <div className="shrink-0">
-                <Lock className="w-5 h-5 text-[#E8A020]" />
-              </div>
-              <span className="text-[13px] md:text-sm font-semibold text-[#0F1F3D] whitespace-nowrap">
-                Escrow Protected
-              </span>
-            </div>
-
-            {/* Rated & Reviewed */}
-            <div className="flex items-center gap-3">
-              <div className="shrink-0">
-                <Star className="w-5 h-5 text-[#E8A020]" />
-              </div>
-              <span className="text-[13px] md:text-sm font-semibold text-[#0F1F3D] whitespace-nowrap">
-                Rated & Reviewed
-              </span>
-            </div>
-
-            {/* WhatsApp Features */}
-            <div className="flex items-center gap-3">
-              <div className="shrink-0">
-                <FaWhatsapp className="w-5 h-5 text-[#E8A020]" />
-              </div>
-              <span className="text-[13px] md:text-sm font-semibold text-[#0F1F3D] whitespace-nowrap">
-                WhatsApp Features
-              </span>
-            </div>
-
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/50 mb-4">Quick links</p>
+            <ul className="space-y-2.5 text-sm text-steel-blue">
+              <li><a href="#how" className="hover:text-gold transition-colors">How it works</a></li>
+              <li><Link href="/demo/browse" className="hover:text-gold transition-colors">Book a Plug</Link></li>
+              <li><Link href="/demo/auth/plug" className="hover:text-gold transition-colors">Become a Plug</Link></li>
+              <li><Link href="/demo" className="hover:text-gold transition-colors">Use Plugr</Link></li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/50 mb-4">Legal</p>
+            <ul className="space-y-2.5 text-sm text-steel-blue">
+              <li><Link href="/privacy" className="hover:text-gold transition-colors">Privacy Policy</Link></li>
+              <li><a href="#" className="hover:text-gold transition-colors">Terms of Service</a></li>
+              <li><a href="#" className="hover:text-gold transition-colors">Dispute Policy</a></li>
+            </ul>
           </div>
         </div>
-      </div>
-
-      {/* How It Works */}
-      <section id="how-it-works" className="py-24 px-6 max-w-7xl mx-auto bg-white">
-        <div className="mb-16">
-          <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">How it works</span>
-          <h2 className="text-4xl md:text-5xl font-black text-[#0A1529] tracking-tighter max-w-md leading-none">
-            Three steps to a job done right.
-          </h2>
+        <div className="max-w-6xl mx-auto mt-12 pt-6 border-t border-white/10 text-[11px] uppercase tracking-[0.14em] text-white/40">
+          © 2026 Alhazen. All rights reserved.
         </div>
-
-        <div className="grid md:grid-cols-3 gap-12">
-          {[
-            {
-              id: '01',
-              title: "Find a Verified Plug",
-              description: "Browse by trade, see badge and rating."
-            },
-            {
-              id: '02',
-              title: "Book and Pay Safely",
-              description: "Job confirmed, payment secured in escrow."
-            },
-            {
-              id: '03',
-              title: "Job Done, You're Protected",
-              description: "Release payment when satisfied, 24hr dispute window."
-            }
-          ].map((step) => (
-            <div key={step.id} className="group cursor-default flex flex-row gap-4 items-left">
-              <div className="text-2xl font-black text-[#0A1529] mb-6 group-hover:text-[#DBA134] transition-colors bg-[#F5F1EC] rounded-full px-4 py-2 w-14 h-14 flex justify-center items-center flex-row-1">
-                {step.id}
-              </div>
-              <div className="flex flex-col">
-                <h3 className="text-xl font-bold text-[#0A1529] mb-2">{step.title}</h3>
-                <p className="text-gray-500 font-medium text-sm">{step.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Why Built Different */}
-      <section className="py-15 px-6 bg-[#F5F1EC] text-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-16">
-            <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">Why Plugr</span>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none mb-4 text-[#162952]">
-              Built Different.
-            </h2>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none mb-4 text-[#162952]">
-              Whatsapp Layered.
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                id: '01',
-                title: "Your Money Is Protected",
-                description: "Payments are held in escrow until you're happy."
-              },
-              {
-                id: '02',
-                title: "Vetted Experts Only",
-                description: "Strict NIN, BVN, and liveness verification for every artisan."
-              },
-              {
-                id: '03',
-                title: "Something Goes Wrong?",
-                description: "24hr dispute window and dedicated ops support."
-              },
-              {
-                id: '04',
-                title: "Guaranteed Quality",
-                description: "Every job comes with a 30-day fault guarantee."
-              },
-              {
-                id: '05',
-                title: "Transparent Pricing",
-                description: "Full quote before work starts. Zero surprises."
-              }
-            ].map((feature) => (
-              <div key={feature.id} className="p-8 rounded-3xl border hover:border-[#DBA134]/50 transition-colors bg-white">
-                <div className="text-[#DBA134] font-medium mb-4">{feature.id}</div>
-                <h3 className="text-xl font-bold mb-2 text-[#162952]">{feature.title}</h3>
-                <p className="text-gray-400 font-medium">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div><br /><br />
-        <div className='text-left'>
-          <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">Why it matters.</span>
-          <h2 className="text-4xl md:text-3xl font-semibold leading-none mb-4 text-[#162952]">
-            Skilled workers <br /> deserve a <br /> professional identity.
-          </h2>
-          <p className="text-[#123076] text-sm mb-6 max-w-3xl w-2/3">Plugr transforms artisans from anaonymous contacts into trusted professionals with visible identity, ratings, and verifiied work history.</p>
-        </div>
-      </section>
-
-      {/* Trades Section */}
-      <section id="trades" className="py-10 px-6 max-w-7xl mx-auto">
-        <div className="mb-16">
-          <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">What we fix</span>
-          <h2 className="text-4xl md:text-5xl font-black text-[#0A1529] tracking-tighter leading-none">
-            Your trade, covered.
-          </h2>
-        </div>
-
-        <div className="w-full flex md:flex-row flex-col gap-6">
-          <div className="w-full p-8 rounded-3xl bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
-            <div className="w-14 h-14 rounded-2xl bg-yellow-50 flex items-center justify-center mb-6 group-hover:bg-yellow-400 transition-colors">
-              <Zap className="w-7 h-7 text-yellow-600 group-hover:text-white" fill="currentColor" />
-            </div>
-            <h3 className="text-2xl font-bold text-[#0A1529] mb-2">Electrician</h3>
-            <p className="text-gray-500 font-medium mb-6">Wiring, sockets, faults, lighting, and general electrical maintenance.</p>
-            <Link href="/find" className="flex items-center gap-2 text-[#DBA134] font-bold">
-              Find an Electrician <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="w-full p-8 rounded-3xl bg-white border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-6 group-hover:bg-blue-400 transition-colors">
-              <Droplet className="w-7 h-7 text-blue-600 group-hover:text-white" fill="currentColor" />
-            </div>
-            <h3 className="text-2xl font-bold text-[#0A1529] mb-2">Plumber</h3>
-            <p className="text-gray-500 font-medium mb-6">Pipes, leaks, fixtures, water heaters, and drainage solutions.</p>
-            <Link href="/find" className="flex items-center gap-2 text-[#DBA134] font-bold">
-              Find a Plumber <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
-
-        <p className="text-center mt-5 text-gray-400 font-bold uppercase text-xs tracking-widest">More trades coming soon</p>
-      </section>
-
-      {/* Featured Plugs */}
-      <section className="py-15 px-6 bg-white">
-        <div className="max-w-7xl mx-auto">
-          {/* 1. Moved text to left by changing text-center to text-left */}
-          <div className="text-left mb-16">
-            <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">
-              Meet the plugs
-            </span>
-            <h2 className="text-4xl md:text-5xl font-black text-[#0A1529] tracking-tighter leading-none mb-4">
-              Real people. Verified.
-            </h2>
-          </div>
-
-          {/* 2. Added pt-6 to prevent badge clipping and flex-nowrap to force horizontal layout */}
-          <div className="no-scrollbarsnap-x snap-mandatory w-full flex overflow-x-auto gap-8 pb-4 no-scrollbar">
-            {([
-              { id: '1', name: "Suleiman Yusuf", trade: "Electrician", rating: 4.8, reviewCount: 28, status: "Busy", badge: "Verified" },
-              { id: '2', name: "John Okoro", trade: "Plumber", rating: 4.9, reviewCount: 45, status: "Available", badge: "Pro" },
-              { id: '3', name: "Tunde Williams", trade: "Electrician", rating: 4.7, reviewCount: 19, status: "Busy", badge: "Verified" },
-            ] as Plug[]).map((plug) => (
-              <PlugCard key={plug.id} plug={plug} />
-            ))}
-
-            {/* Remember to remove 'hidden' if you want it to show up in the scroll list */}
-            <Link href="/find" className="flex shrink-0 min-w-[200px] items-center justify-center p-8 rounded-[2.5rem] border-2 border-dashed border-gray-200 text-gray-400 group hover:border-[#DBA134] transition-colors cursor-pointer">
-              <div className="text-center font-bold">
-                <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4 group-hover:bg-[#F8E8C1]">
-                  <ChevronRight className="w-6 h-6" />
-                </div>
-                Browse All Plugs
-              </div>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-
-      <div className='w-full p-8 bg-white'>
-        <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">FOR CLIENTS</span>
-        <h2 className="text-3xl md:text-4xl font-black leading-none mb-6 text-[#162952]">
-          No more random artisan referrals.
-        </h2>
-        <p className="text-[#123076] text-md mb-6 max-w-3xl w-full flex items-center gap-2 px-4"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center px-4">1</span><span> Hire verified electricians and plumbers</span></p>
-        <p className="text-[#123076] text-md mb-6 max-w-3xl w-full flex items-center gap-2 px-4"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center px-4">2</span><span> Track payments securely</span></p>
-        <p className="text-[#123076] text-md mb-6 max-w-3xl w-full flex items-center gap-2 px-4"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center px-4">3</span><span> Get quote transparency</span></p>
-        <p className="text-[#123076] text-md mb-6 max-w-3xl w-full flex items-center gap-2 px-4"><span className="font-bold text-[#162952] bg-[#DBA134] rounded-full w-8 h-8 flex items-center justify-center px-4">4</span><span> Raise disputes when necessary</span></p>
-
-        <Link href="/find" className="bg-[#DBA134] text-[#162952] w-full text-center p-6 rounded-full font-bold inline-block ">Find a Plug</Link>
-      </div>
-
-      {/* Become a Plug CTA */}
-      <section className="py-24 px-6 bg-[#0A1529] text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">For Professionals</span>
-          <h2 className="text-5xl md:text-6xl font-black tracking-tighter leading-none mb-6 text-[#DBA134]">
-            Join the Plugs.
-          </h2>
-          <p className="text-gray-400 text-lg md:text-xl font-medium mb-12">
-            Build a reputation clients can trust.
-          </p>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-            {[
-              { icon: <DollarSign />, label: "Set Your Own Price" },
-              { icon: <UserCheck />, label: "Build Your Identity" },
-              { icon: <Clock />, label: "Get Consistent Work" },
-              { icon: <ShieldCheck />, label: "Get Paid Safely" }
-            ].map((benefit, i) => (
-              <div key={i} className="flex flex-col items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-[#DBA134]">
-                  {benefit.icon}
-                </div>
-                <span className="text-[10px] font-black uppercase tracking-widest leading-tight">{benefit.label}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="space-y-4 max-w-sm mx-auto text-left mb-12">
-            {[
-              "Sign up",
-              "Complete verification",
-              "Set up profile",
-              "Start receiving jobs"
-            ].map((step, i) => (
-              <div key={i} className="flex items-center gap-4">
-                <div className="w-6 h-6 rounded-full bg-[#DBA134] text-[#0A1529] flex items-center justify-center text-xs font-black">{i + 1}</div>
-                <span className="font-bold">{step}</span>
-              </div>
-            ))}
-          </div>
-
-          <Link href="/become-a-plug" className="inline-block text-center w-full px-10 py-6 bg-[#DBA134] text-white rounded-full font-bold text-xl hover:scale-105 transition-transform">
-            Become a Plug
-          </Link>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section id="faq" className="py-24 px-6 max-w-3xl mx-auto">
-        <div className="text-left mb-16">
-          <span className="text-[#DBA134] font-bold text-sm tracking-widest uppercase mb-4 block">FAQ</span>
-          <h2 className="text-4xl md:text-5xl font-black text-[#0A1529] tracking-tighter">
-            Common Questions.
-          </h2>
-        </div>
-
-        <div className="space-y-4">
-          {[
-            "How do I pay?",
-            "What if I'm not satisfied?",
-            "How are Plugs verified?"
-          ].map((q, i) => (
-            <div key={i} className="p-6 rounded-2xl bg-white border border-gray-100 flex justify-between items-center group cursor-pointer hover:border-[#DBA134] transition-colors">
-              <span className="font-bold text-[#0A1529]">{q}</span>
-              <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-[#DBA134] group-hover:rotate-90 transition-all" />
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-12 p-8 rounded-3xl bg-gray-50 border border-gray-200 text-center">
-          <p className="font-bold text-[#0A1529] mb-4">Still have questions? We're happy to help.</p>
-          <button className="px-8 py-4 bg-[#DBA134] text-white rounded-full font-bold">
-            Contact Support
-          </button>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="py-32 px-6 bg-white text-center border-t border-gray-100">
-        <h2 className="text-5xl md:text-7xl font-black text-[#0A1529] tracking-tighter mb-4">
-          Ready to find <br /> your Plug?
-        </h2>
-        <p className="text-gray-500 font-bold mb-12">Ikeja, Lagos.</p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/find" className="w-full sm:w-auto px-12 py-5 bg-[#DBA134] text-white rounded-full font-bold text-lg text-center">
-            Find a Plug
-          </Link>
-          <Link href="/become-a-plug" className="w-full sm:w-auto px-12 py-5 bg-white border-2 border-[#0A1529] text-[#0A1529] rounded-full font-bold text-lg text-center">
-            Become a Plug
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <Footer />
+      </footer>
     </div>
   );
 }
