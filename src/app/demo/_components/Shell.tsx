@@ -1,12 +1,14 @@
 // src/app/demo/_components/Shell.tsx
-// Mobile-width premium shell shared by every demo screen. Bone light-mode canvas,
+// Mobile-width premium shell shared by every demo/app screen. Bone light-mode canvas,
 // centered column, brand mark + eyebrow/title header, and an optional sticky footer.
+//
+// Back button uses real browser history (router.back) so it always returns to wherever you
+// actually came from. The `back` prop is only a fallback for direct loads (no history).
 
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { cn } from '@/src/lib/utils';
 import { PlugrMark, Eyebrow } from './ui';
 
 export function Shell({
@@ -26,6 +28,13 @@ export function Shell({
   children: React.ReactNode;
   footer?: React.ReactNode;
 }) {
+  const router = useRouter();
+
+  function goBack() {
+    if (typeof window !== 'undefined' && window.history.length > 1) router.back();
+    else router.push(back || '/');
+  }
+
   return (
     <main className="min-h-screen bg-bone text-midnight font-body antialiased flex justify-center">
       <div className="relative w-full max-w-[440px] min-h-screen flex flex-col">
@@ -34,12 +43,12 @@ export function Shell({
             <header className="mb-7">
               <div className="flex items-center justify-between mb-6 min-h-[22px]">
                 {back ? (
-                  <Link
-                    href={back}
+                  <button
+                    onClick={goBack}
                     className="inline-flex items-center gap-1.5 text-sm font-medium text-slate hover:text-midnight transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" /> Back
-                  </Link>
+                  </button>
                 ) : (
                   <span />
                 )}

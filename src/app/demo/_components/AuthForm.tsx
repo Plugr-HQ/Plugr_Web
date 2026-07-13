@@ -40,7 +40,9 @@ export function AuthForm({
     }
     setBusy(true);
     setDemoIdentity(role, phone.trim(), name.trim());
-    router.push(redirectTo);
+    // replace (not push) so pressing Back from the next screen doesn't return to this
+    // already-completed sign-up form.
+    router.replace(redirectTo);
   }
 
   return (

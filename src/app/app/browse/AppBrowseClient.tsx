@@ -81,8 +81,8 @@ export default function AppBrowseClient({ plugs, configError }: { plugs: HackPlu
               </div>
               <span className="text-[11px] font-bold text-gold shrink-0 inline-flex items-center gap-0.5 group-hover:gap-1 transition-all">Profile <ArrowUpRight className="w-3.5 h-3.5" /></span>
             </Link>
-            <div className="mt-3">
-              <RequestPlugButton plugId={plug.id} />
+            <div className="mt-3 flex justify-end">
+              <RequestPlugButton plugId={plug.id} compact />
             </div>
           </Card>
         ))}

@@ -62,7 +62,7 @@ export default function PlugOnboardingPage() {
             {!verifying && <ArrowRight className="w-4 h-4" />}
           </PrimaryButton>
         ) : (
-          <PrimaryButton onClick={() => router.push('/app/plug')}>Go to my dashboard <ArrowRight className="w-4 h-4" /></PrimaryButton>
+          <PrimaryButton onClick={() => router.replace('/app/plug')}>Go to my dashboard <ArrowRight className="w-4 h-4" /></PrimaryButton>
         )
       }
     >
