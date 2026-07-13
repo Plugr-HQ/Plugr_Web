@@ -52,3 +52,5 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
 }
+
+interface Commit { }
