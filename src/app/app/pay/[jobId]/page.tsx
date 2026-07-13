@@ -21,6 +21,8 @@ export default function AppPayPage() {
   const [paid, setPaid] = useState(false);
   const [copied, setCopied] = useState(false);
   const [simulating, setSimulating] = useState(false);
+  const [alatState, setAlatState] = useState<'idle' | 'pending' | 'unknown'>('idle');
+  const [waited, setWaited] = useState(0);
   const started = useRef(false);
 
   useEffect(() => {
@@ -41,13 +43,16 @@ export default function AppPayPage() {
     try {
       const res = await jsonFetch(`/api/jobs/${jobId}/check-status`);
       if (res.status === 'paid_escrow') setPaid(true);
+      else if (res.alatpay) setAlatState(res.alatpay);
     } catch { /* keep polling */ }
   }, [jobId]);
 
   useEffect(() => {
     if (paid || !va) return;
+    poll(); // check immediately, don't wait 3s for the first poll
     const id = setInterval(poll, 3000);
-    return () => clearInterval(id);
+    const t = setInterval(() => setWaited((w) => w + 1), 1000);
+    return () => { clearInterval(id); clearInterval(t); };
   }, [paid, va, poll]);
 
   function copy() {
@@ -104,8 +109,18 @@ export default function AppPayPage() {
           </div>
           {va.accountName && <p className="mt-3 text-xs text-slate">Account name · {va.accountName}</p>}
           <Divider className="my-5" />
-          <div className="flex items-center gap-2.5 text-sm text-midnight"><Loader2 className="w-4 h-4 animate-spin text-gold" /><span className="font-medium">Waiting for your transfer…</span></div>
-          <p className="mt-2 text-xs text-slate/80">We poll ALATPay every 3s — this flips on its own. Account valid 24h.</p>
+          <div className="flex items-center gap-2.5 text-sm text-midnight">
+            <Loader2 className="w-4 h-4 animate-spin text-gold" />
+            <span className="font-medium">Waiting for your transfer…</span>
+            {alatState === 'pending' && (
+              <span className="ml-auto inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Monitoring</span>
+            )}
+          </div>
+          <p className="mt-2 text-xs text-slate/80">
+            ALATPay is watching this account — the moment your transfer settles this flips automatically, no refresh needed.
+            {waited > 25 ? ' Bank settlement can take a minute or two.' : ''}
+            {waited > 0 ? ` (${waited}s)` : ''}
+          </p>
           <Divider className="my-5" />
           <button onClick={simulate} disabled={simulating} className="w-full inline-flex items-center justify-center gap-2 rounded-pill border border-dashed border-gold/40 hover:border-gold hover:bg-gold/5 disabled:opacity-50 transition-all text-[13px] font-bold text-midnight py-3">
             {simulating ? <><Loader2 className="w-4 h-4 animate-spin" /> Simulating…</> : 'Sandbox: simulate transfer'}

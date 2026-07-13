@@ -52,23 +52,26 @@ export async function GET(
 
   const alatpayTransactionId = tx.alatpay_transaction_id;
 
-  let result: any;
+  // Query ALATPay. Its status endpoint returns 200 + status "completed" once the transfer
+  // settles, and 404 + "Transaction Pending." while it's still awaiting/settling. The
+  // "pending" case is NOT an error — it means the VA has the transaction and we keep waiting.
+  let result: any = null;
+  let alatpay: 'completed' | 'pending' | 'unknown' = 'unknown';
   try {
     result = await confirmTransaction(alatpayTransactionId);
+    const inner = result?.data ?? result ?? {};
+    const s = String(inner.status ?? inner.Status ?? inner?.data?.status ?? '').toLowerCase();
+    alatpay = s === 'completed' ? 'completed' : 'pending';
   } catch (err) {
-    const detail = err instanceof AlatPayError ? err.context : String(err);
-    console.warn('check-status: confirmTransaction failed', detail);
-    return NextResponse.json({ status: job.status, note: 'confirm re-query failed', detail });
+    const ctx = err instanceof AlatPayError ? (err.context as any) : null;
+    const msg = String(ctx?.message ?? '').toLowerCase();
+    alatpay = msg.includes('pending') ? 'pending' : 'unknown';
+    if (alatpay === 'unknown') console.warn('check-status: confirm re-query failed', ctx ?? String(err));
   }
 
-  const inner = result?.data ?? result ?? {};
-  const alatStatus = String(
-    inner.status ?? inner.Status ?? inner?.data?.status ?? inner?.data?.Status ?? ''
-  ).toLowerCase();
-  const isSuccessful = alatStatus === 'completed';
-
-  if (!isSuccessful) {
-    return NextResponse.json({ status: job.status, alatpayStatus: alatStatus || null });
+  if (alatpay !== 'completed') {
+    // Not settled yet — tell the UI whether ALATPay has at least seen the transaction.
+    return NextResponse.json({ status: job.status, alatpay });
   }
 
   // Same transition the webhook performs on success (idempotent upsert on the txn id).
@@ -80,10 +83,10 @@ export async function GET(
      do update set status = 'successful',
                    raw_webhook_payload = excluded.raw_webhook_payload,
                    amount = excluded.amount`,
-    [alatpayTransactionId, job.id, job.amount ?? inner.amount ?? inner.Amount ?? 0, result ?? null]
+    [alatpayTransactionId, job.id, job.amount ?? result?.data?.amount ?? result?.amount ?? 0, result ?? null]
   );
 
   await q("update hack_jobs set status = 'paid_escrow' where id = $1", [job.id]);
 
-  return NextResponse.json({ status: 'paid_escrow', verified: true });
+  return NextResponse.json({ status: 'paid_escrow', verified: true, alatpay: 'completed' });
 }

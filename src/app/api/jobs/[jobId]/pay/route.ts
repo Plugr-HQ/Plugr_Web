@@ -49,6 +49,22 @@ export async function POST(
     return NextResponse.json({ error: 'job is already paid' }, { status: 409 });
   }
 
+  // Reuse an existing pending virtual account for this job instead of minting a new one on
+  // revisit — otherwise a genuine payment to the first VA could be orphaned.
+  const existing = await one(
+    `select alatpay_virtual_account, raw_webhook_payload from hack_transactions
+     where job_id = $1 and type = 'collection' and status = 'pending' and alatpay_virtual_account is not null
+     order by created_at desc limit 1`,
+    [job.id]
+  );
+  if (existing?.alatpay_virtual_account) {
+    return NextResponse.json({
+      virtualAccount: normalizeVirtualAccount(existing.raw_webhook_payload),
+      raw: existing.raw_webhook_payload,
+      reused: true,
+    });
+  }
+
   const { firstName, lastName } = splitName(job.client_name);
 
   let result: any;
