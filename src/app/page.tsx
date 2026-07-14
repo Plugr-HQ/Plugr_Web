@@ -471,6 +471,9 @@ export default function LandingPage() {
             <Link href="/app/onboarding" className={btnAlt}>
               Become a Plug
             </Link>
+            <Link href="/demo" className={`${demoBtn} px-10 py-2`}>
+              Try demo <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </Reveal>
       </section>
