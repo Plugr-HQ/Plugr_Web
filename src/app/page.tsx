@@ -74,7 +74,7 @@ const btnGold =
 const btnAlt =
   'inline-flex items-center justify-center gap-2 rounded-pill bg-midnight text-white font-bold px-7 py-4 hover:bg-deep-blue active:scale-[0.98] transition-all';
 const demoBtn =
-  'inline-flex items-center justify-center gap-2 rounded-pill bg-gradient-to-r from-midnight via-gold to-midnight animate-gradient-circular text-white font-bold px-7 py-4 active:scale-[0.98] transition-all shadow-[0_14px_32px_-16px_rgba(232,160,32,0.4)]';
+  'inline-flex items-center justify-center gap-2 rounded-pill bg-gradient-to-r from-midnight via-gold to-midnight animate-gradient-circular text-white text-sm font-bold px-7 py-4 active:scale-[0.98] transition-all shadow-[0_14px_32px_-16px_rgba(232,160,32,0.4)]';
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-gold">
