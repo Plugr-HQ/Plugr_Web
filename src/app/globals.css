@@ -1,41 +1,94 @@
 @import "tailwindcss";
 
 @theme {
-    /* Colors */
-    --color-midnight: #0F1F3D;
-    --color-deep-blue: #162952;
-    --color-gold: #E8A020;
-    --color-gold-light: #F5C86A;
-    --color-bone: #F5F1EC;
-    --color-ink: #1A1A1F;
-    --color-steel-blue: #7A9CC8;
-    --color-slate: #8A9DB0;
+  /* Colors */
+  --color-midnight: #0F1F3D;
+  --color-deep-blue: #162952;
+  --color-gold: #E8A020;
+  --color-gold-light: #F5C86A;
+  --color-bone: #F5F1EC;
+  --color-ink: #1A1A1F;
+  --color-steel-blue: #7A9CC8;
+  --color-slate: #8A9DB0;
 
-    /* Fonts */
-    --font-display: 'Clash Display', sans-serif;
-    --font-body: 'Satoshi', sans-serif;
+  /* Fonts */
+  --font-display: 'Clash Display', sans-serif;
+  --font-body: 'Satoshi', sans-serif;
 
-    /* Radii (referenced by existing pages via rounded-card / rounded-pill) */
-    --radius-card: 1rem;
-    --radius-pill: 9999px;
+  /* Radii (referenced by existing pages via rounded-card / rounded-pill) */
+  --radius-card: 1rem;
+  --radius-pill: 9999px;
+}
+
+/* app/globals.css */
+
+@keyframes gradientLoop {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+    /* Slides the gradient continuously in one direction */
+  }
+}
+
+.animate-gradient-circular {
+  background-size: 200% auto !important;
+  animation: gradientLoop 8s linear infinite;
+  /* 'linear' keeps the wave speed perfectly constant */
 }
 
 /* --- ALATPay demo (/demo) premium light-mode helpers --- */
-.tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1, "ss01" 1; }
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "ss01" 1;
+}
 
 @keyframes demo-rise {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
-.demo-rise { animation: demo-rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
-.demo-rise-1 { animation-delay: 0.04s; }
-.demo-rise-2 { animation-delay: 0.10s; }
-.demo-rise-3 { animation-delay: 0.16s; }
-.demo-rise-4 { animation-delay: 0.22s; }
+
+.demo-rise {
+  animation: demo-rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.demo-rise-1 {
+  animation-delay: 0.04s;
+}
+
+.demo-rise-2 {
+  animation-delay: 0.10s;
+}
+
+.demo-rise-3 {
+  animation-delay: 0.16s;
+}
+
+.demo-rise-4 {
+  animation-delay: 0.22s;
+}
 
 /* soft, warm elevation for cards on the bone canvas */
-.demo-card-shadow { box-shadow: 0 1px 2px rgba(15, 31, 61, 0.04), 0 18px 40px -28px rgba(15, 31, 61, 0.28); }
+.demo-card-shadow {
+  box-shadow: 0 1px 2px rgba(15, 31, 61, 0.04), 0 18px 40px -28px rgba(15, 31, 61, 0.28);
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .demo-rise, .demo-rise-1, .demo-rise-2, .demo-rise-3, .demo-rise-4 { animation: none; }
+
+  .demo-rise,
+  .demo-rise-1,
+  .demo-rise-2,
+  .demo-rise-3,
+  .demo-rise-4 {
+    animation: none;
+  }
 }
