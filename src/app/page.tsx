@@ -139,12 +139,12 @@ export default function LandingPage() {
           </div>
         </div>
         {menuOpen && (
-          <div className="fixed top-[73px] right-5 w-[280px] z-40 h-fit rounded-3xl bg-white/90 backdrop-blur-lg md:hidden flex flex-col p-6 gap-2 border-l border-gray-100 shadow-2xl animate-in slide-in-from-top-10 duration-1000">
-            <Link href="#how" onClick={() => setMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">How it Works</Link>
-            <Link href="#why" onClick={() => setMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">Why Plugr</Link>
-            <Link href="#trades" onClick={() => setMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">Trades</Link>
-            <Link href="#faq" onClick={() => setMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">FAQ</Link>
-            <Link href="/demo" onClick={() => setMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">Try Demo</Link>
+          <div className="fixed top-[73px] right-5 w-[180px] z-40 h-fit rounded-3xl bg-white/95 backdrop-blur-2xl md:hidden flex flex-col p-6 gap-2 border border-white/20 shadow-2xl animate-in slide-in-from-top-10 duration-1000">
+            <Link href="#how" onClick={() => setMenuOpen(false)} className="text-md font-bold text-[#0A1529]">How it Works</Link>
+            <Link href="#why" onClick={() => setMenuOpen(false)} className="text-md font-bold text-[#0A1529]">Why Plugr</Link>
+            <Link href="#trades" onClick={() => setMenuOpen(false)} className="text-md font-bold text-[#0A1529]">Trades</Link>
+            <Link href="#faq" onClick={() => setMenuOpen(false)} className="text-md font-bold text-[#0A1529]">FAQ</Link>
+            <Link href="/demo" onClick={() => setMenuOpen(false)} className="text-md font-bold text-[#0A1529]">Try Demo</Link>
           </div>
         )}
       </nav>
