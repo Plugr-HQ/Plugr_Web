@@ -138,15 +138,12 @@ export default function LandingPage() {
           </div>
         </div>
         {menuOpen && (
-          <div className="md:hidden px-5 pb-5 pt-2 flex flex-col gap-3 border-t border-midnight/[0.06] bg-bone">
-            {NAV_LINKS.map((l) => (
-              <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)} className="text-midnight font-semibold py-1">
-                {l.label}
-              </a>
-            ))}
-            <Link href="/demo" onClick={() => setMenuOpen(false)} className="text-midnight font-semibold py-1">
-              Try demo
-            </Link>
+          <div className="fixed top-[73px] right-5 w-[280px] z-40 h-fit rounded-3xl bg-white/90 backdrop-blur-lg md:hidden flex flex-col p-6 gap-2 border-l border-gray-100 shadow-2xl animate-in slide-in-from-top-10 duration-1000">
+            <Link href="#how" onClick={() => setMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">How it Works</Link>
+            <Link href="#why" onClick={() => setMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">Why Plugr</Link>
+            <Link href="#trades" onClick={() => setMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">Trades</Link>
+            <Link href="#faq" onClick={() => setMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">FAQ</Link>
+            <Link href="/demo" onClick={() => setMenuOpen(false)} className="text-xl font-bold text-[#0A1529]">Try Demo</Link>
           </div>
         )}
       </nav>
