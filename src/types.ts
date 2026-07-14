@@ -53,4 +53,4 @@ export interface ChatMessage {
   timestamp: string;
 }
 
-interface Commit { }
+//interface Commit { }
