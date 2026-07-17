@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { ShieldCheck, Check, Loader2, Camera, ScanFace, LifeBuoy } from 'lucide-react';
 import { Shell } from '@/src/app/demo/_components/Shell';
 import { Card, Label, TextInput, GoldButton } from '@/src/app/demo/_components/ui';
+import { jsonFetch } from '@/src/app/demo/_lib/demo';
 import { cn } from '@/src/lib/utils';
 import {
   getPlugDraft,
@@ -157,9 +158,8 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
     setError(null);
     try {
       const d = getPlugDraft();
-      const res = await fetch('/api/plugs/register', {
+      const body = await jsonFetch('/api/plugs/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           firstName: d.firstName,
           lastName: d.lastName,
@@ -168,8 +168,6 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
           nin: d.nin ?? nin,
         }),
       });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body?.error ?? 'Could not finish setting up your account.');
 
       setPlugId(body.plug.id);
       setPlugOnboarded(true);

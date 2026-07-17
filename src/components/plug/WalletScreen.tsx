@@ -14,6 +14,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loader2, Lock, Clock, Check, Landmark, ShieldCheck, X, Wallet as WalletIcon } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { Card, Divider, Money, Label, TextInput, GoldButton } from '@/src/app/demo/_components/ui';
+import { jsonFetch } from '@/src/app/demo/_lib/demo';
 import {
   getPlugId,
   getPlugBank,
@@ -57,13 +58,12 @@ export function WalletScreen({ base }: { base: string }) {
   const load = useCallback(async () => {
     if (!plugId) return;
     try {
-      const res = await fetch(`/api/plugs/${plugId}/dashboard`);
-      const body = await res.json();
-      if (!res.ok) throw new Error(body?.error ?? 'Could not load your wallet.');
+      const body = await jsonFetch(`/api/plugs/${plugId}/dashboard`);
       setData(body);
       setLeft(body.lock?.seconds ?? null);
+      setError(null);
     } catch (e: any) {
-      setError(e.message);
+      setError(/plug not found/i.test(e?.message ?? '') ? 'Your session expired. Sign in again.' : e.message);
     }
   }, [plugId]);
 

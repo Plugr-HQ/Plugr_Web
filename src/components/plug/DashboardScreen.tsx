@@ -16,7 +16,8 @@ import { useRouter } from 'next/navigation';
 import { Loader2, Clock, Briefcase, ArrowRight, ShieldCheck, Wallet as WalletIcon } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { Card, Money } from '@/src/app/demo/_components/ui';
-import { getPlugId } from '@/src/app/app/_lib/plugAuth';
+import { jsonFetch } from '@/src/app/demo/_lib/demo';
+import { getPlugId, signOutPlug } from '@/src/app/app/_lib/plugAuth';
 import { PlugShell, BadgeChip, JobStatusChip, EmptyState, plugTier } from './PlugChrome';
 
 function hhmm(total: number) {
@@ -41,15 +42,22 @@ export function DashboardScreen({ base }: { base: string }) {
   const load = useCallback(async () => {
     if (!plugId) return;
     try {
-      const res = await fetch(`/api/plugs/${plugId}/dashboard`);
-      const body = await res.json();
-      if (!res.ok) throw new Error(body?.error ?? 'Could not load your dashboard.');
+      // jsonFetch tolerates non-JSON responses instead of throwing a raw parse error
+      const body = await jsonFetch(`/api/plugs/${plugId}/dashboard`);
       setData(body);
       setLeft(body.lock?.seconds ?? null);
+      setError(null);
     } catch (e: any) {
+      // Stale session (plug no longer exists) — sign out rather than stranding the user
+      // on a dead error card they can't leave.
+      if (/plug not found/i.test(e?.message ?? '')) {
+        signOutPlug();
+        router.replace(`${base}/auth/phone`);
+        return;
+      }
       setError(e.message);
     }
-  }, [plugId]);
+  }, [plugId, base, router]);
 
   // no session -> back to phone auth
   useEffect(() => {

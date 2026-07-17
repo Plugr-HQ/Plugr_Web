@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { Card, Divider, GoldButton, Label, TextInput } from '@/src/app/demo/_components/ui';
+import { jsonFetch } from '@/src/app/demo/_lib/demo';
 import { getPlugId } from '@/src/app/app/_lib/plugAuth';
 import { buildProfile } from '@/src/app/app/_lib/profile';
 import { PlugShell, BadgeChip, EmptyState, plugTier } from './PlugChrome';
@@ -75,14 +76,13 @@ export function PlugProfileScreen({ base }: { base: string }) {
   const load = useCallback(async () => {
     if (!plugId) return;
     try {
-      const res = await fetch(`/api/plugs/${plugId}`);
-      const body = await res.json();
-      if (!res.ok) throw new Error(body?.error ?? 'Could not load your profile.');
+      const body = await jsonFetch(`/api/plugs/${plugId}`);
       setPlug(body.plug);
       setBio(body.plug.bio ?? '');
       setPhoto(body.plug.photo_url ?? null);
+      setError(null);
     } catch (e: any) {
-      setError(e.message);
+      setError(/plug not found/i.test(e?.message ?? '') ? 'Your session expired. Sign in again.' : e.message);
     }
   }, [plugId]);
 
