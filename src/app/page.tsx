@@ -25,7 +25,7 @@ import {
   Mail,
   Phone,
 } from 'lucide-react';
-import { FaWhatsapp } from 'react-icons/fa';
+import { FaWhatsapp, FaInstagram, FaXTwitter } from 'react-icons/fa6';
 import { PlugrWordmark, PlugrMark } from '@/src/components/Brand';
 
 const IMG = {
@@ -34,6 +34,12 @@ const IMG = {
   plumber: 'https://images.unsplash.com/photo-1676210133055-eab6ef033ce3?w=700&h=460&fit=crop&q=80&auto=format',
   furniture: 'https://images.unsplash.com/photo-1631396326646-c06a935ff3a6?w=700&h=460&fit=crop&q=80&auto=format',
 };
+
+const SOCIALS = [
+  { label: 'Plugr on Instagram', href: 'https://www.instagram.com/getplugr', icon: <FaInstagram className="w-[18px] h-[18px]" />, external: true },
+  { label: 'Plugr on X', href: 'https://x.com/getplugr', icon: <FaXTwitter className="w-[17px] h-[17px]" />, external: true },
+  { label: 'Email Plugr', href: 'mailto:hello@getplugr.com', icon: <Mail className="w-[18px] h-[18px]" />, external: false },
+];
 
 const NAV_LINKS = [
   { label: 'How it works', href: '#how' },
@@ -493,6 +499,21 @@ export default function LandingPage() {
               <a href="tel:+2348180147857" className="flex items-center gap-2 hover:text-gold transition-colors">
                 <Phone className="w-4 h-4" /> +234 818 014 7857
               </a>
+            </div>
+
+            {/* Socials */}
+            <div className="mt-6 flex items-center gap-2.5">
+              {SOCIALS.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  aria-label={s.label}
+                  {...(s.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  className="grid place-items-center h-10 w-10 rounded-full border border-white/15 text-white/80 hover:text-midnight hover:bg-gold hover:border-gold transition-colors"
+                >
+                  {s.icon}
+                </a>
+              ))}
             </div>
           </div>
           <div>
