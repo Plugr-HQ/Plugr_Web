@@ -22,11 +22,10 @@ import {
   Menu,
   X,
   Plus,
-  Mail,
-  Phone,
 } from 'lucide-react';
-import { FaWhatsapp, FaInstagram, FaXTwitter } from 'react-icons/fa6';
+import { FaWhatsapp } from 'react-icons/fa6';
 import { PlugrWordmark, PlugrMark } from '@/src/components/Brand';
+import { SiteFooter } from '@/src/components/SiteFooter';
 
 const IMG = {
   hero: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1000&h=1200&fit=crop&q=80&auto=format',
@@ -34,12 +33,6 @@ const IMG = {
   plumber: 'https://images.unsplash.com/photo-1676210133055-eab6ef033ce3?w=700&h=460&fit=crop&q=80&auto=format',
   furniture: 'https://images.unsplash.com/photo-1631396326646-c06a935ff3a6?w=700&h=460&fit=crop&q=80&auto=format',
 };
-
-const SOCIALS = [
-  { label: 'Plugr on Instagram', href: 'https://www.instagram.com/getplugr', icon: <FaInstagram className="w-[18px] h-[18px]" />, external: true },
-  { label: 'Plugr on X', href: 'https://x.com/getplugr', icon: <FaXTwitter className="w-[17px] h-[17px]" />, external: true },
-  { label: 'Email Plugr', href: 'mailto:hello@getplugr.com', icon: <Mail className="w-[18px] h-[18px]" />, external: false },
-];
 
 const NAV_LINKS = [
   { label: 'How it works', href: '#how' },
@@ -485,59 +478,7 @@ export default function LandingPage() {
       </section>
 
       {/* ----------------------------------------------------------------- Footer */}
-      <footer className="bg-midnight text-white px-5 py-14">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-[1.4fr_1fr_1fr] gap-10">
-          <div>
-            <PlugrWordmark className="h-6 text-white" />
-            <p className="mt-4 text-sm text-steel-blue max-w-xs leading-relaxed">
-              Pledging allegiance to your success. The trusted network for verified artisans in Lagos.
-            </p>
-            <div className="mt-5 space-y-2 text-sm text-steel-blue">
-              <a href="mailto:hello@getplugr.com" className="flex items-center gap-2 hover:text-gold transition-colors">
-                <Mail className="w-4 h-4" /> hello@getplugr.com
-              </a>
-              <a href="tel:+2348180147857" className="flex items-center gap-2 hover:text-gold transition-colors">
-                <Phone className="w-4 h-4" /> +234 818 014 7857
-              </a>
-            </div>
-
-            {/* Socials */}
-            <div className="mt-6 flex items-center gap-2.5">
-              {SOCIALS.map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  aria-label={s.label}
-                  {...(s.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                  className="grid place-items-center h-10 w-10 rounded-full border border-white/15 text-white/80 hover:text-midnight hover:bg-gold hover:border-gold transition-colors"
-                >
-                  {s.icon}
-                </a>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/50 mb-4">Quick links</p>
-            <ul className="space-y-2.5 text-sm text-steel-blue">
-              <li><a href="#how" className="hover:text-gold transition-colors">How it works</a></li>
-              <li><Link href="/app/browse" className="hover:text-gold transition-colors">Book a Plug</Link></li>
-              <li><Link href="/app/onboarding" className="hover:text-gold transition-colors">Become a Plug</Link></li>
-              <li><Link href="/app/browse" className="hover:text-gold transition-colors">Use Plugr</Link></li>
-            </ul>
-          </div>
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/50 mb-4">Legal</p>
-            <ul className="space-y-2.5 text-sm text-steel-blue">
-              <li><Link href="/privacy" className="hover:text-gold transition-colors">Privacy Policy</Link></li>
-              <li><a href="#" className="hover:text-gold transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-gold transition-colors">Dispute Policy</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="max-w-6xl mx-auto mt-12 pt-6 border-t border-white/10 text-[11px] uppercase tracking-[0.14em] text-white/40">
-          © 2026 Alhazen. All rights reserved.
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

@@ -1,8 +1,10 @@
 // app/privacy/page.tsx
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import Navbar from '@/src/components/Navbar';
-import Footer from '@/src/components/Footer';
+import Link from 'next/link';
+import { ArrowRight, Download, ShieldCheck } from 'lucide-react';
+import { PlugrWordmark } from '@/src/components/Brand';
+import { SiteFooter } from '@/src/components/SiteFooter';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Plugr',
@@ -11,60 +13,78 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <main className="min-h-screen bg-[#F5F1EC]">
-      <Navbar />
+    <main className="min-h-screen bg-bone text-midnight font-body antialiased">
+      {/* Nav — matches the landing */}
+      <nav className="fixed top-0 inset-x-0 z-50 bg-bone/80 backdrop-blur border-b border-midnight/[0.06]">
+        <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+          <a href="/" className="flex items-center">
+            <PlugrWordmark className="h-6 text-midnight" />
+          </a>
+          <div className="flex items-center gap-4">
+            <Link href="/demo" className="hidden md:inline-flex text-sm font-semibold text-midnight/70 hover:text-gold transition-colors">
+              Try demo
+            </Link>
+            <Link
+              href="/app/browse"
+              className="inline-flex items-center gap-1.5 rounded-pill bg-gold text-midnight text-sm font-bold px-4 sm:px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all"
+            >
+              Use Plugr <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </nav>
+
       {/* Header */}
-      <div className="bg-[#0F1F3D] pt-28 pb-16 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl font-bold text-white mb-3">Plugr</h1>
-          <h2 className="text-2xl font-semibold text-[#D4C5A0] mb-2">Privacy Policy</h2>
-          <p className="text-[#B0A080] text-sm">
-            Version 1.0 &nbsp;|&nbsp; Effective Date: July 2026 &nbsp;|&nbsp; getplugr.com
+      <header className="pt-28 md:pt-36 pb-14 px-5 border-b border-midnight/[0.06]">
+        <div className="max-w-3xl mx-auto">
+          <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-gold">
+            <span className="h-px w-6 bg-gold/50" /> Legal
+          </span>
+          <h1 className="mt-4 font-display text-[2.75rem] md:text-[3.5rem] leading-[1.02] text-midnight">
+            Privacy <span className="text-gold">Policy</span>
+          </h1>
+          <p className="mt-4 text-sm text-slate">
+            Version 1.0 &nbsp;·&nbsp; Effective July 2026 &nbsp;·&nbsp; getplugr.com
           </p>
         </div>
-      </div>
+      </header>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 py-12">
-
-        {/* Intro */}
-        <div className="bg-[#F0F4FF] border-l-4 border-[#E8A020] rounded-lg p-6 mb-10">
-          <p className="text-[#4A4A4A] leading-relaxed text-justify">
-            Plugr Technologies Limited (&quot;Plugr,&quot; &quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to
-            protecting your personal information. This Privacy Policy explains how we collect, use, share,
-            and safeguard your data when you use the Plugr platform — including our website at{' '}
-            <strong>getplugr.com</strong>, mobile applications, and WhatsApp-based services. By accessing
-            or using Plugr, you agree to the practices described in this policy.
+      <div className="max-w-3xl mx-auto px-5 py-12">
+        {/* Intro + download */}
+        <div className="flex flex-col-reverse sm:flex-row sm:items-start sm:justify-between gap-6 mb-12">
+          <p className="flex-1 text-[15px] leading-relaxed text-slate">
+            Plugr Technologies Limited (“Plugr,” “we,” “our,” or “us”) is committed to protecting your
+            personal information. This Privacy Policy explains how we collect, use, share, and safeguard
+            your data when you use the Plugr platform — including our website at{' '}
+            <strong className="text-midnight font-semibold">getplugr.com</strong>, mobile applications, and
+            WhatsApp-based services. By accessing or using Plugr, you agree to the practices described in
+            this policy.
           </p>
-        </div>
-
-        {/* Download CTA */}
-        <div className="flex justify-end mb-8">
           <a
             href="/Plugr_Privacy_Policy.pdf"
             download
-            className="flex items-center gap-2 bg-[#0F1F3D] text-white text-sm font-semibold px-5 py-3 rounded-full hover:bg-[#1a2f4f] transition"
+            className="shrink-0 inline-flex items-center justify-center gap-2 rounded-pill border border-midnight/15 bg-white text-midnight text-sm font-bold px-5 py-3 hover:border-gold hover:text-gold transition-colors"
           >
-            ⬇ Download PDF Version
+            <Download className="w-4 h-4" /> Download PDF
           </a>
         </div>
 
-        {/* Sections */}
         <Section number="1" title="Information We Collect">
           <SubSection title="1.1 Information You Provide Directly">
-            <p className="text-[#4A4A4A] text-sm">When you register or use Plugr, we collect information you provide to us, including:</p>
+            <p className="text-sm text-slate">When you register or use Plugr, we collect information you provide to us, including:</p>
             <BulletList items={[
-              <><strong>Identity Information:</strong> Full name, National Identity Number (NIN), profile photograph.</>,
-              <><strong>Contact Information:</strong> Phone number, email address, WhatsApp number.</>,
-              <><strong>Location Information:</strong> City and state of residence or service area.</>,
-              <><strong>Professional Information (Plugs only):</strong> Trade/skill category (e.g., electrician, plumber), work history, certifications.</>,
-              <><strong>Account Credentials:</strong> Authentication tokens and session data.</>,
-              <><strong>Communications:</strong> Messages sent through our WhatsApp interface or in-app chat.</>,
+              <><strong className="text-midnight font-semibold">Identity Information:</strong> Full name, National Identity Number (NIN), profile photograph.</>,
+              <><strong className="text-midnight font-semibold">Contact Information:</strong> Phone number, email address, WhatsApp number.</>,
+              <><strong className="text-midnight font-semibold">Location Information:</strong> City and state of residence or service area.</>,
+              <><strong className="text-midnight font-semibold">Professional Information (Plugs only):</strong> Trade/skill category (e.g., electrician, plumber), work history, certifications.</>,
+              <><strong className="text-midnight font-semibold">Account Credentials:</strong> Authentication tokens and session data.</>,
+              <><strong className="text-midnight font-semibold">Communications:</strong> Messages sent through our WhatsApp interface or in-app chat.</>,
             ]} />
           </SubSection>
 
           <SubSection title="1.2 Information Collected Automatically">
-            <p className="text-[#4A4A4A] text-sm">When you interact with our platform, we automatically collect:</p>
+            <p className="text-sm text-slate">When you interact with our platform, we automatically collect:</p>
             <BulletList items={[
               'Device information (type, operating system, browser).',
               'IP address and approximate geographic location.',
@@ -75,11 +95,11 @@ export default function PrivacyPolicyPage() {
           </SubSection>
 
           <SubSection title="1.3 Information from Third Parties">
-            <p className="text-[#4A4A4A] text-sm">We may receive information about you from:</p>
+            <p className="text-sm text-slate">We may receive information about you from:</p>
             <BulletList items={[
-              <><strong>NIMC:</strong> To verify your NIN during onboarding.</>,
-              <><strong>Meta Platforms:</strong> When you interact with us via WhatsApp Business API.</>,
-              <><strong>Payment Processors:</strong> Transaction status and confirmation data (we do not store full card details).</>,
+              <><strong className="text-midnight font-semibold">NIMC:</strong> To verify your NIN during onboarding.</>,
+              <><strong className="text-midnight font-semibold">Meta Platforms:</strong> When you interact with us via WhatsApp Business API.</>,
+              <><strong className="text-midnight font-semibold">Payment Processors:</strong> Transaction status and confirmation data (we do not store full card details).</>,
             ]} />
           </SubSection>
 
@@ -90,18 +110,18 @@ export default function PrivacyPolicyPage() {
         </Section>
 
         <Section number="2" title="How We Use Your Information">
-          <p className="text-[#4A4A4A] mb-4 text-sm">Plugr uses your personal information for the following purposes:</p>
+          <p className="text-sm text-slate mb-4">Plugr uses your personal information for the following purposes:</p>
           <BulletList items={[
-            <><strong>Account Creation and Management:</strong> To register, authenticate, and manage your Plugr account.</>,
-            <><strong>Identity Verification:</strong> To verify the identity of Plugs using government-issued NIN.</>,
-            <><strong>Service Matching:</strong> To connect Clients with verified Plugs based on location, trade, and availability.</>,
-            <><strong>WhatsApp Communication:</strong> To send service notifications, onboarding flows, job updates, and support messages.</>,
-            <><strong>Payment Processing:</strong> To facilitate secure transactions between Clients and Plugs.</>,
-            <><strong>Platform Safety:</strong> To detect fraud, abuse, and policy violations.</>,
-            <><strong>Customer Support:</strong> To respond to inquiries and resolve disputes.</>,
-            <><strong>Analytics and Improvement:</strong> To understand usage patterns and improve our services.</>,
-            <><strong>Legal Compliance:</strong> To comply with applicable Nigerian laws and regulations.</>,
-            <><strong>Marketing (with consent):</strong> To send promotional communications about Plugr features and offers.</>,
+            <><strong className="text-midnight font-semibold">Account Creation and Management:</strong> To register, authenticate, and manage your Plugr account.</>,
+            <><strong className="text-midnight font-semibold">Identity Verification:</strong> To verify the identity of Plugs using government-issued NIN.</>,
+            <><strong className="text-midnight font-semibold">Service Matching:</strong> To connect Clients with verified Plugs based on location, trade, and availability.</>,
+            <><strong className="text-midnight font-semibold">WhatsApp Communication:</strong> To send service notifications, onboarding flows, job updates, and support messages.</>,
+            <><strong className="text-midnight font-semibold">Payment Processing:</strong> To facilitate secure transactions between Clients and Plugs.</>,
+            <><strong className="text-midnight font-semibold">Platform Safety:</strong> To detect fraud, abuse, and policy violations.</>,
+            <><strong className="text-midnight font-semibold">Customer Support:</strong> To respond to inquiries and resolve disputes.</>,
+            <><strong className="text-midnight font-semibold">Analytics and Improvement:</strong> To understand usage patterns and improve our services.</>,
+            <><strong className="text-midnight font-semibold">Legal Compliance:</strong> To comply with applicable Nigerian laws and regulations.</>,
+            <><strong className="text-midnight font-semibold">Marketing (with consent):</strong> To send promotional communications about Plugr features and offers.</>,
           ]} />
           <Note>
             We will never sell your personal data to advertisers or third-party data brokers. Your data
@@ -110,15 +130,15 @@ export default function PrivacyPolicyPage() {
         </Section>
 
         <Section number="3" title="Legal Basis for Processing">
-          <p className="text-[#4A4A4A] mb-4 text-sm">
+          <p className="text-sm text-slate mb-4">
             We process your personal data under the following legal bases in accordance with the
             Nigeria Data Protection Act (NDPA) 2023:
           </p>
           <BulletList items={[
-            <><strong>Contractual Necessity:</strong> Processing required to provide the services you have requested.</>,
-            <><strong>Legitimate Interests:</strong> Processing necessary for fraud prevention, platform security, and service improvement.</>,
-            <><strong>Legal Obligation:</strong> Processing required to comply with applicable Nigerian laws.</>,
-            <><strong>Consent:</strong> Processing based on your explicit consent, which you may withdraw at any time.</>,
+            <><strong className="text-midnight font-semibold">Contractual Necessity:</strong> Processing required to provide the services you have requested.</>,
+            <><strong className="text-midnight font-semibold">Legitimate Interests:</strong> Processing necessary for fraud prevention, platform security, and service improvement.</>,
+            <><strong className="text-midnight font-semibold">Legal Obligation:</strong> Processing required to comply with applicable Nigerian laws.</>,
+            <><strong className="text-midnight font-semibold">Consent:</strong> Processing based on your explicit consent, which you may withdraw at any time.</>,
           ]} />
         </Section>
 
@@ -132,21 +152,21 @@ export default function PrivacyPolicyPage() {
           </SubSection>
           <SubSection title="4.2 With Service Providers">
             <BulletList items={[
-              <><strong>Cloud Infrastructure:</strong> Render (hosting), Neon (database), Upstash (caching).</>,
-              <><strong>AI Services:</strong> Google Gemini for conversational AI features.</>,
-              <><strong>Identity Verification:</strong> NIMC-accredited NIN verification providers.</>,
-              <><strong>Payment Processing:</strong> Paystack for secure payment handling.</>,
-              <><strong>Messaging:</strong> Meta Platforms for WhatsApp Business API services.</>,
+              <><strong className="text-midnight font-semibold">Cloud Infrastructure:</strong> Render (hosting), Neon (database), Upstash (caching).</>,
+              <><strong className="text-midnight font-semibold">AI Services:</strong> Google Gemini for conversational AI features.</>,
+              <><strong className="text-midnight font-semibold">Identity Verification:</strong> NIMC-accredited NIN verification providers.</>,
+              <><strong className="text-midnight font-semibold">Payment Processing:</strong> Paystack for secure payment handling.</>,
+              <><strong className="text-midnight font-semibold">Messaging:</strong> Meta Platforms for WhatsApp Business API services.</>,
             ]} />
           </SubSection>
           <SubSection title="4.3 Legal Disclosures">
-            <p className="text-[#4A4A4A] text-sm">
+            <p className="text-sm text-slate">
               We may disclose your information when required by law, court order, or government authority,
               or when necessary to protect the rights, property, or safety of Plugr, our users, or the public.
             </p>
           </SubSection>
           <SubSection title="4.4 Business Transfers">
-            <p className="text-[#4A4A4A] text-sm">
+            <p className="text-sm text-slate">
               In the event of a merger, acquisition, or sale of assets, your data may be transferred to
               the successor entity, subject to the same privacy protections described in this policy.
             </p>
@@ -155,26 +175,26 @@ export default function PrivacyPolicyPage() {
 
         <Section number="5" title="Data Retention">
           <BulletList items={[
-            <><strong>Active Account Data:</strong> Retained for the duration of your account and for 2 years after closure.</>,
-            <><strong>Transaction Records:</strong> Retained for 7 years in compliance with Nigerian financial regulations.</>,
-            <><strong>NIN Verification Records:</strong> Retained for the period required by NIMC guidelines.</>,
-            <><strong>Communication Logs:</strong> Retained for 1 year for dispute resolution and safety purposes.</>,
-            <><strong>Marketing Data:</strong> Retained until you withdraw consent or request deletion.</>,
+            <><strong className="text-midnight font-semibold">Active Account Data:</strong> Retained for the duration of your account and for 2 years after closure.</>,
+            <><strong className="text-midnight font-semibold">Transaction Records:</strong> Retained for 7 years in compliance with Nigerian financial regulations.</>,
+            <><strong className="text-midnight font-semibold">NIN Verification Records:</strong> Retained for the period required by NIMC guidelines.</>,
+            <><strong className="text-midnight font-semibold">Communication Logs:</strong> Retained for 1 year for dispute resolution and safety purposes.</>,
+            <><strong className="text-midnight font-semibold">Marketing Data:</strong> Retained until you withdraw consent or request deletion.</>,
           ]} />
-          <p className="text-[#4A4A4A] mt-4 text-sm">
+          <p className="text-sm text-slate mt-4">
             When data is no longer required, we securely delete or anonymise it in accordance with industry best practices.
           </p>
         </Section>
 
         <Section number="6" title="Data Security">
           <BulletList items={[
-            <><strong>Encryption in Transit:</strong> All data transmitted is encrypted using TLS 1.3.</>,
-            <><strong>Encryption at Rest:</strong> Sensitive data stored in our databases is encrypted at rest.</>,
-            <><strong>WhatsApp Flow Encryption:</strong> All data exchanged through WhatsApp Flows is end-to-end encrypted using RSA-2048 and AES-128.</>,
-            <><strong>Access Controls:</strong> Role-based access controls limit data access to authorised personnel only.</>,
-            <><strong>Authentication:</strong> JWT-based authentication with token refresh mechanisms.</>,
-            <><strong>Rate Limiting:</strong> API rate limiting to prevent abuse and brute-force attacks.</>,
-            <><strong>Regular Audits:</strong> Periodic security assessments and vulnerability testing.</>,
+            <><strong className="text-midnight font-semibold">Encryption in Transit:</strong> All data transmitted is encrypted using TLS 1.3.</>,
+            <><strong className="text-midnight font-semibold">Encryption at Rest:</strong> Sensitive data stored in our databases is encrypted at rest.</>,
+            <><strong className="text-midnight font-semibold">WhatsApp Flow Encryption:</strong> All data exchanged through WhatsApp Flows is end-to-end encrypted using RSA-2048 and AES-128.</>,
+            <><strong className="text-midnight font-semibold">Access Controls:</strong> Role-based access controls limit data access to authorised personnel only.</>,
+            <><strong className="text-midnight font-semibold">Authentication:</strong> JWT-based authentication with token refresh mechanisms.</>,
+            <><strong className="text-midnight font-semibold">Rate Limiting:</strong> API rate limiting to prevent abuse and brute-force attacks.</>,
+            <><strong className="text-midnight font-semibold">Regular Audits:</strong> Periodic security assessments and vulnerability testing.</>,
           ]} />
           <Note>
             While we employ industry-standard security measures, no system is completely secure.
@@ -183,22 +203,22 @@ export default function PrivacyPolicyPage() {
         </Section>
 
         <Section number="7" title="Your Privacy Rights">
-          <p className="text-[#4A4A4A] mb-4 text-sm">
+          <p className="text-sm text-slate mb-4">
             Under the Nigeria Data Protection Act (NDPA) 2023, you have the following rights:
           </p>
           <BulletList items={[
-            <><strong>Right of Access:</strong> Request a copy of the personal data we hold about you.</>,
-            <><strong>Right to Rectification:</strong> Request correction of inaccurate or incomplete data.</>,
-            <><strong>Right to Erasure:</strong> Request deletion of your data where we have no legitimate reason to continue processing it.</>,
-            <><strong>Right to Restriction:</strong> Request that we restrict processing in certain circumstances.</>,
-            <><strong>Right to Data Portability:</strong> Receive your data in a structured, machine-readable format.</>,
-            <><strong>Right to Object:</strong> Object to processing based on legitimate interests or for marketing purposes.</>,
-            <><strong>Right to Withdraw Consent:</strong> Withdraw consent at any time where processing is consent-based.</>,
-            <><strong>Right to Lodge a Complaint:</strong> File a complaint with the Nigeria Data Protection Commission (NDPC).</>,
+            <><strong className="text-midnight font-semibold">Right of Access:</strong> Request a copy of the personal data we hold about you.</>,
+            <><strong className="text-midnight font-semibold">Right to Rectification:</strong> Request correction of inaccurate or incomplete data.</>,
+            <><strong className="text-midnight font-semibold">Right to Erasure:</strong> Request deletion of your data where we have no legitimate reason to continue processing it.</>,
+            <><strong className="text-midnight font-semibold">Right to Restriction:</strong> Request that we restrict processing in certain circumstances.</>,
+            <><strong className="text-midnight font-semibold">Right to Data Portability:</strong> Receive your data in a structured, machine-readable format.</>,
+            <><strong className="text-midnight font-semibold">Right to Object:</strong> Object to processing based on legitimate interests or for marketing purposes.</>,
+            <><strong className="text-midnight font-semibold">Right to Withdraw Consent:</strong> Withdraw consent at any time where processing is consent-based.</>,
+            <><strong className="text-midnight font-semibold">Right to Lodge a Complaint:</strong> File a complaint with the Nigeria Data Protection Commission (NDPC).</>,
           ]} />
-          <p className="text-[#4A4A4A] mt-4 text-sm">
-            To exercise any of these rights, contact us at <strong>privacy@getplugr.com</strong>.
-            We will respond within 30 days.
+          <p className="text-sm text-slate mt-4">
+            To exercise any of these rights, contact us at{' '}
+            <strong className="text-midnight font-semibold">privacy@getplugr.com</strong>. We will respond within 30 days.
           </p>
         </Section>
 
@@ -209,41 +229,41 @@ export default function PrivacyPolicyPage() {
             'We do not share your WhatsApp data with third parties beyond what is necessary to provide the service.',
             'You can opt out of WhatsApp communications at any time by replying STOP to any Plugr message.',
           ]} />
-          <p className="text-[#4A4A4A] mt-4 text-sm">
+          <p className="text-sm text-slate mt-4">
             Plugr is not responsible for the privacy practices of third-party platforms. We encourage you
             to review the privacy policies of Meta, Paystack, and other service providers you interact with.
           </p>
         </Section>
 
         <Section number="9" title="Children's Privacy">
-          <p className="text-[#4A4A4A] mb-4 text-sm">
+          <p className="text-sm text-slate mb-4">
             Plugr services are intended for individuals who are 18 years of age or older. We do not
             knowingly collect personal information from minors under the age of 18.
           </p>
-          <p className="text-[#4A4A4A] text-sm">
+          <p className="text-sm text-slate">
             If you believe we have inadvertently collected information from a minor, please contact us
-            immediately at <strong>privacy@getplugr.com</strong> and we will delete such information promptly.
+            immediately at <strong className="text-midnight font-semibold">privacy@getplugr.com</strong> and we will delete such information promptly.
           </p>
         </Section>
 
         <Section number="10" title="Cookies and Tracking Technologies">
           <BulletList items={[
-            <><strong>Essential Cookies:</strong> Required for the platform to function correctly (authentication, session management).</>,
-            <><strong>Analytics Cookies:</strong> Help us understand how users interact with our platform.</>,
-            <><strong>Preference Cookies:</strong> Remember your settings and preferences.</>,
+            <><strong className="text-midnight font-semibold">Essential Cookies:</strong> Required for the platform to function correctly (authentication, session management).</>,
+            <><strong className="text-midnight font-semibold">Analytics Cookies:</strong> Help us understand how users interact with our platform.</>,
+            <><strong className="text-midnight font-semibold">Preference Cookies:</strong> Remember your settings and preferences.</>,
           ]} />
-          <p className="text-[#4A4A4A] mt-4 text-sm">
+          <p className="text-sm text-slate mt-4">
             You can control cookies through your browser settings. We do not use cookies for
             cross-site advertising or tracking.
           </p>
         </Section>
 
         <Section number="11" title="International Data Transfers">
-          <p className="text-[#4A4A4A] mb-4 text-sm">
+          <p className="text-sm text-slate mb-4">
             Plugr is incorporated in Nigeria and primarily processes data within Nigeria. However, some
             third-party providers may process data outside Nigeria, including in the United States and EU.
           </p>
-          <p className="text-[#4A4A4A] text-sm">
+          <p className="text-sm text-slate">
             Where data is transferred internationally, we ensure appropriate safeguards are in place in
             accordance with the NDPA 2023.
           </p>
@@ -255,81 +275,69 @@ export default function PrivacyPolicyPage() {
             'We will notify registered users via email or WhatsApp message.',
             'For material changes, we may request renewed consent where required by law.',
           ]} />
-          <p className="text-[#4A4A4A] mt-4 text-sm">
+          <p className="text-sm text-slate mt-4">
             Your continued use of the Plugr platform after the effective date constitutes acceptance
             of the updated policy.
           </p>
         </Section>
 
         <Section number="13" title="Contact Us">
-          <div className="bg-[#0F1F3D] rounded-2xl p-8 text-center mt-4">
-            <p className="text-white font-bold text-lg mb-1">Plugr Technologies Limited</p>
-            <p className="text-[#D4C5A0] text-sm mb-1">A subsidiary of Alhazen</p>
-            <p className="text-[#D4C5A0] text-sm mb-6">Lagos, Nigeria</p>
-            <div className="space-y-2 text-sm">
-              <p className="text-[#D4C5A0]">
-                <span className="text-white font-semibold">Privacy Inquiries:</span> privacy@getplugr.com
-              </p>
-              <p className="text-[#D4C5A0]">
-                <span className="text-white font-semibold">General Support:</span> support@getplugr.com
-              </p>
-              <p className="text-[#D4C5A0]">
-                <span className="text-white font-semibold">Website:</span> https://getplugr.com
-              </p>
+          <div className="rounded-[24px] bg-midnight text-white p-8 mt-2 text-center">
+            <span className="mx-auto mb-4 grid place-items-center h-12 w-12 rounded-2xl bg-gold/15">
+              <ShieldCheck className="w-6 h-6 text-gold" />
+            </span>
+            <p className="font-display text-xl text-white">Plugr Technologies Limited</p>
+            <p className="text-steel-blue text-sm mt-1">A subsidiary of Alhazen · Lagos, Nigeria</p>
+
+            <div className="mt-6 space-y-2 text-sm">
+              <p className="text-steel-blue"><span className="text-white font-semibold">Privacy inquiries:</span> privacy@getplugr.com</p>
+              <p className="text-steel-blue"><span className="text-white font-semibold">General support:</span> support@getplugr.com</p>
+              <p className="text-steel-blue"><span className="text-white font-semibold">Website:</span> getplugr.com</p>
             </div>
-            <div className="mt-6 pt-6 border-t border-[#1a2f4f]">
-              <p className="text-[#B0A080] text-sm">For regulatory complaints:</p>
-              <p className="text-white font-semibold text-sm">Nigeria Data Protection Commission (NDPC)</p>
-              <p className="text-[#B0A080] text-sm">www.ndpc.gov.ng</p>
+
+            <div className="mt-6 pt-6 border-t border-white/10">
+              <p className="text-steel-blue text-[13px]">For regulatory complaints</p>
+              <p className="text-white font-semibold text-sm mt-0.5">Nigeria Data Protection Commission (NDPC)</p>
+              <p className="text-steel-blue text-[13px]">www.ndpc.gov.ng</p>
             </div>
           </div>
         </Section>
-
       </div>
-      <Footer />
+
+      <SiteFooter />
     </main>
   );
 }
 
 // ── COMPONENTS ────────────────────────────────────────────────────────────────
 
-function Section({ number, title, children }: {
-  number: string;
-  title: string;
-  children: ReactNode;
-}) {
+function Section({ number, title, children }: { number: string; title: string; children: ReactNode }) {
   return (
-    <section className="mb-10">
-      <div className="border-t border-[#E0E0E0] pt-6 mb-4">
-        <h2 className="text-xl font-bold text-[#0F1F3D]">
-          {number}. {title}
-        </h2>
+    <section className="mb-12 border-t border-midnight/[0.08] pt-8">
+      <div className="flex items-baseline gap-3 mb-5">
+        <span className="font-display text-lg text-gold tnum">{number.padStart(2, '0')}</span>
+        <h2 className="font-display text-[1.6rem] leading-tight text-midnight">{title}</h2>
       </div>
       <div className="space-y-4">{children}</div>
     </section>
   );
 }
 
-function SubSection({ title, children }: {
-  title: string;
-  children: ReactNode;
-}) {
+function SubSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="mb-4">
-      <h3 className="text-base font-bold text-[#E8A020] mb-3">{title}</h3>
+      <h3 className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-3">{title}</h3>
       <div className="space-y-2">{children}</div>
     </div>
   );
 }
 
-function BulletList({ items }: {
-  items: ReactNode[];
-}) {
+function BulletList({ items }: { items: ReactNode[] }) {
   return (
-    <ul className="space-y-2 mt-2">
+    <ul className="space-y-2.5 mt-2">
       {items.map((item, i) => (
-        <li key={i} className="flex gap-3 text-[#4A4A4A] text-sm leading-relaxed">
-          <span className="text-[#E8A020] mt-1 shrink-0">•</span>
+        <li key={i} className="flex gap-3 text-sm leading-relaxed text-slate">
+          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-gold shrink-0" />
           <span>{item}</span>
         </li>
       ))}
@@ -337,12 +345,10 @@ function BulletList({ items }: {
   );
 }
 
-function Note({ children }: {
-  children: ReactNode;
-}) {
+function Note({ children }: { children: ReactNode }) {
   return (
-    <div className="bg-[#FFF8EC] border-l-4 border-[#E8A020] rounded-r-lg p-4 mt-4">
-      <p className="text-[#0F1F3D] text-sm font-medium leading-relaxed">{children}</p>
+    <div className="rounded-2xl bg-gold/[0.08] border border-gold/20 p-4 mt-4">
+      <p className="text-sm font-medium leading-relaxed text-midnight">{children}</p>
     </div>
   );
 }
