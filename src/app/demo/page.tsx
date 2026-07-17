@@ -9,9 +9,14 @@
 import Link from 'next/link';
 import { User, Wrench, ArrowRight } from 'lucide-react';
 import { PlugrWordmark, Eyebrow } from './_components/ui';
+import { Splash, useSplash } from '@/src/components/Splash';
 
 export default function RoleSelectPage() {
+  const splashDone = useSplash();
+
   return (
+    <>
+    <Splash done={splashDone} />
     <main className="min-h-screen bg-bone text-midnight font-body antialiased flex justify-center">
       <div className="w-full max-w-[440px] min-h-screen flex flex-col px-6 pt-14 pb-10">
         <Link href="/" className="demo-rise">
@@ -35,7 +40,7 @@ export default function RoleSelectPage() {
             className="demo-rise demo-rise-2"
           />
           <RoleTile
-            href="/demo/auth/plug"
+            href="/demo/auth/phone"
             icon={<Wrench className="w-6 h-6" />}
             title="Become a Plug"
             body="Get verified, build your identity, and get paid for great work."
@@ -48,6 +53,7 @@ export default function RoleSelectPage() {
         </p>
       </div>
     </main>
+    </>
   );
 }
 

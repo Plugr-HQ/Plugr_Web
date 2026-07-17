@@ -23,6 +23,8 @@ export default function AppPayPage() {
   const [simulating, setSimulating] = useState(false);
   const [alatState, setAlatState] = useState<'idle' | 'pending' | 'unknown'>('idle');
   const [waited, setWaited] = useState(0);
+  const [checking, setChecking] = useState(false);
+  const [checkMsg, setCheckMsg] = useState<string | null>(null);
   const started = useRef(false);
 
   useEffect(() => {
@@ -59,6 +61,25 @@ export default function AppPayPage() {
     if (!va?.accountNumber) return;
     navigator.clipboard?.writeText(String(va.accountNumber));
     setCopied(true); setTimeout(() => setCopied(false), 1500);
+  }
+
+  // Manual "I've sent the transfer" — forces an immediate re-query of ALATPay instead of
+  // waiting for the next 3s tick, and reports back what ALATPay actually says.
+  async function checkNow() {
+    if (checking) return;
+    setChecking(true); setCheckMsg(null);
+    try {
+      const res = await jsonFetch(`/api/jobs/${jobId}/check-status`);
+      if (res.status === 'paid_escrow') { setPaid(true); return; }
+      setAlatState(res.alatpay ?? 'unknown');
+      setCheckMsg(
+        res.alatpay === 'pending'
+          ? 'ALATPay has your transaction but it hasn’t settled yet. We’ll keep checking — this flips on its own.'
+          : 'No transfer confirmed yet. Bank transfers can take a minute — we’ll keep checking automatically.'
+      );
+    } catch {
+      setCheckMsg('Couldn’t reach ALATPay just now — we’ll keep retrying.');
+    } finally { setChecking(false); }
   }
 
   async function simulate() {
@@ -121,6 +142,16 @@ export default function AppPayPage() {
             {waited > 25 ? ' Bank settlement can take a minute or two.' : ''}
             {waited > 0 ? ` (${waited}s)` : ''}
           </p>
+
+          <button
+            onClick={checkNow}
+            disabled={checking}
+            className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-pill bg-midnight text-white font-bold py-3.5 text-sm hover:bg-deep-blue disabled:opacity-50 transition-colors"
+          >
+            {checking ? <><Loader2 className="w-4 h-4 animate-spin" /> Checking…</> : 'I’ve sent the transfer'}
+          </button>
+          {checkMsg && <p className="mt-2 text-xs text-slate leading-relaxed">{checkMsg}</p>}
+
           <Divider className="my-5" />
           <button onClick={simulate} disabled={simulating} className="w-full inline-flex items-center justify-center gap-2 rounded-pill border border-dashed border-gold/40 hover:border-gold hover:bg-gold/5 disabled:opacity-50 transition-all text-[13px] font-bold text-midnight py-3">
             {simulating ? <><Loader2 className="w-4 h-4 animate-spin" /> Simulating…</> : 'Sandbox: simulate transfer'}

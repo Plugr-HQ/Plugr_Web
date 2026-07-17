@@ -16,6 +16,7 @@ export function Shell({
   title,
   subtitle,
   back,
+  onBack,
   mark = true,
   children,
   footer,
@@ -24,6 +25,8 @@ export function Shell({
   title?: React.ReactNode;
   subtitle?: React.ReactNode;
   back?: string;
+  /** Overrides history-back — e.g. to step backwards inside a multi-step screen. */
+  onBack?: () => void;
   mark?: boolean;
   children: React.ReactNode;
   footer?: React.ReactNode;
@@ -31,6 +34,7 @@ export function Shell({
   const router = useRouter();
 
   function goBack() {
+    if (onBack) return onBack();
     if (typeof window !== 'undefined' && window.history.length > 1) router.back();
     else router.push(back || '/');
   }
@@ -39,10 +43,10 @@ export function Shell({
     <main className="min-h-screen bg-bone text-midnight font-body antialiased flex justify-center">
       <div className="relative w-full max-w-[440px] min-h-screen flex flex-col">
         <div className="flex-1 px-5 pt-6 pb-32">
-          {(back || mark || title || eyebrow) && (
+          {(back || onBack || mark || title || eyebrow) && (
             <header className="mb-7">
               <div className="flex items-center justify-between mb-6 min-h-[22px]">
-                {back ? (
+                {back || onBack ? (
                   <button
                     onClick={goBack}
                     className="inline-flex items-center gap-1.5 text-sm font-medium text-slate hover:text-midnight transition-colors"
