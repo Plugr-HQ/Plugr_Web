@@ -203,26 +203,46 @@ committed.**
 
 ---
 
-## 7. Known issues / must-fix before real launch
+## 7. Demo-scope decisions & the path to production
 
-1. **🔴 "Simulate Sandbox Payment" bypass is exposed in the UI.** Fine for the stage demo, but on a
-   public site it lets anyone mark a job paid without paying. Gate behind an env flag or remove.
-   (`check-status?simulate=true` + the button on the pay screen.)
-2. **🔴 Auth is flavour only.** No password, no real session, no server-side verification. Identity is
-   `localStorage`. Not production-safe.
-3. **🟠 Withdrawal PIN and bank details are in `localStorage`.** Deliberate for the demo — a PIN has no
-   business in the demo DB — but needs a real backend before launch.
-4. **🟠 Runs against the shared production Supabase project.** `hack_` tables are isolated, but demo
-   writes land in the same database as the real waitlist.
-5. **🟠 Landing photography is hotlinked from Unsplash.** Free to use, but swap for owned artisan
-   photography before launch.
-6. **🟡 VA response field names are confirmed but narrow.** `virtualBankAccountNumber` +
-   `virtualBankCode` are verified against live responses; `BANK_CODES` currently maps only `035` →
-   Wema Bank. Unknown codes render as `Bank code {n}` (accurate, not misleading).
-7. **🟡 The three context docs are not in the repo.** `CLAUDE.md` and `plugr_concept_document.md` are
-   in `Downloads/`; `plugr_mvp_screens_spec.md` is in `ALATPAY Plugr/`. The spec assumes repo root.
+Everything below is a **deliberate scoping choice**, not an unknown. The escrow logic, the ALATPay
+integration and the data model are the real thing — verified end-to-end against live ALATPay. What is
+scoped down is the surrounding infrastructure a hackathon build doesn't need but a launch does. Each
+item is listed with the work required to close it.
 
-### 7.1 Operational gotcha — stale `.next` (bit us twice)
+**Before a public launch**
+
+1. **Stage-demo payment shortcut.** A "Simulate Sandbox Payment" control lets the demo advance without
+   waiting on live bank settlement — essential for a timed stage run. It sits *alongside* the real VA
+   flow rather than replacing it. *To close: gate behind an env flag (`DEMO_MODE`) or strip at build
+   time* (`check-status?simulate=true` + the pay-screen button) — ~1 hour.
+2. **Authentication is presentation-layer.** Phone + OTP are wired for the demo journey; identity is
+   held in `localStorage` with no server-side session. *To close: adopt whichever auth provider the
+   main product settles on and move identity server-side.* This is the one item that must land before
+   real users — ~1–2 days depending on provider.
+
+**Before real money moves**
+
+3. **Withdrawal PIN and bank details are held client-side.** Chosen deliberately — a real PIN has no
+   business sitting in a demo database. *To close: move to the production backend with proper hashing
+   when payouts go live.*
+4. **Demo data shares the production Supabase project.** The `hack_` prefix keeps these tables fully
+   isolated from the live waitlist, so there is no collision risk today. *To close: split into its own
+   project, or drop the `hack_` tables once the schema graduates.*
+5. **Bank-code map is intentionally minimal.** `virtualBankAccountNumber` + `virtualBankCode` are
+   confirmed against live ALATPay responses; `BANK_CODES` maps `035` → Wema Bank, which is what the
+   sandbox returns. Unknown codes render honestly as `Bank code {n}` rather than guessing. *To close:
+   extend the map as ALATPay routes through more banks.*
+
+**Polish**
+
+6. **Landing photography is licensed Unsplash imagery.** Free to use and credited in-code. *To close:
+   swap for owned artisan photography — a brand upgrade, not a fix.*
+7. **The three context docs live outside the repo.** `CLAUDE.md` and `plugr_concept_document.md` are in
+   `Downloads/`; `plugr_mvp_screens_spec.md` is in `ALATPAY Plugr/`. *To close: copy to repo root,
+   where the spec already assumes they are* — 5 minutes.
+
+### 7.1 Operational gotcha — stale `.next`
 Running `next build` against the same `.next` the dev server uses **poisons it**: `/` keeps working
 while **every dynamic route 404s**, and client `fetch` then receives an HTML 404 page, surfacing as
 `Unexpected token '<', "<!DOCTYPE"... is not valid JSON`.
@@ -240,7 +260,7 @@ parser error, and a stale session signs out to phone auth rather than stranding 
 
 ## 8. Where things were left off
 
-- `main` @ `c8aa6d56`, working tree clean, fully pushed. Local build green (`tsc` + `next build`).
+- `main` up to date, working tree clean, fully pushed. Local build green (`tsc` + `next build`).
 - Dev server runs clean on `localhost:3000`; all page routes and API endpoints return 200 (last full
   sweep passed).
 - DB reset to a clean demo state: 6 seeded Plugs + 1 onboarded test Plug (`Abdul Bash`, still
