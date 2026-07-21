@@ -2,7 +2,7 @@
 // Register this URL in ALATPay Dashboard > Settings > Business > Edit > Webhook URL.
 //
 // Confirmed payload shape: { Value: { Data: { Amount, OrderId, Id, Status, ... } } }.
-// OrderId is our hack_jobs.id; Id is the ALATPay transaction id. Signature arrives in the
+// OrderId is our Job.id; Id is the ALATPay transaction id. Signature arrives in the
 // "x-signature" header (HMAC-SHA256 of the RAW body, base64, ALATPAY_WEBHOOK_SECRET_KEY) —
 // verify BEFORE touching the DB. IP whitelist fallback: 74.178.162.156.
 //
@@ -29,7 +29,8 @@ export async function POST(req: Request) {
 
   if (!data?.Id) {
     await q(
-      "insert into hack_transactions (type, status, raw_webhook_payload) values ('collection', 'pending', $1)",
+      `insert into "Transaction" (id, type, status, "rawWebhookPayload")
+       values (gen_random_uuid(), 'COLLECTION', 'PENDING', $1)`,
       [payload]
     );
     return NextResponse.json({ received: true, note: 'no transaction Id in payload' });
@@ -41,10 +42,10 @@ export async function POST(req: Request) {
 
   // Idempotency — ALATPay retries at 30min / 1hr / 24hr on non-200 responses.
   const existing = await one(
-    'select id, status from hack_transactions where alatpay_transaction_id = $1',
+    'select id, status from "Transaction" where "alatpayTransactionId" = $1',
     [alatpayTransactionId]
   );
-  if (existing?.status === 'successful') {
+  if (existing?.status === 'SUCCESSFUL') {
     return NextResponse.json({ received: true, note: 'already processed' });
   }
 
@@ -55,22 +56,28 @@ export async function POST(req: Request) {
     console.warn('confirmTransaction re-query failed, proceeding on signature trust alone', err);
   }
 
-  const job = orderId ? await one('select id, amount from hack_jobs where id = $1', [orderId]) : null;
+  const job = orderId ? await one('select id, amount from "Job" where id = $1', [orderId]) : null;
 
   await q(
-    `insert into hack_transactions
-       (alatpay_transaction_id, job_id, amount, type, status, raw_webhook_payload)
-     values ($1, $2, $3, 'collection', $4, $5)
-     on conflict (alatpay_transaction_id) where alatpay_transaction_id is not null
+    `insert into "Transaction"
+       (id, "alatpayTransactionId", "jobId", amount, type, status, "rawWebhookPayload")
+     values (gen_random_uuid(), $1, $2, $3, 'COLLECTION', $4, $5)
+     on conflict ("alatpayTransactionId")
      do update set status = excluded.status,
-                   job_id = excluded.job_id,
+                   "jobId" = excluded."jobId",
                    amount = excluded.amount,
-                   raw_webhook_payload = excluded.raw_webhook_payload`,
-    [alatpayTransactionId, job?.id ?? null, job?.amount ?? data.Amount ?? 0, isSuccessful ? 'successful' : 'pending', payload]
+                   "rawWebhookPayload" = excluded."rawWebhookPayload"`,
+    [
+      alatpayTransactionId,
+      job?.id ?? null,
+      job?.amount ?? data.Amount ?? 0,
+      isSuccessful ? 'SUCCESSFUL' : 'PENDING',
+      payload,
+    ]
   );
 
   if (isSuccessful && job?.id) {
-    await q("update hack_jobs set status = 'paid_escrow' where id = $1", [job.id]);
+    await q('update "Job" set "escrowStatus" = $2 where id = $1', [job.id, 'locked']);
   }
 
   // Must return 200 or ALATPay will retry per its schedule.
