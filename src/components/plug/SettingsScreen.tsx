@@ -9,6 +9,7 @@ import { Settings } from 'lucide-react';
 import { Card } from '@/src/app/demo/_components/ui';
 import { getPlugId } from '@/src/app/app/_lib/plugAuth';
 import { PlugShell, EmptyState } from './PlugChrome';
+import { withSource } from '@/src/lib/apiSource';
 
 export function SettingsScreen({ base }: { base: string }) {
   const [plug, setPlug] = useState<any>(null);
@@ -16,11 +17,11 @@ export function SettingsScreen({ base }: { base: string }) {
   useEffect(() => {
     const id = getPlugId();
     if (!id) return;
-    fetch(`/api/plugs/${id}`)
+    fetch(withSource(`/api/plugs/${id}`, base))
       .then((r) => r.json())
       .then((d) => setPlug(d.plug))
       .catch(() => {});
-  }, []);
+  }, [base]);
 
   return (
     <PlugShell base={base} plug={plug}>

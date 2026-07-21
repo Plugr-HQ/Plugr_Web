@@ -26,7 +26,7 @@ export default function AppConfirmPage() {
   const fireUnlock = useCallback(async () => {
     if (unlockedRef.current) return;
     unlockedRef.current = true;
-    try { await jsonFetch(`/api/jobs/${jobId}/unlock`, { method: 'POST' }); } catch {}
+    try { await jsonFetch(`/api/jobs/${jobId}/unlock?source=core`, { method: 'POST' }); } catch {}
     setPhase('done');
   }, [jobId]);
 
@@ -39,7 +39,7 @@ export default function AppConfirmPage() {
   }, [fireUnlock]);
 
   useEffect(() => {
-    jsonFetch(`/api/jobs/${jobId}`).then((snap) => {
+    jsonFetch(`/api/jobs/${jobId}?source=core`).then((snap) => {
       setJob(snap.job);
       if (snap.job?.status === 'released' && snap.job.escrow_released_at) beginCountdown(snap.job.escrow_released_at);
     }).catch((e) => setError(e.message));
@@ -55,7 +55,7 @@ export default function AppConfirmPage() {
   async function confirm() {
     setBusy(true); setError(null);
     try {
-      const res = await jsonFetch(`/api/jobs/${jobId}/release`, { method: 'POST' });
+      const res = await jsonFetch(`/api/jobs/${jobId}/release?source=core`, { method: 'POST' });
       setRemaining(res.lockSeconds ?? LOCK_SECONDS);
       setPhase('counting');
     } catch (e: any) { setError(e.message); } finally { setBusy(false); }

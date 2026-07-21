@@ -32,10 +32,10 @@ export default function AppPayPage() {
     started.current = true;
     (async () => {
       try {
-        const snap = await jsonFetch(`/api/jobs/${jobId}`);
+        const snap = await jsonFetch(`/api/jobs/${jobId}?source=core`);
         setJob(snap.job);
         if (snap.job?.status === 'paid_escrow') { setPaid(true); return; }
-        const { virtualAccount } = await jsonFetch(`/api/jobs/${jobId}/pay`, { method: 'POST' });
+        const { virtualAccount } = await jsonFetch(`/api/jobs/${jobId}/pay?source=core`, { method: 'POST' });
         setVa(virtualAccount);
       } catch (e: any) { setError(e.message); }
     })();
@@ -43,7 +43,7 @@ export default function AppPayPage() {
 
   const poll = useCallback(async () => {
     try {
-      const res = await jsonFetch(`/api/jobs/${jobId}/check-status`);
+      const res = await jsonFetch(`/api/jobs/${jobId}/check-status?source=core`);
       if (res.status === 'paid_escrow') setPaid(true);
       else if (res.alatpay) setAlatState(res.alatpay);
     } catch { /* keep polling */ }
@@ -69,7 +69,7 @@ export default function AppPayPage() {
     if (checking) return;
     setChecking(true); setCheckMsg(null);
     try {
-      const res = await jsonFetch(`/api/jobs/${jobId}/check-status`);
+      const res = await jsonFetch(`/api/jobs/${jobId}/check-status?source=core`);
       if (res.status === 'paid_escrow') { setPaid(true); return; }
       setAlatState(res.alatpay ?? 'unknown');
       setCheckMsg(
@@ -86,7 +86,7 @@ export default function AppPayPage() {
     if (simulating) return;
     setSimulating(true); setError(null);
     try {
-      const res = await jsonFetch(`/api/jobs/${jobId}/check-status?simulate=true`);
+      const res = await jsonFetch(`/api/jobs/${jobId}/check-status?simulate=true&source=core`);
       if (res.status === 'paid_escrow') setPaid(true);
     } catch (e: any) { setError(e.message); } finally { setSimulating(false); }
   }

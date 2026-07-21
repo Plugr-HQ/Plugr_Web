@@ -3,23 +3,24 @@
 // Used for the Screen-3 payment poll and the Receipt screen. Next 16: await params.
 
 import { NextResponse } from 'next/server';
-import { q, one } from '@/src/lib/hackDb';
+import { getRepo, resolveSource } from '@/src/lib/repo';
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ jobId: string }> }
 ) {
   const { jobId } = await params;
+  const repo = getRepo(resolveSource(request));
 
   try {
-    const job = await one('select * from hack_jobs where id = $1', [jobId]);
+    const job = await repo.getJob(jobId);
     if (!job) {
       return NextResponse.json({ error: 'job not found' }, { status: 404 });
     }
 
     const [plug, transactions] = await Promise.all([
-      one('select * from hack_plugs where id = $1', [job.plug_id]),
-      q('select * from hack_transactions where job_id = $1 order by created_at asc', [job.id]),
+      job.plug_id ? repo.getPlug(job.plug_id) : Promise.resolve(null),
+      repo.txnsForJob(job.id),
     ]);
 
     return NextResponse.json({ job, plug, transactions: transactions ?? [] });

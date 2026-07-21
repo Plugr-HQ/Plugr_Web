@@ -6,64 +6,43 @@
 // serverless can't persist a timer). We only return unlocksAt/lockSeconds for the UI.
 
 import { NextResponse } from 'next/server';
-import { one, q } from '@/src/lib/hackDb';
-import { requireJobParty, UnauthorizedError } from '@/src/lib/auth';
+import { getRepo, resolveSource } from '@/src/lib/repo';
 
 const DEMO_LOCK_SECONDS = 60;
+
+// Releasable once paid into escrow. Our screen order marks the job 'completed' before the
+// client confirms, so accept both post-payment states.
+const RELEASABLE_STATUSES = ['completed', 'paid_escrow'];
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ jobId: string }> }
 ) {
   const { jobId } = await params;
+  const repo = getRepo(resolveSource(request));
 
-  const job = await one(
-    'select id, "plugId", amount, status, "escrowStatus", "clientId" from "Job" where id = $1',
-    [jobId]
-  );
+  const job = await repo.getJob(jobId);
   if (!job) {
     return NextResponse.json({ error: 'job not found' }, { status: 404 });
   }
-
-  try {
-    await requireJobParty(request, job);
-  } catch (err) {
-    if (err instanceof UnauthorizedError) {
-      return NextResponse.json({ error: err.message }, { status: err.status });
-    }
-    throw err;
-  }
-
-  // Releasable once escrow is actually holding the funds — regardless of whether
-  // the job has separately been marked COMPLETED yet.
-  if (job.escrowStatus !== 'locked') {
+  if (!RELEASABLE_STATUSES.includes(job.status)) {
     return NextResponse.json(
-      { error: `escrow is '${job.escrowStatus}', expected 'locked' to release` },
+      { error: `job is in status '${job.status}', expected one of ${RELEASABLE_STATUSES.join(' | ')}` },
       { status: 400 }
     );
   }
-  if (!job.plugId) {
-    return NextResponse.json({ error: 'job has no assigned plug' }, { status: 400 });
+  if (!job.plug_id) {
+    return NextResponse.json({ error: 'job has no plug assigned' }, { status: 400 });
   }
 
-  // NOTE: this Postgres function still targets hack_plugs internally as of the last
-  // grep — do not ship this route until sql/wallet_functions.sql is confirmed updated
-  // to write to "PlugProfile" instead.
-  await q('select increment_wallet_locked($1, $2)', [job.plugId, job.amount]);
+  // Move funds into the Plug's locked balance now.
+  await repo.lockFunds(job.plug_id, Number(job.amount));
 
   const releasedAt = new Date();
   const unlocksAt = new Date(releasedAt.getTime() + DEMO_LOCK_SECONDS * 1000);
 
-  await q(
-    'update "Job" set "escrowStatus" = $2, "escrowReleasedAt" = $3 where id = $1',
-    [job.id, 'released', releasedAt.toISOString()]
-  );
-
-  await q(
-    `insert into "Transaction" (id, "jobId", amount, type, status)
-     values (gen_random_uuid(), $1, $2, 'RELEASE', 'SUCCESSFUL')`,
-    [job.id, job.amount]
-  );
+  await repo.setJobStatus(job.id, 'released', { escrowReleasedAt: releasedAt });
+  await repo.insertRelease(job.id, Number(job.amount));
 
   return NextResponse.json({
     released: true,

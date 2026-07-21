@@ -19,14 +19,14 @@ export default function AppPlugJob() {
   const [error, setError] = useState<string | null>(null);
 
   async function load() {
-    const snap = await jsonFetch(`/api/jobs/${jobId}`);
+    const snap = await jsonFetch(`/api/jobs/${jobId}?source=core`);
     setJob(snap.job);
   }
   useEffect(() => { load().catch((e) => setError(e.message)); }, [jobId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function act(path: 'accept' | 'complete') {
     setBusy(true); setError(null);
-    try { await jsonFetch(`/api/jobs/${jobId}/${path}`, { method: 'POST' }); await load(); }
+    try { await jsonFetch(`/api/jobs/${jobId}/${path}?source=core`, { method: 'POST' }); await load(); }
     catch (e: any) { setError(e.message); } finally { setBusy(false); }
   }
 

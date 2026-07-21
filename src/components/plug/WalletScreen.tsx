@@ -28,6 +28,7 @@ import {
   type PlugBank,
 } from '@/src/app/app/_lib/plugAuth';
 import { PlugShell, JobStatusChip, EmptyState } from './PlugChrome';
+import { withSource } from '@/src/lib/apiSource';
 
 type Range = 'week' | 'month' | 'total';
 type Sheet = null | 'withdraw' | 'bank' | 'changeBank';
@@ -58,14 +59,14 @@ export function WalletScreen({ base }: { base: string }) {
   const load = useCallback(async () => {
     if (!plugId) return;
     try {
-      const body = await jsonFetch(`/api/plugs/${plugId}/dashboard`);
+      const body = await jsonFetch(withSource(`/api/plugs/${plugId}/dashboard`, base));
       setData(body);
       setLeft(body.lock?.seconds ?? null);
       setError(null);
     } catch (e: any) {
       setError(/plug not found/i.test(e?.message ?? '') ? 'Your session expired. Sign in again.' : e.message);
     }
-  }, [plugId]);
+  }, [plugId, base]);
 
   useEffect(() => {
     setBank(getPlugBank());
@@ -85,9 +86,9 @@ export function WalletScreen({ base }: { base: string }) {
     const jobId = data?.lock?.jobId;
     if (left === 0 && jobId && !unlocked.current) {
       unlocked.current = true;
-      fetch(`/api/jobs/${jobId}/unlock`, { method: 'POST' }).finally(load);
+      fetch(withSource(`/api/jobs/${jobId}/unlock`, base), { method: 'POST' }).finally(load);
     }
-  }, [left, data?.lock?.jobId, load]);
+  }, [left, data?.lock?.jobId, load, base]);
 
   if (!data) {
     return (
@@ -276,6 +277,7 @@ export function WalletScreen({ base }: { base: string }) {
         <Sheets
           sheet={sheet}
           close={() => setSheet(null)}
+          base={base}
           plugId={plugId}
           available={available}
           locked={locked}
@@ -293,10 +295,11 @@ export function WalletScreen({ base }: { base: string }) {
 /* --------------------------------------------------------------- bottom sheets */
 
 function Sheets({
-  sheet, close, plugId, available, locked, counting, left, bank, onBank, reload,
+  sheet, close, base, plugId, available, locked, counting, left, bank, onBank, reload,
 }: {
   sheet: Exclude<Sheet, null>;
   close: () => void;
+  base: string;
   plugId: string;
   available: number;
   locked: number;
@@ -321,6 +324,7 @@ function Sheets({
         {sheet === 'changeBank' && <ChangeBank onDone={(b) => { onBank(b); close(); }} />}
         {sheet === 'withdraw' && (
           <Withdraw
+            base={base}
             plugId={plugId}
             available={available}
             locked={locked}
@@ -473,8 +477,9 @@ function ChangeBank({ onDone }: { onDone: (b: PlugBank) => void }) {
 
 /** Withdraw — opens even while locked, and shows the countdown instead of hiding. */
 function Withdraw({
-  plugId, available, locked, counting, left, bank, close, reload,
+  base, plugId, available, locked, counting, left, bank, close, reload,
 }: {
+  base: string;
   plugId: string;
   available: number;
   locked: number;
@@ -497,7 +502,7 @@ function Withdraw({
     if (!checkPlugPin(pin)) return setError('Wrong PIN. Try again.');
     setBusy(true);
     try {
-      const res = await fetch(`/api/plugs/${plugId}/withdraw`, {
+      const res = await fetch(withSource(`/api/plugs/${plugId}/withdraw`, base), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: amt }),

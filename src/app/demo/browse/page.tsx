@@ -1,8 +1,9 @@
 // src/app/demo/browse/page.tsx
-// Screen 1 — Browse Plugs. Server component reads hack_plugs directly via pg (DATABASE_URL).
+// Screen 1 — Browse Plugs. Server component reads the hack_ demo tables directly (the /demo
+// surface stays on the frozen buildathon data set).
 // Fails soft to a config notice if the DB isn't reachable, so the page still renders.
 
-import { q } from '@/src/lib/hackDb';
+import { getRepo } from '@/src/lib/repo';
 import BrowseClient, { type HackPlug } from './BrowseClient';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +13,7 @@ export default async function BrowsePage() {
   let configError = false;
 
   try {
-    plugs = await q<HackPlug>('select * from hack_plugs order by rating desc');
+    plugs = (await getRepo('hack').listPlugs()) as unknown as HackPlug[];
   } catch {
     configError = true;
   }

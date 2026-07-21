@@ -20,7 +20,7 @@ export default function AppWithdraw() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    jsonFetch(`/api/plugs/${plugId}`).then((d) => { const a = Number(d.plug?.wallet_balance_available ?? 0); setAvailable(a); setAmount(String(a)); }).catch((e) => setError(e.message));
+    jsonFetch(`/api/plugs/${plugId}?source=core`).then((d) => { const a = Number(d.plug?.wallet_balance_available ?? 0); setAvailable(a); setAmount(String(a)); }).catch((e) => setError(e.message));
   }, [plugId]);
 
   async function withdraw() {
@@ -28,7 +28,7 @@ export default function AppWithdraw() {
     const amt = Number(amount);
     if (!Number.isFinite(amt) || amt <= 0 || amt > available) return setError('Enter an amount within your available balance.');
     setBusy(true);
-    try { await jsonFetch(`/api/plugs/${plugId}/withdraw`, { method: 'POST', body: JSON.stringify({ amount: amt }) }); setDone(true); }
+    try { await jsonFetch(`/api/plugs/${plugId}/withdraw?source=core`, { method: 'POST', body: JSON.stringify({ amount: amt }) }); setDone(true); }
     catch (e: any) { setError(e.message); } finally { setBusy(false); }
   }
 

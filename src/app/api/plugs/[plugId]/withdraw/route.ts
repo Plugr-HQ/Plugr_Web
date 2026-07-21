@@ -4,7 +4,7 @@
 // Do NOT fabricate a completed bank transfer. Next 16: await params.
 
 import { NextResponse } from 'next/server';
-import { one, q } from '@/src/lib/hackDb';
+import { getRepo, resolveSource } from '@/src/lib/repo';
 
 export async function POST(
   request: Request,
@@ -12,17 +12,20 @@ export async function POST(
 ) {
   const { plugId } = await params;
 
-  let amount: number;
+  let body: { amount?: number; source?: string };
   try {
-    amount = Number((await request.json())?.amount);
+    body = await request.json();
   } catch {
     return NextResponse.json({ error: 'invalid request body' }, { status: 400 });
   }
+
+  const repo = getRepo(resolveSource(request, body.source));
+  const amount = Number(body.amount);
   if (!Number.isFinite(amount) || amount <= 0) {
     return NextResponse.json({ error: 'a positive amount is required' }, { status: 400 });
   }
 
-  const plug = await one('select id, wallet_balance_available from hack_plugs where id = $1', [plugId]);
+  const plug = await repo.getPlug(plugId);
   if (!plug) {
     return NextResponse.json({ error: 'plug not found' }, { status: 404 });
   }
@@ -30,15 +33,8 @@ export async function POST(
     return NextResponse.json({ error: 'insufficient available balance' }, { status: 400 });
   }
 
-  await q('update hack_plugs set wallet_balance_available = wallet_balance_available - $1 where id = $2', [
-    amount,
-    plug.id,
-  ]);
-
-  const withdrawal = await one(
-    "insert into hack_transactions (job_id, amount, type, status) values (null, $1, 'withdrawal', 'pending') returning *",
-    [amount]
-  );
+  await repo.debitAvailable(plug.id, amount);
+  const withdrawal = await repo.insertWithdrawal(amount);
 
   return NextResponse.json({ withdrawal, status: 'pending' });
 }

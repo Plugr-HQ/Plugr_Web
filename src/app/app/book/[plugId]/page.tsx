@@ -20,7 +20,7 @@ export default function AppBookPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    jsonFetch(`/api/plugs/${plugId}`).then((d) => setPlug(d.plug)).catch((e) => setError(e.message));
+    jsonFetch(`/api/plugs/${plugId}?source=core`).then((d) => setPlug(d.plug)).catch((e) => setError(e.message));
   }, [plugId]);
 
   async function book() {
@@ -33,7 +33,7 @@ export default function AppBookPage() {
     setSubmitting(true);
     try {
       const { name, phone } = getDemoIdentity();
-      const { job } = await jsonFetch('/api/jobs', {
+      const { job } = await jsonFetch('/api/jobs?source=core', {
         method: 'POST',
         body: JSON.stringify({ plugId, clientName: name || 'Client', clientPhone: phone, jobDescription: description.trim(), amount: amt }),
       });

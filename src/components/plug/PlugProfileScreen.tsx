@@ -24,6 +24,7 @@ import { getPlugId } from '@/src/app/app/_lib/plugAuth';
 import { buildProfile } from '@/src/app/app/_lib/profile';
 import { PlugShell, BadgeChip, EmptyState, plugTier } from './PlugChrome';
 import { DigitalId } from '@/src/app/app/_components/DigitalId';
+import { withSource } from '@/src/lib/apiSource';
 
 type WorkPost = { id: string; title: string; photos: string[]; createdAt: string };
 
@@ -76,7 +77,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
   const load = useCallback(async () => {
     if (!plugId) return;
     try {
-      const body = await jsonFetch(`/api/plugs/${plugId}`);
+      const body = await jsonFetch(withSource(`/api/plugs/${plugId}`, base));
       setPlug(body.plug);
       setBio(body.plug.bio ?? '');
       setPhoto(body.plug.photo_url ?? null);
@@ -84,12 +85,12 @@ export function PlugProfileScreen({ base }: { base: string }) {
     } catch (e: any) {
       setError(/plug not found/i.test(e?.message ?? '') ? 'Your session expired. Sign in again.' : e.message);
     }
-  }, [plugId]);
+  }, [plugId, base]);
 
   useEffect(() => { load(); }, [load]);
 
   async function patch(payload: any) {
-    const res = await fetch(`/api/plugs/${plugId}`, {
+    const res = await fetch(withSource(`/api/plugs/${plugId}`, base), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

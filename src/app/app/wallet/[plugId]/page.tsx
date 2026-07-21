@@ -18,7 +18,7 @@ export default function AppWallet() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    try { const d = await jsonFetch(`/api/plugs/${plugId}`); setPlug(d.plug); setWithdrawals(d.withdrawals ?? []); }
+    try { const d = await jsonFetch(`/api/plugs/${plugId}?source=core`); setPlug(d.plug); setWithdrawals(d.withdrawals ?? []); }
     catch (e: any) { setError(e.message); }
   }, [plugId]);
 

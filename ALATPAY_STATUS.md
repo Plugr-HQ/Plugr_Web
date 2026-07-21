@@ -30,7 +30,38 @@ anon key. Rather than request more secrets, the data layer was rewritten onto `p
 - connects directly to Postgres, so there's no PostgREST/RLS gate to configure,
 - needs no service-role key at all.
 
-Helper: `src/lib/hackDb.ts` (`q()` / `one()`). The old `supabaseAdmin.ts` was removed.
+Helper: `src/lib/db.ts` (`q()` / `one()`). The old `supabaseAdmin.ts` was removed.
+
+### 2.1b Two storage backends behind one API — `/demo` on `hack_`, `/app` on the core tables
+The demo was built on `hack_`-prefixed tables. Those are now the **frozen buildathon submission**,
+and `/app` talks to the **real product tables** instead:
+
+| Surface | Tables |
+|---|---|
+| `/demo` | `hack_plugs`, `hack_jobs`, `hack_transactions` |
+| `/app`  | `"PlugProfile"` + `"User"` + `"Category"`, `"Job"`, `"transactions"` |
+
+Both go through `src/lib/repo/` — one interface, two implementations (`hack.ts`, `core.ts`). The core
+backend **aliases its columns back to the snake_case shape the API already returned**, so every
+response stayed byte-compatible and no UI component had to change.
+
+Routes pick a backend from `?source=core|hack` (or a `source` field in a JSON body).
+**The default is `hack`** — deliberately, so a missed call site keeps reading demo data rather than
+silently writing into production tables. Client components derive it from their existing `base` prop
+via `src/lib/apiSource.ts`.
+
+The **webhook is the one exception**: ALATPay only sends an `OrderId`, so it cannot be told which
+backend to use. It looks the job up in the core tables first, then the `hack_` tables, and acts on
+whichever owns it.
+
+Two mappings worth knowing:
+- **Status.** The `JobStatus` enum has no `paid_escrow` / `released` / `withdrawn` members, so the
+  money state lives in `"Job"."escrowStatus"` (free text, and the core schema already indexed it) and
+  `"Job"."status"` carries the coarse work state. `status` = how far along the work is;
+  `escrowStatus` = where the money is.
+- **Identity.** `hack_jobs` stored the client as loose text; `"Job"."clientId"` is a real FK, so
+  booking find-or-creates a `"User"` keyed on phone. That is why phone is required on `/app` and
+  wasn't in the demo.
 
 ### 2.2 Payment confirmation is **polling**, not the webhook
 ALATPay's business account is in *Pending Basic Tier* approval, so the webhook URL cannot be
@@ -83,22 +114,49 @@ alongside the real `Plugr Waitlist` table. Nothing pre-existing was touched or m
 
 ## 3. Data model
 
+### 3.1 `hack_` tables — the `/demo` surface (frozen)
+
 ```
-hack_plugs (7 rows)
+hack_plugs (12 rows)
   id, name, trade, photo_url, rating, jobs_completed, verified,
   wallet_balance_available, wallet_balance_locked, alatpay_wallet_id,
   created_at, bio, work_posts (jsonb)
 
-hack_jobs (10 rows)
+hack_jobs (12 rows)
   id, plug_id, client_name, client_phone, job_description, amount,
   status, created_at, completed_at, escrow_released_at
 
-hack_transactions (25 rows)
+hack_transactions (28 rows)
   id, job_id, alatpay_transaction_id, alatpay_virtual_account, amount,
   type, status, raw_webhook_payload (jsonb), created_at
 
 functions: increment_wallet_locked(), move_locked_to_available()
 ```
+
+### 3.2 Core tables — the `/app` surface (Prisma-managed)
+
+```
+"Category"     id, name, code, description, isActive, createdAt, updatedAt
+"User"         id, phone*, email*, name, role, status, onboardingStep,
+               latitude, longitude, address, createdAt, updatedAt, deletedAt
+"PlugProfile"  id, userId*, bio, status, isVerified, averageRating, categoryId,
+               jobsCompleted, walletBalanceAvailable, walletBalanceLocked,
+               photoUrl†, workPosts†, createdAt, updatedAt, deletedAt
+"Job"          id, clientId, plugId, categoryId, status, title, description,
+               latitude, longitude, address, price, escrowAmount, escrowStatus,
+               escrowReleasedAt, complaintWindowClosesAt, disputeRaised, ...
+"transactions" id, jobId, alatpayTransactionId*, alatpayVirtualAccount, amount,
+               type, status, rawWebhookPayload, createdAt
+
+* unique   † added by this work — see sql/core_schema_additions.sql
+functions: increment_wallet_locked_core(), move_locked_to_available_core()
+```
+
+**⚠️ Prisma drift.** `photoUrl` and `workPosts` were added directly in Postgres because the core
+schema had nowhere to store a Plug's photo or portfolio. They are additive and nullable/defaulted,
+so nothing existing breaks — but until they are added to `schema.prisma`, `prisma migrate dev` will
+report drift and `prisma migrate reset` would drop them. The exact model change is written out at the
+top of `sql/core_schema_additions.sql`. **This is the one item that needs the CTO.**
 
 **Job status lifecycle:** `requested → paid_escrow → accepted → completed → released → withdrawn`
 
@@ -107,8 +165,21 @@ functions: increment_wallet_locked(), move_locked_to_available()
 > client confirms — so at release time the job is `completed`. Both are post-payment states, so an
 > unfunded job still cannot be released.
 
-**Seeded:** 6 Plugs (2 electricians, 2 plumbers, 2 furniture) + 1 real onboarded test Plug.
-All wallet balances currently zeroed for a clean demo.
+**Seeded:** 6 catalogue Plugs (2 electricians, 2 plumbers, 2 furniture) in `hack_plugs`, plus test
+rows left by onboarding runs. All wallet balances zeroed.
+
+**Catalogue migration.** `scripts/migrate-plugs-to-core.cjs` copies those 6 into `"User"` +
+`"PlugProfile"`. It is **dry-run by default** (`--apply` to write) and idempotent, keyed on a
+deterministic placeholder phone (`0800…`, an unallocated Nigerian prefix, derived from the Plug's
+uuid) since `hack_plugs` never had a phone column and `"User"."phone"` is `NOT NULL UNIQUE`.
+
+By default it migrates only **catalogue-quality** Plugs — verified, with a real rating. The other 6
+`hack_plugs` rows are onboarding test residue, and putting them in the production `"User"` table
+would be pollution. `--all` overrides.
+
+**Not migrated:** `hack_jobs` and `hack_transactions`. Those are demo artefacts — simulated payments
+and 60-second escrow releases. Copying them into `"Job"`/`"transactions"` would put fake jobs and
+fake money movements into the tables the real product reports on.
 
 ---
 
@@ -260,13 +331,20 @@ parser error, and a stale session signs out to phone auth rather than stranding 
 
 ## 8. Where things were left off
 
-- `main` up to date, working tree clean, fully pushed. Local build green (`tsc` + `next build`).
-- Dev server runs clean on `localhost:3000`; all page routes and API endpoints return 200 (last full
-  sweep passed).
-- DB reset to a clean demo state: 6 seeded Plugs + 1 onboarded test Plug (`Abdul Bash`, still
-  `verified: false` so it demonstrates the Pending Review state), all balances ₦0.
-- **Next action: set the Vercel env vars and redeploy** — everything else is code-complete for the
-  demo.
+- Local build green (`tsc --noEmit` + `next build`). Dev server clean; `/`, `/app`, `/app/browse`,
+  `/demo`, `/demo/browse`, `/privacy` all 200, no console or server errors.
+- **`/app` now runs on the core product tables; `/demo` still runs on `hack_`.** Verified by running
+  the full escrow lifecycle against *both* backends — create → simulate payment → accept → complete →
+  release → 60s lock → unlock → withdraw. Both passed, and the isolation check confirmed the core run
+  wrote only to `"Job"`/`"transactions"` and the demo run only to `hack_jobs`/`hack_transactions`. All
+  test rows were cleaned up afterwards; row counts returned to their pre-test values.
+- `/app/browse` renders the 6 migrated Plugs **plus `Emeka Okafor`**, the `PlugProfile` that already
+  existed in the production table. `/demo/browse` still shows the `hack_` set. Neither leaks into the
+  other.
+- **Next actions, in order:**
+  1. **CTO:** fold `photoUrl` + `workPosts` into `schema.prisma` (see §3.2) before any
+     `prisma migrate`, or they will be dropped.
+  2. Set the Vercel env vars and redeploy.
 
 ### Demo walkthrough (2 tabs)
 **Tab A — client:** Landing → Use Plugr → Book a Plug → pick a Plug → profile → Request → sign-up →

@@ -19,6 +19,7 @@ import { Card, Money } from '@/src/app/demo/_components/ui';
 import { jsonFetch } from '@/src/app/demo/_lib/demo';
 import { getPlugId, signOutPlug } from '@/src/app/app/_lib/plugAuth';
 import { PlugShell, BadgeChip, JobStatusChip, EmptyState, plugTier } from './PlugChrome';
+import { withSource } from '@/src/lib/apiSource';
 
 function hhmm(total: number) {
   const h = Math.floor(total / 3600);
@@ -43,7 +44,7 @@ export function DashboardScreen({ base }: { base: string }) {
     if (!plugId) return;
     try {
       // jsonFetch tolerates non-JSON responses instead of throwing a raw parse error
-      const body = await jsonFetch(`/api/plugs/${plugId}/dashboard`);
+      const body = await jsonFetch(withSource(`/api/plugs/${plugId}/dashboard`, base));
       setData(body);
       setLeft(body.lock?.seconds ?? null);
       setError(null);
@@ -81,9 +82,9 @@ export function DashboardScreen({ base }: { base: string }) {
     const jobId = data?.lock?.jobId;
     if (left === 0 && jobId && !unlocked.current) {
       unlocked.current = true;
-      fetch(`/api/jobs/${jobId}/unlock`, { method: 'POST' }).finally(load);
+      fetch(withSource(`/api/jobs/${jobId}/unlock`, base), { method: 'POST' }).finally(load);
     }
-  }, [left, data?.lock?.jobId, load]);
+  }, [left, data?.lock?.jobId, load, base]);
 
   if (error) {
     return (
@@ -111,7 +112,7 @@ export function DashboardScreen({ base }: { base: string }) {
   async function simulateApproval() {
     setApproving(true);
     try {
-      await fetch(`/api/plugs/${plug.id}`, {
+      await fetch(withSource(`/api/plugs/${plug.id}`, base), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ verified: true }),

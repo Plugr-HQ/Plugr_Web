@@ -5,7 +5,8 @@
 // Each step explains itself before asking for data, per the spec's trust note. Three
 // failures on a step surfaces a "Contact support" CTA.
 //
-// On all-verified: creates the real hack_plugs row, then routes to PLG-01 (Pending Review).
+// On all-verified: creates the real Plug row (core tables on /app, hack_ tables on /demo),
+// then routes to PLG-01 (Pending Review).
 //
 // NOTE: no NIMC/liveness SDK is wired yet — any 11-digit NIN passes and the liveness capture
 // self-approves. Both `verifyNin` and `verifyLiveness` are the seams a provider drops into.
@@ -25,7 +26,9 @@ import {
   clearPlugDraft,
   setPlugId,
   setPlugOnboarded,
+  getPlugPhone,
 } from '@/src/app/app/_lib/plugAuth';
+import { withSource } from '@/src/lib/apiSource';
 
 const MAX_ATTEMPTS = 3;
 
@@ -158,7 +161,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
     setError(null);
     try {
       const d = getPlugDraft();
-      const body = await jsonFetch('/api/plugs/register', {
+      const body = await jsonFetch(withSource('/api/plugs/register', base), {
         method: 'POST',
         body: JSON.stringify({
           firstName: d.firstName,
@@ -166,6 +169,9 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
           trade: d.trade,
           photoUrl: d.photo ?? null,
           nin: d.nin ?? nin,
+          // The core tables key a Plug to a real "User" row, which needs the phone captured
+          // back at AUTH-02. The hack_ demo tables ignore it.
+          phone: getPlugPhone(),
         }),
       });
 

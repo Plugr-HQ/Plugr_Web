@@ -1,8 +1,10 @@
-// src/lib/hackDb.ts
-// Server-only Postgres access for the ALATPay demo, via the shared DATABASE_URL
-// (the same Supabase Postgres the rest of Plugr_Web uses through `pg`). A direct DB
-// connection means full privileges and no PostgREST/RLS gate — and no service-role key
-// needed. Only ever touches hack_-prefixed tables.
+// src/lib/db.ts
+// Server-only Postgres access via the shared DATABASE_URL (the same Supabase Postgres the
+// rest of Plugr_Web uses). A direct connection means full privileges and no PostgREST/RLS
+// gate — and no service-role key needed.
+//
+// This is the raw pool. Route handlers should not build SQL against it directly; they go
+// through src/lib/repo, which picks the hack_ or core table set per request.
 
 import { Pool } from 'pg';
 
@@ -12,7 +14,7 @@ function getPool(): Pool {
   if (pool) return pool;
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
-    throw new Error('DATABASE_URL is not set for the ALATPay demo routes.');
+    throw new Error('DATABASE_URL is not set.');
   }
   pool = new Pool({
     connectionString,

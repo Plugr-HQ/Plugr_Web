@@ -4,24 +4,22 @@
 // await params.
 
 import { NextResponse } from 'next/server';
-import { one, q } from '@/src/lib/hackDb';
+import { getRepo, resolveSource } from '@/src/lib/repo';
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ plugId: string }> }
 ) {
   const { plugId } = await params;
+  const repo = getRepo(resolveSource(request));
 
   try {
-    const plug = await one('select * from hack_plugs where id = $1', [plugId]);
+    const plug = await repo.getPlug(plugId);
     if (!plug) {
       return NextResponse.json({ error: 'plug not found' }, { status: 404 });
     }
 
-    const withdrawals = await q(
-      "select * from hack_transactions where type = 'withdrawal' order by created_at desc"
-    );
-
+    const withdrawals = await repo.listWithdrawals();
     return NextResponse.json({ plug, withdrawals: withdrawals ?? [] });
   } catch (e) {
     console.error('plug snapshot failed', e);
@@ -41,35 +39,39 @@ export async function PATCH(
 ) {
   const { plugId } = await params;
 
-  let body: { bio?: string; photoUrl?: string | null; workPosts?: unknown; verified?: boolean };
+  let body: {
+    bio?: string;
+    photoUrl?: string | null;
+    workPosts?: unknown;
+    verified?: boolean;
+    source?: string;
+  };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'invalid request body' }, { status: 400 });
   }
 
-  const sets: string[] = [];
-  const vals: any[] = [];
-  const add = (frag: string, v: any) => {
-    vals.push(v);
-    sets.push(`${frag} = $${vals.length}`);
-  };
+  const repo = getRepo(resolveSource(request, body.source));
 
-  if (typeof body.bio === 'string') add('bio', body.bio.slice(0, 600));
-  if (typeof body.photoUrl === 'string' || body.photoUrl === null) add('photo_url', body.photoUrl);
-  if (Array.isArray(body.workPosts)) add('work_posts', JSON.stringify(body.workPosts));
-  if (typeof body.verified === 'boolean') add('verified', body.verified);
+  const hasUpdate =
+    typeof body.bio === 'string' ||
+    typeof body.photoUrl === 'string' ||
+    body.photoUrl === null ||
+    Array.isArray(body.workPosts) ||
+    typeof body.verified === 'boolean';
 
-  if (!sets.length) {
+  if (!hasUpdate) {
     return NextResponse.json({ error: 'nothing to update' }, { status: 400 });
   }
 
   try {
-    vals.push(plugId);
-    const plug = await one(
-      `update hack_plugs set ${sets.join(', ')} where id = $${vals.length} returning *`,
-      vals
-    );
+    const plug = await repo.updatePlug(plugId, {
+      bio: body.bio,
+      photoUrl: body.photoUrl,
+      workPosts: body.workPosts,
+      verified: body.verified,
+    });
     if (!plug) return NextResponse.json({ error: 'plug not found' }, { status: 404 });
     return NextResponse.json({ plug });
   } catch (e) {

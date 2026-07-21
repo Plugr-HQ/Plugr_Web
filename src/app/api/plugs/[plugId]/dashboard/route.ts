@@ -9,51 +9,46 @@
 // measured from escrow_released_at.
 
 import { NextResponse } from 'next/server';
-import { one, q } from '@/src/lib/hackDb';
+import { getRepo, resolveSource } from '@/src/lib/repo';
 
 const LOCK_SECONDS = 60;
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ plugId: string }> }
 ) {
   const { plugId } = await params;
+  const repo = getRepo(resolveSource(request));
 
   try {
-    const plug = await one('select * from hack_plugs where id = $1', [plugId]);
+    const plug = await repo.getPlug(plugId);
     if (!plug) return NextResponse.json({ error: 'plug not found' }, { status: 404 });
 
-    const jobs = await q(
-      `select id, client_name, job_description, amount, status, created_at, completed_at, escrow_released_at
-       from hack_jobs where plug_id = $1 order by created_at desc`,
-      [plugId]
-    );
+    const jobs = await repo.jobsForPlug(plugId);
 
-    const earned = jobs.filter((j: any) => j.status === 'released' || j.status === 'withdrawn');
+    const earned = jobs.filter((j) => j.status === 'released' || j.status === 'withdrawn');
     const since = (days: number) => Date.now() - days * 864e5;
-    const sum = (rows: any[]) => rows.reduce((t, j) => t + Number(j.amount || 0), 0);
+    const sum = (rows: typeof jobs) => rows.reduce((t, j) => t + Number(j.amount || 0), 0);
 
     const earnings = {
-      week: sum(earned.filter((j: any) => new Date(j.escrow_released_at ?? j.created_at).getTime() >= since(7))),
-      month: sum(earned.filter((j: any) => new Date(j.escrow_released_at ?? j.created_at).getTime() >= since(30))),
+      week: sum(earned.filter((j) => new Date(j.escrow_released_at ?? j.created_at).getTime() >= since(7))),
+      month: sum(earned.filter((j) => new Date(j.escrow_released_at ?? j.created_at).getTime() >= since(30))),
       total: sum(earned),
     };
 
     // "In progress" = paid into escrow and not yet released.
     const activeJob =
-      jobs.find((j: any) => ['paid_escrow', 'accepted', 'completed'].includes(j.status)) ?? null;
+      jobs.find((j) => ['paid_escrow', 'accepted', 'completed'].includes(j.status)) ?? null;
 
     // Countdown until the locked balance frees up (drives PLG-01/PLG-03 lock states).
-    const lastReleased = jobs.find((j: any) => j.status === 'released' && j.escrow_released_at);
+    const lastReleased = jobs.find((j) => j.status === 'released' && j.escrow_released_at);
     let unlocksInSeconds: number | null = null;
     if (Number(plug.wallet_balance_locked) > 0 && lastReleased?.escrow_released_at) {
       const readyAt = new Date(lastReleased.escrow_released_at).getTime() + LOCK_SECONDS * 1000;
       unlocksInSeconds = Math.max(0, Math.round((readyAt - Date.now()) / 1000));
     }
 
-    const withdrawals = await q(
-      "select * from hack_transactions where type = 'withdrawal' order by created_at desc limit 20"
-    );
+    const withdrawals = await repo.listWithdrawals(20);
 
     return NextResponse.json({
       plug,

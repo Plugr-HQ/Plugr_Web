@@ -18,7 +18,7 @@ export default function AppReceiptPage() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => { jsonFetch(`/api/jobs/${jobId}`).then(setData).catch((e) => setError(e.message)); }, [jobId]);
+  useEffect(() => { jsonFetch(`/api/jobs/${jobId}?source=core`).then(setData).catch((e) => setError(e.message)); }, [jobId]);
 
   if (error) return <Shell title="Receipt" back="/app/browse"><Card className="p-4 border-red-200"><p className="text-sm text-red-600">{error}</p></Card></Shell>;
   if (!data) return <Shell title="Receipt" back="/app/browse"><div className="flex items-center gap-2 text-slate text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div></Shell>;
