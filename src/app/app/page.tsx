@@ -11,11 +11,20 @@
 import Link from 'next/link';
 import { User, Wrench, ArrowRight } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
-import { PlugrWordmark, Eyebrow } from '@/src/app/demo/_components/ui';
+import { PlugrWordmark, Eyebrow } from '@/src/app/_shared/ui';
 import { Splash, useSplash } from '@/src/components/Splash';
+import { usePlugEntryRedirect } from '@/src/app/app/_lib/entryRouting';
 
 export default function AppRoleSelect() {
   const splashDone = useSplash();
+  // A Plug who already onboarded shouldn't be asked how they want to use Plugr again.
+  // Not strict: someone mid-onboarding still gets the choice, so they aren't locked
+  // out of the client side.
+  const checking = usePlugEntryRedirect('/app', false);
+
+  // The splash already covers this beat, so a returning Plug sees it and lands on their
+  // dashboard — no flash of the role picker.
+  if (checking) return <Splash done={false} />;
 
   return (
     <>
@@ -53,7 +62,7 @@ export default function AppRoleSelect() {
           </div>
 
           <p className="mt-auto pt-10 text-xs text-slate/70 text-center demo-rise demo-rise-4">
-            Escrow payments powered by ALATPay.
+            Escrow payments powered by Monnify.
           </p>
         </div>
       </main>
