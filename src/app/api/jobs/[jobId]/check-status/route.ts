@@ -1,60 +1,71 @@
 // src/app/api/jobs/[jobId]/check-status/route.ts
 // GET — poll-based fallback for the ALATPay webhook. Pulls the transaction status directly
 // from ALATPay via confirmTransaction() and performs the same transition the webhook would:
-// on 'completed', flip hack_jobs -> 'paid_escrow' and upsert the collection tx to 'successful'.
+// on 'completed', flip Job.escrowStatus -> 'locked' and upsert the collection tx to 'SUCCESSFUL'.
 // The webhook route stays intact — both are idempotent. Next 16: await params.
 
 import { NextResponse } from 'next/server';
 import { one, q } from '@/src/lib/hackDb';
 import { confirmTransaction, AlatPayError } from '@/src/lib/alatpay';
+import { requireJobParty, UnauthorizedError } from '@/src/lib/auth';
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ jobId: string }> }
 ) {
   const { jobId } = await params;
 
-  const job = await one('select id, amount, status from hack_jobs where id = $1', [jobId]);
+  const job = await one(
+    'select id, amount, status, "escrowStatus", "clientId", "plugId" from "Job" where id = $1',
+    [jobId]
+  );
   if (!job) {
     return NextResponse.json({ error: 'job not found' }, { status: 404 });
   }
-  if (job.status === 'paid_escrow') {
+
+  try {
+    await requireJobParty(request, job);
+  } catch (err) {
+    if (err instanceof UnauthorizedError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    throw err;
+  }
+
+  if (job.escrowStatus === 'locked') {
     return NextResponse.json({ status: 'paid_escrow', note: 'already paid' });
   }
 
-  const { searchParams } = new URL(_request.url);
+  const { searchParams } = new URL(request.url);
   const simulate = searchParams.get('simulate') === 'true';
 
   if (simulate) {
     const mockTxId = `sim_${job.id}_${Date.now()}`;
     await q(
-      `insert into hack_transactions
-         (alatpay_transaction_id, job_id, amount, type, status, raw_webhook_payload)
-       values ($1, $2, $3, 'collection', 'successful', $4)
-       on conflict (alatpay_transaction_id) where alatpay_transaction_id is not null
-       do update set status = 'successful'`,
+      `insert into "Transaction"
+         (id, "alatpayTransactionId", "jobId", amount, type, status, "rawWebhookPayload")
+       values (gen_random_uuid(), $1, $2, $3, 'COLLECTION', 'SUCCESSFUL', $4)
+       on conflict ("alatpayTransactionId") where "alatpayTransactionId" is not null
+       do update set status = 'SUCCESSFUL'`,
       [mockTxId, job.id, job.amount ?? 0, JSON.stringify({ simulated: true })]
     );
-    await q("update hack_jobs set status = 'paid_escrow' where id = $1", [job.id]);
+    await q('update "Job" set "escrowStatus" = $2 where id = $1', [job.id, 'locked']);
     return NextResponse.json({ status: 'paid_escrow', verified: true, simulated: true });
   }
 
   const tx = await one(
-    `select id, alatpay_transaction_id, status from hack_transactions
-     where job_id = $1 and alatpay_transaction_id is not null
-     order by created_at desc limit 1`,
+    `select id, "alatpayTransactionId", status from "Transaction"
+     where "jobId" = $1 and "alatpayTransactionId" is not null
+     order by "createdAt" desc limit 1`,
     [job.id]
   );
 
-  if (!tx?.alatpay_transaction_id) {
+  if (!tx?.alatpayTransactionId) {
     return NextResponse.json({ status: job.status, note: 'no alatpay transaction id yet' });
   }
 
-  const alatpayTransactionId = tx.alatpay_transaction_id;
+  const alatpayTransactionId = tx.alatpayTransactionId;
 
-  // Query ALATPay. Its status endpoint returns 200 + status "completed" once the transfer
-  // settles, and 404 + "Transaction Pending." while it's still awaiting/settling. The
-  // "pending" case is NOT an error — it means the VA has the transaction and we keep waiting.
   let result: any = null;
   let alatpay: 'completed' | 'pending' | 'unknown' = 'unknown';
   try {
@@ -70,23 +81,21 @@ export async function GET(
   }
 
   if (alatpay !== 'completed') {
-    // Not settled yet — tell the UI whether ALATPay has at least seen the transaction.
     return NextResponse.json({ status: job.status, alatpay });
   }
 
-  // Same transition the webhook performs on success (idempotent upsert on the txn id).
   await q(
-    `insert into hack_transactions
-       (alatpay_transaction_id, job_id, amount, type, status, raw_webhook_payload)
-     values ($1, $2, $3, 'collection', 'successful', $4)
-     on conflict (alatpay_transaction_id) where alatpay_transaction_id is not null
-     do update set status = 'successful',
-                   raw_webhook_payload = excluded.raw_webhook_payload,
+    `insert into "Transaction"
+       (id, "alatpayTransactionId", "jobId", amount, type, status, "rawWebhookPayload")
+     values (gen_random_uuid(), $1, $2, $3, 'COLLECTION', 'SUCCESSFUL', $4)
+     on conflict ("alatpayTransactionId") where "alatpayTransactionId" is not null
+     do update set status = 'SUCCESSFUL',
+                   "rawWebhookPayload" = excluded."rawWebhookPayload",
                    amount = excluded.amount`,
     [alatpayTransactionId, job.id, job.amount ?? result?.data?.amount ?? result?.amount ?? 0, result ?? null]
   );
 
-  await q("update hack_jobs set status = 'paid_escrow' where id = $1", [job.id]);
+  await q('update "Job" set "escrowStatus" = $2 where id = $1', [job.id, 'locked']);
 
   return NextResponse.json({ status: 'paid_escrow', verified: true, alatpay: 'completed' });
 }

@@ -1,14 +1,13 @@
 // src/app/api/jobs/[jobId]/pay/route.ts
 // POST — Screen 3 "Pay Now". Generates a one-time ALATPay virtual account for this job's
 // amount (the REAL money-movement leg). orderId = job id so the webhook / check-status can
-// flip the job to 'paid_escrow'. Records a pending 'collection' row now.
+// flip the job's escrow to 'locked'. Records a pending 'collection' row now.
 
 import { NextResponse } from 'next/server';
 import { q, one } from '@/src/lib/hackDb';
 import { generateVirtualAccount, AlatPayError } from '@/src/lib/alatpay';
+import { requireJobParty, UnauthorizedError } from '@/src/lib/auth';
 
-// Map ALATPay's numeric bank code to a display name. ALATPay's VA response has no
-// bankName field — only virtualBankCode — so we derive the name from the code.
 const BANK_CODES: Record<string, string> = { '035': 'Wema Bank' };
 
 function splitName(full: string): { firstName: string; lastName: string } {
@@ -32,35 +31,49 @@ function normalizeVirtualAccount(data: any) {
 }
 
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ jobId: string }> }
 ) {
   const { jobId } = await params;
 
   const job = await one(
-    'select id, client_name, client_phone, job_description, amount, status from hack_jobs where id = $1',
+    `select j.id, j.amount, j.status, j."escrowStatus", j.description,
+            j."clientId", j."plugId", u.name as client_name, u.phone as client_phone
+     from "Job" j
+     join "User" u on u.id = j."clientId"
+     where j.id = $1`,
     [jobId]
   );
 
   if (!job) {
     return NextResponse.json({ error: 'job not found' }, { status: 404 });
   }
-  if (job.status === 'paid_escrow') {
+
+  try {
+    await requireJobParty(request, job);
+  } catch (err) {
+    if (err instanceof UnauthorizedError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    throw err;
+  }
+
+  if (job.escrowStatus === 'locked') {
     return NextResponse.json({ error: 'job is already paid' }, { status: 409 });
   }
 
   // Reuse an existing pending virtual account for this job instead of minting a new one on
   // revisit — otherwise a genuine payment to the first VA could be orphaned.
   const existing = await one(
-    `select alatpay_virtual_account, raw_webhook_payload from hack_transactions
-     where job_id = $1 and type = 'collection' and status = 'pending' and alatpay_virtual_account is not null
-     order by created_at desc limit 1`,
+    `select "alatpayVirtualAccount", "rawWebhookPayload" from "Transaction"
+     where "jobId" = $1 and type = 'COLLECTION' and status = 'PENDING' and "alatpayVirtualAccount" is not null
+     order by "createdAt" desc limit 1`,
     [job.id]
   );
-  if (existing?.alatpay_virtual_account) {
+  if (existing?.alatpayVirtualAccount) {
     return NextResponse.json({
-      virtualAccount: normalizeVirtualAccount(existing.raw_webhook_payload),
-      raw: existing.raw_webhook_payload,
+      virtualAccount: normalizeVirtualAccount(existing.rawWebhookPayload),
+      raw: existing.rawWebhookPayload,
       reused: true,
     });
   }
@@ -72,7 +85,7 @@ export async function POST(
     result = await generateVirtualAccount({
       amount: Number(job.amount),
       orderId: job.id,
-      description: job.job_description || `Plugr escrow for job ${job.id}`,
+      description: job.description || `Plugr escrow for job ${job.id}`,
       customer: {
         email: 'demo-client@getplugr.com',
         phone: job.client_phone || '08000000000',
@@ -92,9 +105,9 @@ export async function POST(
   const va = normalizeVirtualAccount(result);
 
   await q(
-    `insert into hack_transactions
-       (job_id, alatpay_transaction_id, alatpay_virtual_account, amount, type, status, raw_webhook_payload)
-     values ($1, $2, $3, $4, 'collection', 'pending', $5)`,
+    `insert into "Transaction"
+       (id, "jobId", "alatpayTransactionId", "alatpayVirtualAccount", amount, type, status, "rawWebhookPayload")
+     values (gen_random_uuid(), $1, $2, $3, $4, 'COLLECTION', 'PENDING', $5)`,
     [job.id, va.transactionId, va.accountNumber, Number(job.amount), result ?? null]
   );
 

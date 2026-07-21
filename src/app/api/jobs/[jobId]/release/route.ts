@@ -7,43 +7,61 @@
 
 import { NextResponse } from 'next/server';
 import { one, q } from '@/src/lib/hackDb';
+import { requireJobParty, UnauthorizedError } from '@/src/lib/auth';
 
 const DEMO_LOCK_SECONDS = 60;
 
-// Releasable once paid into escrow. Our screen order marks the job 'completed' before the
-// client confirms, so accept both post-payment states.
-const RELEASABLE_STATUSES = ['completed', 'paid_escrow'];
-
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ jobId: string }> }
 ) {
   const { jobId } = await params;
 
-  const job = await one('select id, plug_id, amount, status from hack_jobs where id = $1', [jobId]);
+  const job = await one(
+    'select id, "plugId", amount, status, "escrowStatus", "clientId" from "Job" where id = $1',
+    [jobId]
+  );
   if (!job) {
     return NextResponse.json({ error: 'job not found' }, { status: 404 });
   }
-  if (!RELEASABLE_STATUSES.includes(job.status)) {
+
+  try {
+    await requireJobParty(request, job);
+  } catch (err) {
+    if (err instanceof UnauthorizedError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    throw err;
+  }
+
+  // Releasable once escrow is actually holding the funds — regardless of whether
+  // the job has separately been marked COMPLETED yet.
+  if (job.escrowStatus !== 'locked') {
     return NextResponse.json(
-      { error: `job is in status '${job.status}', expected one of ${RELEASABLE_STATUSES.join(' | ')}` },
+      { error: `escrow is '${job.escrowStatus}', expected 'locked' to release` },
       { status: 400 }
     );
   }
+  if (!job.plugId) {
+    return NextResponse.json({ error: 'job has no assigned plug' }, { status: 400 });
+  }
 
-  // Move funds into the Plug's locked balance now.
-  await q('select increment_wallet_locked($1, $2)', [job.plug_id, job.amount]);
+  // NOTE: this Postgres function still targets hack_plugs internally as of the last
+  // grep — do not ship this route until sql/wallet_functions.sql is confirmed updated
+  // to write to "PlugProfile" instead.
+  await q('select increment_wallet_locked($1, $2)', [job.plugId, job.amount]);
 
   const releasedAt = new Date();
   const unlocksAt = new Date(releasedAt.getTime() + DEMO_LOCK_SECONDS * 1000);
 
-  await q("update hack_jobs set status = 'released', escrow_released_at = $2 where id = $1", [
-    job.id,
-    releasedAt.toISOString(),
-  ]);
+  await q(
+    'update "Job" set "escrowStatus" = $2, "escrowReleasedAt" = $3 where id = $1',
+    [job.id, 'released', releasedAt.toISOString()]
+  );
 
   await q(
-    "insert into hack_transactions (job_id, amount, type, status) values ($1, $2, 'release', 'successful')",
+    `insert into "Transaction" (id, "jobId", amount, type, status)
+     values (gen_random_uuid(), $1, $2, 'RELEASE', 'SUCCESSFUL')`,
     [job.id, job.amount]
   );
 
