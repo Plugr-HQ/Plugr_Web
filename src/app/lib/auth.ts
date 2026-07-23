@@ -1,6 +1,6 @@
 // src/lib/auth.ts
 import { createClient } from '@supabase/supabase-js';
-import { one } from '@/src/lib/hackDb';
+import { one } from '@/src/lib/db';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
