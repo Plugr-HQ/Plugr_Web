@@ -1,0 +1,356 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+/// System user levels
+enum Role {
+  ADMIN
+  CLIENT
+  PLUG
+}
+
+/// Account state tracking
+enum UserStatus {
+  ACTIVE
+  BANNED
+  PENDING_ONBOARDING
+}
+
+/// Plug availability status
+enum PlugStatus {
+  ACTIVE
+  INACTIVE
+  BUSY
+}
+
+/// Job State Machine States
+enum JobStatus {
+  PENDING
+  SEARCHING_PLUG
+  PLUG_ASSIGNED
+  CLIENT_ACCEPTED
+  PLUG_ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+/// Payment transaction states
+enum TransactionType {
+  COLLECTION
+  RELEASE
+  WITHDRAWAL
+}
+
+/// Payment transaction status
+enum TransactionStatus {
+  PENDING
+  SUCCESSFUL
+  FAILED
+}
+
+/// Direction of SMS/WhatsApp logs
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+/// Message visual format
+enum MessageType {
+  TEXT
+  TEMPLATE
+  INTERACTIVE_BUTTON
+  LIST
+}
+
+/// Core User Model
+model User {
+  id              String            @id @default(uuid()) @db.Uuid
+  phone           String            @unique
+  email           String?           @unique
+  name            String?
+  role            Role              @default(CLIENT)
+  status          UserStatus        @default(PENDING_ONBOARDING)
+  onboardingStep  Int               @default(0) // Step tracer for WhatsApp dialogue state machine
+
+  // Geolocation fields (Stored as decimals; PostGIS uses raw geometry in DB)
+  latitude        Float?
+  longitude       Float?
+  address         String?
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  deletedAt       DateTime?         // Soft delete support
+
+  // Relations
+  plugProfile     PlugProfile?      // Only present if role = PLUG
+  jobsAsClient    Job[]             @relation("ClientJobs")
+  ratingsGiven    Rating[]          @relation("GivenRatings")
+  refreshTokens   RefreshToken[]
+  messages        WhatsappMessage[]
+  notifications   Notification[]
+  aiConversations AiConversation[]
+
+  @@index([latitude, longitude], name: "idx_user_coords")
+  @@index([role, status])
+}
+
+/// Plug (Service Provider) Profile
+model PlugProfile {
+  id                      String      @id @default(uuid()) @db.Uuid
+  userId                  String      @unique @db.Uuid
+  user                    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bio                     String?
+  status                  PlugStatus  @default(INACTIVE)
+  isVerified              Boolean     @default(false)
+  averageRating           Float       @default(0.0)
+  jobsCompleted           Int         @default(0)
+
+  // Profile media (added for the /app Plug surface — browse cards + PLG-02 portfolio)
+  photoUrl                String?
+  workPosts               Json        @default("[]")
+
+  // Wallet balances (escrow system)
+  walletBalanceAvailable  Float       @default(0.0)
+  walletBalanceLocked     Float       @default(0.0)
+
+  // Service configuration
+  categoryId              String      @db.Uuid
+  category                Category    @relation(fields: [categoryId], references: [id])
+
+  jobs                    Job[]       @relation("PlugJobs")
+  ratings                 Rating[]    @relation("ReceivedRatings")
+
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+  deletedAt               DateTime?
+
+  @@index([status, categoryId])
+}
+
+/// Service category (e.g. Plumber, Electrician, Tutor)
+model Category {
+  id          String        @id @default(uuid()) @db.Uuid
+  name        String        @unique
+  code        String        @unique // URL-friendly e.g., "electrician"
+  description String?
+  isActive    Boolean       @default(true)
+
+  plugs       PlugProfile[]
+  jobs        Job[]
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+/// Service Job / Transaction Record
+model Job {
+  id          String      @id @default(uuid()) @db.Uuid
+  clientId    String      @db.Uuid
+  client      User        @relation("ClientJobs", fields: [clientId], references: [id])
+
+  plugId      String?     @db.Uuid
+  plug        PlugProfile? @relation("PlugJobs", fields: [plugId], references: [id])
+
+  categoryId  String      @db.Uuid
+  category    Category    @relation(fields: [categoryId], references: [id])
+
+  status      JobStatus   @default(PENDING)
+  title       String
+  description String?
+
+  // Target location for the service
+  latitude    Float
+  longitude   Float
+  address     String?
+
+  // Pricing
+  price       Float?
+
+  // Escrow
+  escrowStatus            String?   // 'locked' | 'released' | 'refunded'
+  escrowAmount            Float?
+  complaintWindowClosesAt DateTime?
+  disputeRaised           Boolean   @default(false)
+  escrowReleasedAt        DateTime?
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?
+
+  // Relations
+  statusHistory    JobStatusHistory[]
+  ratings          Rating[]
+  whatsappMessages WhatsappMessage[]
+  transactions     Transaction[]
+
+  @@index([status])
+  @@index([clientId])
+  @@index([plugId])
+  @@index([escrowStatus])
+}
+
+/// Audit Trail for Job Transitions
+model JobStatusHistory {
+  id              String     @id @default(uuid()) @db.Uuid
+  jobId           String     @db.Uuid
+  job             Job        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  previousStatus  JobStatus?
+  newStatus       JobStatus
+  reason          String?
+  changedByUserId String?    // Traceability (can be admin, client, plug or SYSTEM)
+
+  createdAt       DateTime   @default(now())
+
+  @@index([jobId])
+}
+
+/// Payment Transaction Records
+model Transaction {
+  id                    String            @id @default(uuid()) @db.Uuid
+  jobId                 String?           @db.Uuid
+  job                   Job?              @relation(fields: [jobId], references: [id])
+
+  alatpayTransactionId  String?           @unique
+  alatpayVirtualAccount String?
+  amount                Float
+  type                  TransactionType   // COLLECTION | RELEASE | WITHDRAWAL
+  status                TransactionStatus @default(PENDING)
+  rawWebhookPayload     Json?
+
+  createdAt             DateTime          @default(now())
+
+  @@index([jobId])
+  @@index([alatpayTransactionId])
+  @@map("transactions")
+}
+
+/// Core Logging for WhatsApp messaging
+model WhatsappMessage {
+  id          String           @id @default(uuid()) @db.Uuid
+  messageSid  String?          @unique // WhatsApp Cloud API WAMID reference
+  userId      String?          @db.Uuid
+  user        User?            @relation(fields: [userId], references: [id])
+
+  jobId       String?          @db.Uuid
+  job         Job?             @relation(fields: [jobId], references: [id])
+
+  direction   MessageDirection
+  type        MessageType      @default(TEXT)
+  payload     Json             // Raw JSON payload from/to WhatsApp Cloud API
+  textBody    String?          // Extracted readable text
+
+  isProcessed Boolean          @default(false)
+  retryCount  Int              @default(0)
+
+  createdAt   DateTime         @default(now())
+
+  @@index([messageSid])
+  @@index([userId])
+}
+
+/// User platform Notifications
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// Ratings & Reviews System
+model Rating {
+  id             String      @id @default(uuid()) @db.Uuid
+  jobId          String      @db.Uuid
+  job            Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  giverId        String      @db.Uuid
+  giver          User        @relation("GivenRatings", fields: [giverId], references: [id])
+
+  receiverPlugId String      @db.Uuid
+  receiverPlug   PlugProfile @relation("ReceivedRatings", fields: [receiverPlugId], references: [id], onDelete: Cascade)
+
+  score          Int         // 1 to 5 scale
+  comment        String?
+
+  createdAt      DateTime    @default(now())
+
+  @@unique([jobId, giverId])
+}
+
+/// Secure Auth Refresh Token Table
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  token     String   @unique
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// AI Orchestration: Conversation Sessions
+model AiConversation {
+  id           String      @id @default(uuid()) @db.Uuid
+  userId       String      @db.Uuid
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  agentType    String      // 'CLIENT_AGENT' | 'PLUG_AGENT' | 'ADMIN_AGENT'
+  currentState String      @default("IDLE") // Dialog Flow routing state
+  summary      String?     @db.Text         // Memory summarization text
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  messages     AiMessage[]
+  toolLogs     AiToolLog[]
+
+  @@index([userId])
+}
+
+/// AI Orchestration: Conversational History Logs
+model AiMessage {
+  id             String         @id @default(uuid()) @db.Uuid
+  conversationId String         @db.Uuid
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  sender         String         // 'USER' | 'AGENT' | 'SYSTEM'
+  content        String         @db.Text
+  timestamp      DateTime       @default(now())
+
+  @@index([conversationId])
+}
+
+/// AI Orchestration: Audit Trail of Agent Tool Executions
+model AiToolLog {
+  id             String         @id @default(uuid()) @db.Uuid
+  conversationId String         @db.Uuid
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  toolName       String         // e.g., 'create_job', 'find_nearest_plugs', etc.
+  parameters     Json           // Input parameters requested by LLM agent
+  response       Json           // Deterministic output returned to agent
+  isSuccess      Boolean        @default(true)
+  timestamp      DateTime       @default(now())
+
+  @@index([conversationId])
+}

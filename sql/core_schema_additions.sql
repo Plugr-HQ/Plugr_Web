@@ -3,16 +3,11 @@
 -- Additive, idempotent changes to the CORE (Prisma-managed) schema so the /app surface can
 -- run the Plugr escrow lifecycle against the real tables instead of the hack_ demo tables.
 --
--- IMPORTANT FOR THE CTO — PRISMA DRIFT
--- These objects are created directly in Postgres, but "PlugProfile" is Prisma-managed. Until
--- the two columns below are added to schema.prisma, `prisma migrate dev` will report drift
--- and `prisma migrate reset` would drop them. Fold this into the Prisma schema:
---
---   model PlugProfile {
---     ...
---     photoUrl  String?
---     workPosts Json    @default("[]")
---   }
+-- IMPORTANT FOR THE CTO — PRISMA
+-- These objects are created directly in Postgres, but "PlugProfile" is Prisma-managed. The two
+-- new columns (photoUrl, workPosts) have ALREADY been added to schema.prisma (in the
+-- PlugProfile model) to match, so `prisma migrate status` should report in-sync rather than
+-- drift. If you regenerate migrations from scratch, keep those two fields.
 --
 -- Everything here is additive and nullable/defaulted, so it cannot break existing rows or
 -- existing product code.
@@ -64,13 +59,23 @@ end;
 $$ language plpgsql;
 
 -- ---------------------------------------------------------------------------
--- 4. Escrow state lives in "Job"."escrowStatus" (free text), which the core schema already
---    indexes (Job_escrowStatus_idx) — no enum change needed. The JobStatus enum has no
---    paid_escrow / released / withdrawn members, so "Job"."status" carries the coarse
---    product state and "escrowStatus" carries the escrow lifecycle:
+-- 4. Escrow/job state uses the TWO columns the Prisma schema already defines — no enum change,
+--    nothing to run here. Documented so the mapping isn't rediscovered later.
 --
---      escrowStatus   requested -> paid_escrow -> accepted -> completed -> released -> withdrawn
---      status         PENDING   -> PLUG_ASSIGNED -> PLUG_ACCEPTED -> IN_PROGRESS -> COMPLETED
+--    "Job"."status"       — JobStatus enum: the work-progress state machine.
+--    "Job"."escrowStatus" — free text, ONLY the money state: 'locked' | 'released' | 'refunded'
+--                           (per the schema.prisma comment). Already indexed
+--                           (Job_escrowStatus_idx).
 --
---    Nothing to run here — documented so the mapping isn't rediscovered later.
+--    The demo's single lifecycle maps onto that pair (src/lib/repo/core.ts, STATE_MAP):
+--
+--      demo status   "Job"."status"    "Job"."escrowStatus"
+--      requested     PENDING           null
+--      paid_escrow   PLUG_ASSIGNED     locked
+--      accepted      PLUG_ACCEPTED     locked
+--      completed     COMPLETED         locked      (dispute window)
+--      released      COMPLETED         released
+--
+--    core.ts reconstructs the demo status from both columns on read, so our writes stay
+--    legible to the CTO's WhatsApp/AI backend (which checks escrowStatus for locked/released).
 -- ---------------------------------------------------------------------------

@@ -55,10 +55,23 @@ backend to use. It looks the job up in the core tables first, then the `hack_` t
 whichever owns it.
 
 Two mappings worth knowing:
-- **Status.** The `JobStatus` enum has no `paid_escrow` / `released` / `withdrawn` members, so the
-  money state lives in `"Job"."escrowStatus"` (free text, and the core schema already indexed it) and
-  `"Job"."status"` carries the coarse work state. `status` = how far along the work is;
-  `escrowStatus` = where the money is.
+- **Status.** The core schema splits job state across **two columns** (confirmed against
+  `schema.prisma`): `"Job"."status"` is the `JobStatus` enum (work progress) and
+  `"Job"."escrowStatus"` holds **only** the money state — `'locked' | 'released' | 'refunded'`, per
+  the schema comment. The demo's single lifecycle maps onto that pair, and `core.ts` reconstructs it
+  on read:
+
+  | demo status | `"Job"."status"` | `"Job"."escrowStatus"` |
+  |---|---|---|
+  | requested   | `PENDING`        | `null` |
+  | paid_escrow | `PLUG_ASSIGNED`  | `locked` |
+  | accepted    | `PLUG_ACCEPTED`  | `locked` |
+  | completed   | `COMPLETED`      | `locked` (dispute window) |
+  | released    | `COMPLETED`      | `released` |
+
+  Speaking the CTO's `escrowStatus` vocabulary matters: the WhatsApp/AI backend reads these same
+  rows and checks `escrowStatus` for `locked`/`released` — it would never match a demo value like
+  `paid_escrow`. Verified end-to-end that the raw columns hold exactly these pairs.
 - **Identity.** `hack_jobs` stored the client as loose text; `"Job"."clientId"` is a real FK, so
   booking find-or-creates a `"User"` keyed on phone. That is why phone is required on `/app` and
   wasn't in the demo.
@@ -152,13 +165,17 @@ functions: increment_wallet_locked(), move_locked_to_available()
 functions: increment_wallet_locked_core(), move_locked_to_available_core()
 ```
 
-**⚠️ Prisma drift.** `photoUrl` and `workPosts` were added directly in Postgres because the core
-schema had nowhere to store a Plug's photo or portfolio. They are additive and nullable/defaulted,
-so nothing existing breaks — but until they are added to `schema.prisma`, `prisma migrate dev` will
-report drift and `prisma migrate reset` would drop them. The exact model change is written out at the
-top of `sql/core_schema_additions.sql`. **This is the one item that needs the CTO.**
+**Schema alignment.** Verified against `schema.prisma` (repo root — it was untracked until this
+change, now committed as the schema of record). `photoUrl` and `workPosts` were added to `"PlugProfile"`
+because the core schema had nowhere to store a Plug's photo or portfolio; both are additive and
+nullable/defaulted, and **have been added to the `PlugProfile` model in `schema.prisma`** to match,
+so `prisma migrate status` should report in-sync rather than drift. The CTO just needs to keep those
+two fields when regenerating migrations.
 
-**Job status lifecycle:** `requested → paid_escrow → accepted → completed → released → withdrawn`
+**Demo lifecycle (both surfaces):** `requested → paid_escrow → accepted → completed → released`
+On `/app` this is stored as the two-column pair in §2.1b; on `/demo` it's the single `hack_jobs.status`
+column. (`withdrawn` is wallet-level, not a job state — a withdrawal debits the wallet and writes a
+`WITHDRAWAL` transaction; it never sets a job status.)
 
 > **Note:** the `/release` guard accepts **`completed` OR `paid_escrow`**. The original dropped code
 > required strictly `paid_escrow`, but the screen order puts the Plug's "mark complete" *before* the
@@ -341,9 +358,13 @@ parser error, and a stale session signs out to phone auth rather than stranding 
 - `/app/browse` renders the 6 migrated Plugs **plus `Emeka Okafor`**, the `PlugProfile` that already
   existed in the production table. `/demo/browse` still shows the `hack_` set. Neither leaks into the
   other.
+- **Checked against `schema.prisma`** (repo root; was untracked, now committed). Two things came out of it: `photoUrl`
+  and `workPosts` are now in the `PlugProfile` model, and `escrowStatus` was corrected to the CTO's
+  `locked`/`released` vocabulary (§2.1b) — the raw columns were re-verified to hold exactly
+  `PLUG_ASSIGNED`+`locked`, `COMPLETED`+`locked`, `COMPLETED`+`released` across the lifecycle.
 - **Next actions, in order:**
-  1. **CTO:** fold `photoUrl` + `workPosts` into `schema.prisma` (see §3.2) before any
-     `prisma migrate`, or they will be dropped.
+  1. **CTO:** confirm the `photoUrl`/`workPosts` additions to `schema.prisma` and keep them on the
+     next `prisma migrate` (they already exist in the DB, so this should read as in-sync, not drift).
   2. Set the Vercel env vars and redeploy.
 
 ### Demo walkthrough (2 tabs)

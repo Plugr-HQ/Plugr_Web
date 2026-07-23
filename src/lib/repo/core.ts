@@ -40,15 +40,42 @@ export const source: Source = 'core';
 const PLACEHOLDER_LAT = 6.5244;
 const PLACEHOLDER_LNG = 3.3792;
 
-/** escrowStatus (money) -> JobStatus enum (work). */
-const WORK_STATUS: Record<JobStatus, string> = {
-  requested: 'PENDING',
-  paid_escrow: 'PLUG_ASSIGNED',
-  accepted: 'PLUG_ACCEPTED',
-  completed: 'COMPLETED',
-  released: 'COMPLETED',
-  withdrawn: 'COMPLETED',
+// The core schema splits a job's state across TWO columns (see schema.prisma):
+//   "Job"."status"       — JobStatus enum, the work-progress state machine
+//   "Job"."escrowStatus" — free text, ONLY the money state: 'locked' | 'released' | 'refunded'
+//
+// The demo's single 5-state lifecycle maps onto that pair. Writing both keeps our rows legible
+// to the CTO's WhatsApp/AI backend, which reads the same tables and checks escrowStatus for
+// 'locked'/'released' — it would never match a demo-vocabulary value like 'paid_escrow'.
+//
+//   demo status   "Job"."status"    "Job"."escrowStatus"
+//   requested     PENDING           null        (no money yet)
+//   paid_escrow   PLUG_ASSIGNED     locked
+//   accepted      PLUG_ACCEPTED     locked
+//   completed     COMPLETED         locked      (work done, still in dispute window)
+//   released      COMPLETED         released
+//
+// 'withdrawn' is wallet-level, not a job state — no job is ever set to it (withdrawal creates a
+// WITHDRAWAL transaction and debits the wallet), so it isn't in this map.
+const STATE_MAP: Record<JobStatus, { work: string; escrow: string | null }> = {
+  requested: { work: 'PENDING', escrow: null },
+  paid_escrow: { work: 'PLUG_ASSIGNED', escrow: 'locked' },
+  accepted: { work: 'PLUG_ACCEPTED', escrow: 'locked' },
+  completed: { work: 'COMPLETED', escrow: 'locked' },
+  released: { work: 'COMPLETED', escrow: 'released' },
+  withdrawn: { work: 'COMPLETED', escrow: 'released' },
 };
+
+// Reconstruct the demo lifecycle from the two core columns. Kept as one fragment so the
+// projection and the listJobs status filter derive it identically.
+const DEMO_STATUS_SQL = `
+  case
+    when j."escrowStatus" = 'released'                                then 'released'
+    when j."escrowStatus" = 'locked' and j.status = 'COMPLETED'       then 'completed'
+    when j."escrowStatus" = 'locked' and j.status = 'PLUG_ACCEPTED'   then 'accepted'
+    when j."escrowStatus" = 'locked'                                  then 'paid_escrow'
+    else 'requested'
+  end`;
 
 // ---------------------------------------------------------------- projections
 
@@ -73,7 +100,7 @@ const PLUG_FROM = `
   where p."deletedAt" is null`;
 
 // "Job" has no completedAt column; "updatedAt" is the closest honest stand-in and is only
-// surfaced once the job has actually reached a completed-or-later escrow state.
+// surfaced once the work has actually reached COMPLETED.
 const JOB_COLS = `
   j.id,
   j."plugId"                                   as plug_id,
@@ -81,10 +108,9 @@ const JOB_COLS = `
   cu.phone                                     as client_phone,
   coalesce(j.description, j.title)             as job_description,
   coalesce(j."escrowAmount", j.price, 0)       as amount,
-  coalesce(j."escrowStatus", 'requested')      as status,
+  ${DEMO_STATUS_SQL}                           as status,
   j."createdAt"                                as created_at,
-  case when j."escrowStatus" in ('completed','released','withdrawn')
-       then j."updatedAt" end                  as completed_at,
+  case when j.status = 'COMPLETED' then j."updatedAt" end as completed_at,
   j."escrowReleasedAt"                         as escrow_released_at`;
 
 const JOB_FROM = `
@@ -196,7 +222,7 @@ export async function unlockFunds(plugId: string, amount: number): Promise<void>
 export async function listJobs(statuses?: string[]): Promise<JobRow[]> {
   return statuses?.length
     ? q<JobRow>(
-        `select ${JOB_COLS} ${JOB_FROM} and coalesce(j."escrowStatus",'requested') = any($1)
+        `select ${JOB_COLS} ${JOB_FROM} and ${DEMO_STATUS_SQL} = any($1)
          order by j."createdAt" desc limit 50`,
         [statuses]
       )
@@ -238,11 +264,12 @@ export async function createJob(input: CreateJobInput): Promise<JobRow> {
   const description = input.jobDescription ?? null;
   const title = (description ?? 'Plugr job').slice(0, 80);
 
+  // New job = demo 'requested' = work PENDING, no escrow yet (escrowStatus null).
   const created = await one<{ id: string }>(
     `insert into "Job"
        (id, "clientId", "plugId", "categoryId", status, title, description,
         latitude, longitude, price, "escrowAmount", "escrowStatus", "createdAt", "updatedAt")
-     values (gen_random_uuid(), $1, $2, $3, 'PENDING', $4, $5, $6, $7, $8, $8, 'requested', now(), now())
+     values (gen_random_uuid(), $1, $2, $3, 'PENDING', $4, $5, $6, $7, $8, $8, null, now(), now())
      returning id`,
     [client!.id, input.plugId, plug.categoryId, title, description, PLACEHOLDER_LAT, PLACEHOLDER_LNG, input.amount]
   );
@@ -255,15 +282,17 @@ export async function setJobStatus(
   status: JobStatus,
   opts?: { completedAt?: Date; escrowReleasedAt?: Date }
 ): Promise<void> {
-  const sets = [`"escrowStatus" = $2`, `status = $3::"JobStatus"`, `"updatedAt" = now()`];
-  const vals: any[] = [jobId, status, WORK_STATUS[status] ?? 'PENDING'];
+  const map = STATE_MAP[status] ?? STATE_MAP.requested;
+  // Write BOTH columns: the work-state enum and the money-state string, per the CTO's model.
+  const sets = [`status = $2::"JobStatus"`, `"escrowStatus" = $3`, `"updatedAt" = now()`];
+  const vals: any[] = [jobId, map.work, map.escrow];
 
   if (opts?.escrowReleasedAt) {
     vals.push(opts.escrowReleasedAt.toISOString());
     sets.push(`"escrowReleasedAt" = $${vals.length}`);
   }
-  // completedAt has no column in "Job" — "updatedAt" (set above) carries it, and the JOB_COLS
-  // projection surfaces it as completed_at once escrowStatus reaches a completed state.
+  // completedAt has no column in "Job" — "updatedAt" (set above) carries it, and JOB_COLS
+  // surfaces it as completed_at once status reaches COMPLETED.
 
   await q(`update "Job" set ${sets.join(', ')} where id = $1`, vals);
 }
