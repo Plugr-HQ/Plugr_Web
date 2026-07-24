@@ -20,6 +20,7 @@ import { Shell } from '@/src/app/demo/_components/Shell';
 import { Card, Label, TextInput, GoldButton } from '@/src/app/demo/_components/ui';
 import { jsonFetch } from '@/src/app/demo/_lib/demo';
 import { cn } from '@/src/lib/utils';
+import { setToken } from '@/src/lib/api';
 import {
   getPlugDraft,
   savePlugDraft,
@@ -90,7 +91,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play().catch(() => {});
+        await videoRef.current.play().catch(() => { });
       }
     } catch {
       setCamError('We couldn’t open your camera. Allow camera access, then try again.');
@@ -169,12 +170,11 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
           trade: d.trade,
           photoUrl: d.photo ?? null,
           nin: d.nin ?? nin,
-          // The core tables key a Plug to a real "User" row, which needs the phone captured
-          // back at AUTH-02. The hack_ demo tables ignore it.
           phone: getPlugPhone(),
         }),
       });
 
+      if (body.accessToken) setToken(body.accessToken);
       setPlugId(body.plug.id);
       setPlugOnboarded(true);
       clearPlugDraft();
