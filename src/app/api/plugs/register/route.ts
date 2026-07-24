@@ -1,17 +1,21 @@
 // src/app/api/plugs/register/route.ts
 // POST — creates a real Plug row at the end of Plug onboarding (PLG-ON-02).
 //
-// The new Plug starts unverified so PLG-01 opens in the spec's "Pending Review" state until
-// ops approval. Rating/jobs start at 0 — a new Plug has no record yet; the trust record
-// compounds from here.
+// This now proxies to the NestJS backend's POST /auth/register instead of
+// writing to Postgres directly (that direct-write path lived in
+// src/lib/repo/core.ts and required its own DATABASE_URL on Vercel, which
+// went out of sync with the real Supabase password independently of
+// everything else — see incident notes from 2026-07-24).
 //
-// Static segment, so it resolves ahead of /api/plugs/[plugId] and doesn't touch the
-// pre-existing mock collection route at /api/plugs.
+// Validation stays here so error messages/UX don't change for the caller.
+// NIN is still deliberately NOT sent to the backend or persisted anywhere —
+// spec forbids exposing raw NIN/BVN, and there's no verification service to
+// hand it to yet.
 
 import { NextResponse } from 'next/server';
-import { getRepo, resolveSource } from '@/src/lib/repo';
 
 const TRADES = ['electrician', 'plumber', 'furniture'];
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export async function POST(request: Request) {
   let body: {
@@ -21,7 +25,6 @@ export async function POST(request: Request) {
     photoUrl?: string | null;
     nin?: string;
     phone?: string;
-    source?: string;
   };
 
   try {
@@ -29,9 +32,6 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: 'invalid request body' }, { status: 400 });
   }
-
-  const source = resolveSource(request, body.source);
-  const repo = getRepo(source);
 
   const firstName = (body.firstName ?? '').trim();
   const lastName = (body.lastName ?? '').trim();
@@ -49,30 +49,40 @@ export async function POST(request: Request) {
   if (nin.length !== 11) {
     return NextResponse.json({ error: 'NIN must be 11 digits' }, { status: 400 });
   }
-  // The core tables key a Plug to a real "User" row, which requires a phone. The hack_ demo
-  // tables store the Plug standalone, so phone stays optional there.
-  if (source === 'core' && !phone) {
+  if (!phone) {
     return NextResponse.json({ error: 'phone is required to register a Plug' }, { status: 400 });
   }
 
   try {
-    const plug = await repo.createPlug({
-      firstName,
-      lastName,
-      trade,
-      photoUrl: body.photoUrl ?? null,
-      phone: phone || null,
+    const backendRes = await fetch(`${API_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone,
+        name: `${firstName} ${lastName}`,
+        role: 'PLUG',
+        trade,
+        photoUrl: body.photoUrl ?? null,
+      }),
     });
 
-    // NIN is deliberately NOT persisted — the spec forbids exposing raw NIN/BVN anywhere,
-    // and there's no verification service to hand it to yet.
-    return NextResponse.json({ plug }, { status: 201 });
-  } catch (e: any) {
-    console.error('plug register failed', e);
-    const message = String(e?.message ?? '');
-    if (message.includes('phone is required') || message.includes('no Category')) {
-      return NextResponse.json({ error: message }, { status: 400 });
+    const data = await backendRes.json();
+
+    if (!backendRes.ok) {
+      // Pass the backend's error message through (e.g. "already registered",
+      // "no Category with code ...") instead of masking it as a generic 500.
+      return NextResponse.json(
+        { error: data?.message ?? data?.error ?? 'could not create plug' },
+        { status: backendRes.status }
+      );
     }
+
+    // data = { accessToken, refreshToken, user, plug }
+    // Return everything — the client component should store accessToken/
+    // refreshToken via lib/api.ts's setToken() the same way login already does.
+    return NextResponse.json(data, { status: 201 });
+  } catch (e: any) {
+    console.error('plug register failed (backend proxy)', e);
     return NextResponse.json({ error: 'could not create plug' }, { status: 500 });
   }
 }
