@@ -1,38 +1,44 @@
 // src/app/api/plugs/[plugId]/route.ts
 // GET — a single Plug's wallet snapshot (available vs locked), polled by the Screen 6
-// wallet view. Sits alongside the existing mock /api/plugs (different segment). Next 16:
-// await params.
+// wallet view.
+// PATCH — edit the Plug's own profile (PLG-02) and flip ops approval.
+//
+// Both now proxy to the NestJS backend instead of querying Postgres directly (that direct
+// path lived in src/lib/repo/core.ts and required its own DATABASE_URL on Vercel — see
+// incident notes from 2026-07-24/25).
 
 import { NextResponse } from 'next/server';
-import { getRepo, resolveSource } from '@/src/lib/repo';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ plugId: string }> }
 ) {
   const { plugId } = await params;
-  const repo = getRepo(resolveSource(request));
 
   try {
-    const plug = await repo.getPlug(plugId);
-    if (!plug) {
-      return NextResponse.json({ error: 'plug not found' }, { status: 404 });
+    const backendRes = await fetch(`${API_URL}/plugs/${plugId}`, {
+      method: 'GET',
+      cache: 'no-store',
+    });
+
+    const data = await backendRes.json();
+
+    if (!backendRes.ok) {
+      return NextResponse.json(
+        { error: data?.message ?? data?.error ?? 'could not load plug' },
+        { status: backendRes.status }
+      );
     }
 
-    const withdrawals = await repo.listWithdrawals();
-    return NextResponse.json({ plug, withdrawals: withdrawals ?? [] });
+    return NextResponse.json(data);
   } catch (e) {
-    console.error('plug snapshot failed', e);
+    console.error('plug snapshot failed (backend proxy)', e);
     return NextResponse.json({ error: 'could not load plug' }, { status: 500 });
   }
 }
 
-/**
- * PATCH — edit the Plug's own profile (PLG-02) and flip ops approval.
- * Only editable fields are accepted: bio, photo, work posts, and `verified` (which stands in
- * for the ops-approval step). Verified identity data (name/trade/NIN) is locked post-
- * verification per spec, so it is deliberately not patchable here.
- */
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ plugId: string }> }
@@ -44,15 +50,12 @@ export async function PATCH(
     photoUrl?: string | null;
     workPosts?: unknown;
     verified?: boolean;
-    source?: string;
   };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'invalid request body' }, { status: 400 });
   }
-
-  const repo = getRepo(resolveSource(request, body.source));
 
   const hasUpdate =
     typeof body.bio === 'string' ||
@@ -66,16 +69,24 @@ export async function PATCH(
   }
 
   try {
-    const plug = await repo.updatePlug(plugId, {
-      bio: body.bio,
-      photoUrl: body.photoUrl,
-      workPosts: body.workPosts,
-      verified: body.verified,
+    const backendRes = await fetch(`${API_URL}/plugs/${plugId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     });
-    if (!plug) return NextResponse.json({ error: 'plug not found' }, { status: 404 });
-    return NextResponse.json({ plug });
+
+    const data = await backendRes.json();
+
+    if (!backendRes.ok) {
+      return NextResponse.json(
+        { error: data?.message ?? data?.error ?? 'could not update plug' },
+        { status: backendRes.status }
+      );
+    }
+
+    return NextResponse.json(data);
   } catch (e) {
-    console.error('plug update failed', e);
+    console.error('plug update failed (backend proxy)', e);
     return NextResponse.json({ error: 'could not update plug' }, { status: 500 });
   }
 }
