@@ -86,6 +86,12 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
 
   const startCamera = useCallback(async () => {
     setCamError(null);
+    // Stop any previously acquired stream first — without this, a failed liveness attempt
+    // that re-triggers this effect leaves the old stream's tracks running forever, orphaned,
+    // while streamRef only ever points at the newest one. That's what kept the camera
+    // indicator lit even after the flow finished.
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
       streamRef.current = stream;
@@ -94,9 +100,9 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
         await videoRef.current.play().catch(() => { });
       }
     } catch {
-      setCamError('We couldn’t open your camera. Allow camera access, then try again.');
+      setCamError("We couldn't open your camera. Allow camera access, then try again.");
     }
-  }, []);
+  }, []);;
 
   // start the camera when the liveness step opens
   useEffect(() => {
