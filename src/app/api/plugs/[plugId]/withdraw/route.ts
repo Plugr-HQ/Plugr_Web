@@ -19,12 +19,41 @@ export async function POST(
     return NextResponse.json({ error: 'invalid request body' }, { status: 400 });
   }
 
-  const repo = getRepo(resolveSource(request, body.source));
+  const source = resolveSource(request, body.source);
   const amount = Number(body.amount);
   if (!Number.isFinite(amount) || amount <= 0) {
     return NextResponse.json({ error: 'a positive amount is required' }, { status: 400 });
   }
 
+  if (source === 'core') {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    try {
+      const backendRes = await fetch(`${API_URL}/plugs/${plugId}/withdraw`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ amount }),
+      });
+
+      const data = await backendRes.json();
+
+      if (!backendRes.ok) {
+        return NextResponse.json(
+          { error: data?.message ?? data?.error ?? 'could not process withdrawal' },
+          { status: backendRes.status }
+        );
+      }
+
+      return NextResponse.json(data);
+    } catch (e) {
+      console.error('withdrawal backend proxy failed', e);
+      return NextResponse.json({ error: 'could not process withdrawal' }, { status: 500 });
+    }
+  }
+
+  // Fallback for hack (demo) source
+  const repo = getRepo(source);
   const plug = await repo.getPlug(plugId);
   if (!plug) {
     return NextResponse.json({ error: 'plug not found' }, { status: 404 });
