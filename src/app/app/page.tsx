@@ -59,16 +59,18 @@ export default function AppRoleSelect() {
               body="Get verified, build your profile, and get paid for great work."
               className="demo-rise demo-rise-3"
             />
+            <p className="text-slate/70 text-center">
+               Already have an account? <Link href="/app/auth/login" className="text-gold">Login</Link>
+            </p>
           </div>
 
           <p className="mt-auto pt-10 text-xs text-slate/70 text-center demo-rise demo-rise-4">
-            Escrow payments powered by Monnify.
+            Escrow payments powered by Alatpay.
           </p>
         </div>
       </main>
     </>
-  );
-}
+)}
 
 function Tile({
   href,
