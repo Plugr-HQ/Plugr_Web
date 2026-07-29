@@ -1,11 +1,10 @@
 // src/app/api/plugs/[plugId]/route.ts
 // GET — a single Plug's wallet snapshot (available vs locked), polled by the Screen 6
-// wallet view.
-// PATCH — edit the Plug's own profile (PLG-02) and flip ops approval.
+// wallet view. Proxies to the NestJS backend (GET /plugs/:id), forwarding the caller's token.
 //
-// Both now proxy to the NestJS backend instead of querying Postgres directly (that direct
-// path lived in src/lib/repo/core.ts and required its own DATABASE_URL on Vercel — see
-// incident notes from 2026-07-24/25).
+// PATCH moved out: the old combined PATCH /plugs/:id was split on the backend into
+//   PATCH /plugs/:id/profile      (PLUG + ownership)  -> ./profile/route.ts
+//   PATCH /plugs/:id/verification (ADMIN)             -> ./verification/route.ts
 
 import { NextResponse } from 'next/server';
 
@@ -17,10 +16,14 @@ export async function GET(
 ) {
   const { plugId } = await params;
 
+  // Forward the caller's bearer token so the backend's guards can authorize.
+  const auth = request.headers.get('authorization');
+
   try {
     const backendRes = await fetch(`${API_URL}/plugs/${plugId}`, {
       method: 'GET',
       cache: 'no-store',
+      headers: auth ? { Authorization: auth } : undefined,
     });
 
     const data = await backendRes.json();
@@ -36,57 +39,5 @@ export async function GET(
   } catch (e) {
     console.error('plug snapshot failed (backend proxy)', e);
     return NextResponse.json({ error: 'could not load plug' }, { status: 500 });
-  }
-}
-
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ plugId: string }> }
-) {
-  const { plugId } = await params;
-
-  let body: {
-    bio?: string;
-    photoUrl?: string | null;
-    workPosts?: unknown;
-    verified?: boolean;
-  };
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: 'invalid request body' }, { status: 400 });
-  }
-
-  const hasUpdate =
-    typeof body.bio === 'string' ||
-    typeof body.photoUrl === 'string' ||
-    body.photoUrl === null ||
-    Array.isArray(body.workPosts) ||
-    typeof body.verified === 'boolean';
-
-  if (!hasUpdate) {
-    return NextResponse.json({ error: 'nothing to update' }, { status: 400 });
-  }
-
-  try {
-    const backendRes = await fetch(`${API_URL}/plugs/${plugId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    const data = await backendRes.json();
-
-    if (!backendRes.ok) {
-      return NextResponse.json(
-        { error: data?.message ?? data?.error ?? 'could not update plug' },
-        { status: backendRes.status }
-      );
-    }
-
-    return NextResponse.json(data);
-  } catch (e) {
-    console.error('plug update failed (backend proxy)', e);
-    return NextResponse.json({ error: 'could not update plug' }, { status: 500 });
   }
 }

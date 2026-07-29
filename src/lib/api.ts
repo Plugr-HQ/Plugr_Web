@@ -19,6 +19,16 @@ export const clearToken = () => {
   }
 };
 
+/**
+ * Authorization header for the stored access token, or {} if none.
+ * Client-only (reads localStorage). Spread into a fetch's headers so the server-side proxy
+ * routes receive the token and can forward it to the guarded NestJS endpoints.
+ */
+export const authHeaders = (): Record<string, string> => {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 const getHeaders = (auth = false) => {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',

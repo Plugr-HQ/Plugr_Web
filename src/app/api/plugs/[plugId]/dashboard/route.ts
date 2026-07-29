@@ -16,10 +16,15 @@ export async function GET(
 ) {
   const { plugId } = await params;
 
+  // Forward the caller's bearer token so the backend's JwtAuthGuard/RolesGuard/ownership guard
+  // can authorize. The client attaches it via authHeaders(); this proxy passes it through.
+  const auth = request.headers.get('authorization');
+
   try {
     const backendRes = await fetch(`${API_URL}/plugs/${plugId}/dashboard`, {
       method: 'GET',
       cache: 'no-store',
+      headers: auth ? { Authorization: auth } : undefined,
     });
 
     const data = await backendRes.json();

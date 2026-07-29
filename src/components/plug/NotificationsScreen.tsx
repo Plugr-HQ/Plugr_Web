@@ -11,6 +11,7 @@ import { Card } from '@/src/app/demo/_components/ui';
 import { getPlugId } from '@/src/app/app/_lib/plugAuth';
 import { PlugShell, EmptyState } from './PlugChrome';
 import { withSource } from '@/src/lib/apiSource';
+import { authHeaders } from '@/src/lib/api';
 
 export function NotificationsScreen({ base }: { base: string }) {
   const [plug, setPlug] = useState<any>(null);
@@ -18,7 +19,7 @@ export function NotificationsScreen({ base }: { base: string }) {
   useEffect(() => {
     const id = getPlugId();
     if (!id) return;
-    fetch(withSource(`/api/plugs/${id}`, base))
+    fetch(withSource(`/api/plugs/${id}`, base), { headers: authHeaders() })
       .then((r) => r.json())
       .then((d) => setPlug(d.plug))
       .catch(() => {});

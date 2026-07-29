@@ -20,6 +20,7 @@ import { jsonFetch } from '@/src/app/demo/_lib/demo';
 import { getPlugId, signOutPlug } from '@/src/app/app/_lib/plugAuth';
 import { PlugShell, BadgeChip, JobStatusChip, EmptyState, plugTier } from './PlugChrome';
 import { withSource } from '@/src/lib/apiSource';
+import { authHeaders } from '@/src/lib/api';
 
 function hhmm(total: number) {
   const h = Math.floor(total / 3600);
@@ -112,9 +113,13 @@ export function DashboardScreen({ base }: { base: string }) {
   async function simulateApproval() {
     setApproving(true);
     try {
-      await fetch(withSource(`/api/plugs/${plug.id}`, base), {
+      // NOTE: verification is now the ADMIN-only /verification route on the backend. This
+      // plug-side "simulate approval" shortcut will 403 for a PLUG — it stays here only so the
+      // call targets the correct split endpoint, not the removed combined PATCH. Real approval
+      // belongs to the admin verifications UI (currently a mock). See the token/guards report.
+      await fetch(withSource(`/api/plugs/${plug.id}/verification`, base), {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ verified: true }),
       });
       await load();

@@ -1,13 +1,17 @@
 // src/app/demo/_lib/demo.ts
 // Small shared helpers for the ALATPay demo screens. Client-safe (no secrets).
 
+import { authHeaders } from '@/src/lib/api';
+
 export const naira = (n: number | string | null | undefined) =>
   '₦' + Number(n || 0).toLocaleString('en-NG');
 
 export async function jsonFetch<T = any>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
+    // authHeaders() attaches the stored access token when present so guarded /app proxy routes
+    // can forward it. Harmless for /demo (source=hack) and public routes — they ignore it.
+    headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(init?.headers || {}) },
   });
   const body = await res.json().catch(() => ({} as any));
   if (!res.ok) {

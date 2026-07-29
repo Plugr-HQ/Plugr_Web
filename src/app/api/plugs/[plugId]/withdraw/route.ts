@@ -27,11 +27,14 @@ export async function POST(
 
   if (source === 'core') {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    // Forward the caller's bearer token — withdraw is strict PLUG+ownership on the backend.
+    const auth = request.headers.get('authorization');
     try {
       const backendRes = await fetch(`${API_URL}/plugs/${plugId}/withdraw`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(auth ? { Authorization: auth } : {}),
         },
         body: JSON.stringify({ amount }),
       });

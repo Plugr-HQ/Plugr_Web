@@ -29,6 +29,7 @@ import {
 } from '@/src/app/app/_lib/plugAuth';
 import { PlugShell, JobStatusChip, EmptyState } from './PlugChrome';
 import { withSource } from '@/src/lib/apiSource';
+import { authHeaders } from '@/src/lib/api';
 
 type Range = 'week' | 'month' | 'total';
 type Sheet = null | 'withdraw' | 'bank' | 'changeBank';
@@ -504,7 +505,7 @@ function Withdraw({
     try {
       const res = await fetch(withSource(`/api/plugs/${plugId}/withdraw`, base), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ amount: amt }),
       });
       const body = await res.json();

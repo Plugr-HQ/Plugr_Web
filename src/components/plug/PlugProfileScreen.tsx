@@ -25,6 +25,7 @@ import { buildProfile } from '@/src/app/app/_lib/profile';
 import { PlugShell, BadgeChip, EmptyState, plugTier } from './PlugChrome';
 import { DigitalId } from '@/src/app/app/_components/DigitalId';
 import { withSource } from '@/src/lib/apiSource';
+import { authHeaders } from '@/src/lib/api';
 
 type WorkPost = { id: string; title: string; photos: string[]; createdAt: string };
 
@@ -90,9 +91,10 @@ export function PlugProfileScreen({ base }: { base: string }) {
   useEffect(() => { load(); }, [load]);
 
   async function patch(payload: any) {
-    const res = await fetch(withSource(`/api/plugs/${plugId}`, base), {
+    // Self-service profile edit -> the split /profile route (PLUG + ownership on the backend).
+    const res = await fetch(withSource(`/api/plugs/${plugId}/profile`, base), {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify(payload),
     });
     const body = await res.json();
