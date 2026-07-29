@@ -2,17 +2,20 @@
 //
 // One API, two storage backends.
 //
-//   /demo  -> hack_plugs / hack_jobs / hack_transactions   (the frozen buildathon submission)
+//   /demo  -> in-memory static fixtures (src/lib/repo/demo.ts + demoData.ts) — NO database
 //   /app   -> "PlugProfile" / "User" / "Category" / "Job" / "transactions"  (core product)
 //
-// Both backends return the SAME row shapes — the snake_case shape the hack_ tables happen to
-// use — so every API response stays byte-compatible and no UI component had to change. The
-// core backend does the column mapping in SQL (see core.ts).
+// The hack_ tables /demo used to read were dropped in a DB reset, so the 'hack' source is now
+// served entirely from in-memory fixtures — no DB calls on the /demo path. The DB-backed
+// hack.ts is kept on disk for reference but is no longer wired to getRepo.
 //
-// Default source is 'hack'. That is deliberate: if a call site is ever missed, it keeps
-// reading the demo tables rather than silently writing into the production ones.
+// Both backends return the SAME row shapes (snake_case), so every API response stays
+// byte-compatible and no UI component changed. The core backend maps columns in SQL (core.ts).
+//
+// Default source is 'hack'. That is deliberate: if a call site is ever missed, it serves the
+// in-memory demo fixtures rather than silently touching the production core tables.
 
-import * as hack from './hack';
+import * as demo from './demo';
 import * as core from './core';
 
 export type Source = 'hack' | 'core';
@@ -138,7 +141,8 @@ export interface Repo {
   listWithdrawals(limit?: number): Promise<TxnRow[]>;
 }
 
-const REPOS: Record<Source, Repo> = { hack, core };
+// The 'hack' source now resolves to the in-memory demo fixtures (no DB); 'core' is unchanged.
+const REPOS: Record<Source, Repo> = { hack: demo, core };
 
 export function getRepo(source: Source = 'hack'): Repo {
   return REPOS[source] ?? REPOS.hack;
@@ -157,4 +161,4 @@ export function resolveSource(request: Request, bodySource?: unknown): Source {
   return raw === 'core' ? 'core' : 'hack';
 }
 
-export { hack, core };
+export { demo, core };
