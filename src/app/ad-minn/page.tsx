@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Users,
   Briefcase,
@@ -12,64 +12,151 @@ import {
   Check,
   X,
   MoreVertical,
-  LayoutDashboard
+  LayoutDashboard,
+  PanelLeftClose,
+  PanelLeft,
 } from 'lucide-react'
 import { cn } from '@/src/lib/utils'
 
+const SIDEBAR_PIN_KEY = 'plugr-admin-sidebar-pinned'
+
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'plugs' | 'jobs' | 'verifications'>('plugs')
+  const [isPinned, setIsPinned] = useState(false);
+
+  // Hydrate pin state from localStorage on mount (client-only, avoids SSR mismatch)
+  useEffect(() => {
+    const stored = localStorage.getItem(SIDEBAR_PIN_KEY)
+    if (stored !== null) {
+      setIsPinned(stored === 'true')
+    }
+  }, [])
+
+  const togglePinned = () => {
+    setIsPinned((prev) => {
+      const next = !prev
+      localStorage.setItem(SIDEBAR_PIN_KEY, String(next))
+      return next
+    })
+  }
 
   return (
     <div className="flex min-h-screen bg-bone">
       {/* Sidebar */}
-      <aside className="w-64 bg-midnight text-white hidden md:flex flex-col">
-        <div className="p-6 border-b border-white/5">
-          <div className="flex items-center gap-2">
-            <Image src="/logo.svg" alt="Plugr Logo" width={32} height={32} className="brightness-0 invert" />
-            <span className="text-2xl font-black tracking-tighter text-white">plugr</span>
+      <aside
+      className={cn(
+        "group fixed left-0 top-0 bottom-0 z-50 bg-midnight text-white transition-all duration-300 ease-in-out flex flex-col shadow-xl",
+        isPinned ? "w-64" : "w-16 hover:w-64"
+      )}
+    >
+      {/* Header */}
+      <div className="p-4 border-b border-white/5 flex items-center justify-between min-h-[73px]">
+        <div className={cn("flex items-center shrink-0 overflow-hidden", isPinned ? "gap-3" : "gap-0 group-hover:gap-3")}>
+          <div className="shrink-0">
+            <Image src="/plugr.svg" alt="Plugr Logo" width={32} height={32} />
           </div>
-        </div>
-
-        <nav className="grow p-4 space-y-2">
-          <button
-            onClick={() => setActiveTab('plugs')}
+          <span
             className={cn(
-              "w-full flex items-center gap-3 px-4 py-3 rounded-card text-sm font-bold transition-colors",
-              activeTab === 'plugs' ? "bg-gold text-midnight" : "text-steel-blue hover:bg-white/5"
+              "text-2xl font-black tracking-tighter text-white whitespace-nowrap overflow-hidden transition-all duration-200",
+              isPinned ? "opacity-100 w-auto" : "opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto"
             )}
           >
-            <Users className="w-5 h-5" />
+            plugr
+          </span>
+        </div>
+
+        <button
+          onClick={togglePinned}
+          className={cn(
+            "rounded-lg text-steel-blue hover:text-white hover:bg-white/10 transition-all duration-200 overflow-hidden shrink-0",
+            isPinned ? "opacity-100 w-auto p-1.5" : "opacity-0 w-0 p-0 group-hover:opacity-100 group-hover:w-auto group-hover:p-1.5"
+          )}
+          title={isPinned ? "Unpin sidebar" : "Pin sidebar"}
+        >
+          {isPinned ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeft className="w-5 h-5" />}
+        </button>
+      </div>
+
+      {/* Navigation */}
+      <nav className="grow p-3 space-y-2 overflow-x-hidden">
+        <button
+          onClick={() => setActiveTab('plugs')}
+          className={cn(
+            "w-full flex items-center px-3.5 py-3 rounded-card text-sm font-bold transition-colors whitespace-nowrap",
+            isPinned ? "gap-3 justify-start" : "gap-0 justify-center group-hover:gap-3 group-hover:justify-start",
+            activeTab === 'plugs' ? "bg-gold text-midnight" : "text-steel-blue hover:bg-white/5"
+          )}
+        >
+          <Users className="w-5 h-5 shrink-0" />
+          <span
+            className={cn(
+              "overflow-hidden transition-all duration-200",
+              isPinned ? "opacity-100 w-auto" : "opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto"
+            )}
+          >
             Manage Plugs
-          </button>
-          <button
-            onClick={() => setActiveTab('jobs')}
-            className={cn(
-              "w-full flex items-center gap-3 px-4 py-3 rounded-card text-sm font-bold transition-colors",
-              activeTab === 'jobs' ? "bg-gold text-midnight" : "text-steel-blue hover:bg-white/5"
-            )}
-          >
-            <Briefcase className="w-5 h-5" />
-            Job Oversight
-          </button>
-          <button
-            onClick={() => setActiveTab('verifications')}
-            className={cn(
-              "w-full flex items-center gap-3 px-4 py-3 rounded-card text-sm font-bold transition-colors",
-              activeTab === 'verifications' ? "bg-gold text-midnight" : "text-steel-blue hover:bg-white/5"
-            )}
-          >
-            <ShieldCheck className="w-5 h-5" />
-            Verifications
-          </button>
-        </nav>
+          </span>
+        </button>
 
-        <div className="p-6 border-t border-white/5 text-xs text-steel-blue">
+        <button
+          onClick={() => setActiveTab('jobs')}
+          className={cn(
+            "w-full flex items-center px-3.5 py-3 rounded-card text-sm font-bold transition-colors whitespace-nowrap",
+            isPinned ? "gap-3 justify-start" : "gap-0 justify-center group-hover:gap-3 group-hover:justify-start",
+            activeTab === 'jobs' ? "bg-gold text-midnight" : "text-steel-blue hover:bg-white/5"
+          )}
+        >
+          <Briefcase className="w-5 h-5 shrink-0" />
+          <span
+            className={cn(
+              "overflow-hidden transition-all duration-200",
+              isPinned ? "opacity-100 w-auto" : "opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto"
+            )}
+          >
+            Job Oversight
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('verifications')}
+          className={cn(
+            "w-full flex items-center px-3.5 py-3 rounded-card text-sm font-bold transition-colors whitespace-nowrap",
+            isPinned ? "gap-3 justify-start" : "gap-0 justify-center group-hover:gap-3 group-hover:justify-start",
+            activeTab === 'verifications' ? "bg-gold text-midnight" : "text-steel-blue hover:bg-white/5"
+          )}
+        >
+          <ShieldCheck className="w-5 h-5 shrink-0" />
+          <span
+            className={cn(
+              "overflow-hidden transition-all duration-200",
+              isPinned ? "opacity-100 w-auto" : "opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto"
+            )}
+          >
+            Verifications
+          </span>
+        </button>
+      </nav>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-white/5 text-xs text-steel-blue whitespace-nowrap overflow-hidden">
+        <span
+          className={cn(
+            "transition-opacity duration-200",
+            isPinned ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+          )}
+        >
           Plugr Admin v1.0.0
-        </div>
-      </aside>
+        </span>
+      </div>
+    </aside>
 
       {/* Main Content */}
-      <main className="grow flex flex-col">
+      <main
+        className={cn(
+          "grow flex flex-col transition-all duration-300 ease-in-out",
+          isPinned ? "ml-64" : "ml-16"
+        )}
+      >
         <header className="bg-white h-16 border-b border-bone flex items-center justify-between px-8">
           <h1 className="font-display text-xl text-midnight capitalize">{activeTab} Management</h1>
           <div className="flex items-center gap-4">
