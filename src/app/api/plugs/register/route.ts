@@ -1,17 +1,17 @@
 // src/app/api/plugs/register/route.ts
-// POST — creates a real Plug row at the end of Plug onboarding (PLG-ON-02).
+// POST — creates a Plug row at the end of Plug onboarding (PLG-ON-02).
 //
-// This proxies to the NestJS backend's POST /auth/register instead of writing to Postgres
-// directly (that direct-write path lived in src/lib/repo/core.ts and required its own
-// DATABASE_URL on Vercel, which went out of sync with the real Supabase password
-// independently of everything else — see incident notes from 2026-07-24).
+// Source-branched (matches the withdraw proxy):
+//   core (/app)  -> proxy to the NestJS backend POST /auth/register (returns a real JWT).
+//   hack (/demo) -> local hack_ repo only, so the demo stays isolated and never creates real
+//                   backend rows / tokens.
 //
-// Validation stays here so error messages/UX don't change for the caller.
-// NIN is still deliberately NOT sent to the backend or persisted anywhere —
-// spec forbids exposing raw NIN/BVN, and there's no verification service to
-// hand it to yet.
+// Validation stays here so error messages/UX don't change for the caller. NIN is deliberately
+// never sent to the backend or persisted — spec forbids exposing raw NIN/BVN, and there's no
+// verification service to hand it to yet.
 
 import { NextResponse } from 'next/server';
+import { getRepo, resolveSource } from '@/src/lib/repo';
 
 const TRADES = ['electrician', 'plumber', 'furniture'];
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -24,6 +24,7 @@ export async function POST(request: Request) {
     photoUrl?: string | null;
     nin?: string;
     phone?: string;
+    source?: string;
   };
 
   try {
@@ -31,6 +32,8 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: 'invalid request body' }, { status: 400 });
   }
+
+  const source = resolveSource(request, body.source);
 
   const firstName = (body.firstName ?? '').trim();
   const lastName = (body.lastName ?? '').trim();
@@ -48,36 +51,61 @@ export async function POST(request: Request) {
   if (nin.length !== 11) {
     return NextResponse.json({ error: 'NIN must be 11 digits' }, { status: 400 });
   }
-  if (!phone) {
+  // The core tables key a Plug to a real "User" row, which needs a phone. The hack_ demo
+  // tables store the Plug standalone, so phone stays optional there.
+  if (source === 'core' && !phone) {
     return NextResponse.json({ error: 'phone is required to register a Plug' }, { status: 400 });
   }
 
-  try {
-    const backendRes = await fetch(`${API_URL}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        phone,
-        name: `${firstName} ${lastName}`,
-        role: 'PLUG',
-        trade,
-        photoUrl: body.photoUrl ?? null,
-      }),
-    });
+  // core (/app): proxy to the NestJS backend, which mints the JWT.
+  if (source === 'core') {
+    try {
+      const backendRes = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone,
+          name: `${firstName} ${lastName}`,
+          role: 'PLUG',
+          trade,
+          photoUrl: body.photoUrl ?? null,
+        }),
+      });
 
-    const data = await backendRes.json();
+      const data = await backendRes.json();
 
-    if (!backendRes.ok) {
-      return NextResponse.json(
-        { error: data?.message ?? data?.error ?? 'could not create plug' },
-        { status: backendRes.status }
-      );
+      if (!backendRes.ok) {
+        return NextResponse.json(
+          { error: data?.message ?? data?.error ?? 'could not create plug' },
+          { status: backendRes.status }
+        );
+      }
+
+      // data = { accessToken, refreshToken, user, plug }
+      return NextResponse.json(data, { status: 201 });
+    } catch (e: any) {
+      console.error('plug register failed (backend proxy)', e);
+      return NextResponse.json({ error: 'could not create plug' }, { status: 500 });
     }
+  }
 
-    // data = { accessToken, refreshToken, user, plug }
-    return NextResponse.json(data, { status: 201 });
+  // hack (/demo): local repo only — no backend, no token. Returns { plug } (no accessToken),
+  // so OnboardingVerifyScreen skips setToken and the demo session stays token-free.
+  try {
+    const plug = await getRepo('hack').createPlug({
+      firstName,
+      lastName,
+      trade,
+      photoUrl: body.photoUrl ?? null,
+      phone: phone || null,
+    });
+    return NextResponse.json({ plug }, { status: 201 });
   } catch (e: any) {
-    console.error('plug register failed (backend proxy)', e);
+    console.error('plug register failed (hack repo)', e);
+    const message = String(e?.message ?? '');
+    if (message.includes('phone is required') || message.includes('no Category')) {
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
     return NextResponse.json({ error: 'could not create plug' }, { status: 500 });
   }
 }
