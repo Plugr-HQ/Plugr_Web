@@ -70,6 +70,14 @@ enum MessageType {
   LIST
 }
 
+/// Dispute lifecycle states
+enum DisputeStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
 /// Core User Model
 model User {
   id              String            @id @default(uuid()) @db.Uuid
@@ -191,6 +199,7 @@ model Job {
   ratings          Rating[]
   whatsappMessages WhatsappMessage[]
   transactions     Transaction[]
+  disputes         Dispute[]
 
   @@index([status])
   @@index([clientId])
@@ -353,4 +362,25 @@ model AiToolLog {
   timestamp      DateTime       @default(now())
 
   @@index([conversationId])
+}
+
+/// Dispute raised against a job (escrow hold / resolution workflow)
+model Dispute {
+  id                String        @id @default(uuid()) @db.Uuid
+  jobId             String        @db.Uuid
+  job               Job           @relation(fields: [jobId], references: [id])
+
+  raisedByUserId    String        @db.Uuid
+  reason            String
+  status            DisputeStatus @default(OPEN)
+
+  resolutionNote    String?
+  resolvedByUserId  String?
+  resolvedAt        DateTime?
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([jobId])
+  @@index([status])
 }
