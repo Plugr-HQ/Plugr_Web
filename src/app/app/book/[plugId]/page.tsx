@@ -20,7 +20,8 @@ export default function AppBookPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    jsonFetch(`/api/plugs/${plugId}?source=core`).then((d) => setPlug(d.plug)).catch((e) => setError(e.message));
+    // Public profile read (client is not the plug owner) — the unauthenticated /profile route.
+    jsonFetch(`/api/plugs/${plugId}/profile`).then((d) => setPlug(d.plug)).catch((e) => setError(e.message));
   }, [plugId]);
 
   async function book() {

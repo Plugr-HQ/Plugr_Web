@@ -21,7 +21,8 @@ export default function PlugProfilePage() {
   const [showId, setShowId] = useState(false);
 
   useEffect(() => {
-    jsonFetch(`/api/plugs/${plugId}?source=core`).then((d) => setPlug(d.plug)).catch((e) => setError(e.message));
+    // Public profile read (client viewing a plug) — the unauthenticated /profile route.
+    jsonFetch(`/api/plugs/${plugId}/profile`).then((d) => setPlug(d.plug)).catch((e) => setError(e.message));
   }, [plugId]);
 
   if (error) return <Shell title="Profile" back="/app/browse"><Card className="p-4 border-red-200"><p className="text-sm text-red-600">{error}</p></Card></Shell>;

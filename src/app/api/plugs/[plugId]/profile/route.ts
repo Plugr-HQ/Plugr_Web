@@ -1,13 +1,45 @@
 // src/app/api/plugs/[plugId]/profile/route.ts
+// GET   — public plug profile for the client booking flow. Proxies to the backend's public,
+//         unguarded GET /plugs/:id/profile (display fields only, no wallet data). No token
+//         needed — a client views a plug before any session exists.
 // PATCH — self-service profile edit (bio / photoUrl / workPosts). Proxies to the NestJS
-// backend's PATCH /plugs/:id/profile (guarded PLUG + ownership), forwarding the caller's token.
+//         backend's PATCH /plugs/:id/profile (guarded PLUG + ownership), forwarding the token.
 //
-// Split out of the old combined PATCH /plugs/:id. `verified` is intentionally NOT handled here
-// — that lives on ../verification (ADMIN only).
+// PATCH was split out of the old combined PATCH /plugs/:id. `verified` is intentionally NOT
+// handled here — that lives on ../verification (ADMIN only).
 
 import { NextResponse } from 'next/server';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ plugId: string }> }
+) {
+  const { plugId } = await params;
+
+  try {
+    // Public endpoint — no Authorization needed.
+    const backendRes = await fetch(`${API_URL}/plugs/${plugId}/profile`, {
+      method: 'GET',
+      cache: 'no-store',
+    });
+
+    const data = await backendRes.json();
+
+    if (!backendRes.ok) {
+      return NextResponse.json(
+        { error: data?.message ?? data?.error ?? 'could not load plug profile' },
+        { status: backendRes.status }
+      );
+    }
+
+    return NextResponse.json(data);
+  } catch (e) {
+    console.error('plug public profile failed (backend proxy)', e);
+    return NextResponse.json({ error: 'could not load plug profile' }, { status: 500 });
+  }
+}
 
 export async function PATCH(
   request: Request,
