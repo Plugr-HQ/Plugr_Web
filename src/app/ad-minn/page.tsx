@@ -50,7 +50,7 @@ export default function AdminDashboard() {
       )}
     >
       {/* Header */}
-      <div className="p-4 border-b border-white/5 flex items-center justify-between min-h-[73px]">
+      <div className="p-4 border-b border-white/5 flex items-center justify-between min-h-18.25">
         <div className={cn("flex items-center shrink-0 overflow-hidden", isPinned ? "gap-3" : "gap-0 group-hover:gap-3")}>
           <div className="shrink-0">
             <Image src="/plugr.svg" alt="Plugr Logo" width={32} height={32} />
