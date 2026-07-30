@@ -62,6 +62,34 @@ export const api = {
       if (!res.ok) throw new Error('Login failed');
       return res.json();
     },
+    // OTP login — same phone+code flow the backend uses for everyone. Role is NOT sent:
+    // it's optional on the backend and only applied to brand-new numbers (as CLIENT/PLUG),
+    // never ADMIN. An existing admin keeps their DB role, which the caller then checks.
+    requestOtp: async (phone: string) => {
+      const res = await fetch(`${API_URL}/auth/otp/request`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ phone }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({} as any));
+        throw new Error(data?.message || 'Could not send verification code.');
+      }
+      return res.json();
+    },
+    // Returns { accessToken, refreshToken, user: { id, phone, name, role, status }, isNewUser }.
+    verifyOtp: async (phone: string, otp: string) => {
+      const res = await fetch(`${API_URL}/auth/otp/verify`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ phone, otp }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({} as any));
+        throw new Error(data?.message || 'Verification failed.');
+      }
+      return res.json();
+    },
   },
   plugs: {
     getAll: async (city?: string, categoryCode?: string) => {
