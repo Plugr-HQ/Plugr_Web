@@ -114,10 +114,11 @@ export default function AdminLoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-bone p-6">
       <div className="w-full max-w-md">
-        <div className="mb-8 flex items-center justify-center gap-2">
-          <Image src="/logo.svg" alt="Plugr" width={32} height={32} />
-          <span className="text-2xl font-black tracking-tighter text-midnight">plugr</span>
-          <span className="ml-1 rounded-full bg-midnight px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+        <div className="mb-8 flex items-center justify-center gap-3">
+          {/* Full plugr wordmark (icon + text) at its native 80:22 ratio — no separate text label. */}
+          <Image src="/logo.svg" alt="Plugr" width={102} height={28} priority />
+          <span className="h-6 w-px bg-midnight/15" aria-hidden />
+          <span className="rounded-full bg-midnight px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.15em] text-white">
             Admin
           </span>
         </div>
