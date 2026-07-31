@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, ShieldCheck } from 'lucide-react';
 import { api, setToken, clearToken } from '@/src/lib/api';
 import { cn } from '@/src/lib/utils';
-import { Card, PrimaryButton, PlugrMark } from '@/src/app/demo/_components/ui';
+import { Card, PrimaryButton } from '@/src/app/demo/_components/ui';
 
 const LENGTH = 6;
 
@@ -115,8 +115,9 @@ export default function AdminLoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-bone p-6">
       <div className="w-full max-w-md demo-rise">
         <div className="mb-8 flex items-center justify-center gap-2.5">
-          <PlugrMark className="h-8 w-8 text-gold" />
-          <span className="font-display text-3xl leading-none tracking-tight text-midnight">plugr</span>
+          {/* Exact brand asset — gold mark + bold "plugr" wordmark, untouched geometry/weight. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="Plugr" className="h-7 w-auto" />
           <span className="rounded-pill bg-midnight px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.15em] text-white">
             Admin
           </span>

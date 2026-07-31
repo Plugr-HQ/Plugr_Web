@@ -10,7 +10,6 @@
 import { useEffect, useState } from 'react';
 import { Users, Briefcase, ShieldCheck, Flag, LayoutDashboard, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
-import { PlugrMark } from '@/src/app/demo/_components/ui';
 
 export type AdminTab = 'dispatch' | 'jobs' | 'flags' | 'plugs' | 'verifications';
 
@@ -32,16 +31,21 @@ const TITLES: Record<AdminTab, string> = {
 
 const EXPANDED_KEY = 'plugr-admin-sidebar-expanded';
 
-// Gold plug mark + wordtext — the brandmark stays gold everywhere (as Ramon used /plugr.svg).
-function Brand({ expanded, textClass }: { expanded: boolean; textClass: string }) {
+// The exact brand asset from the repo — geometry/weight untouched, only the colour variant
+// changes: the gold-mark + bold "plugr" light wordmark on the midnight sidebar, or the gold mark
+// alone when collapsed. (eslint-disable: intentional <img> for the static SVG brand asset.)
+function Brand({ expanded }: { expanded: boolean }) {
   return (
     <span className="flex items-center gap-2.5 overflow-hidden">
-      <PlugrMark className="h-7 w-7 shrink-0 text-gold" />
-      {expanded && (
+      {expanded ? (
         <>
-          <span className={cn('font-display text-2xl leading-none tracking-tight', textClass)}>plugr</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo_light.svg" alt="Plugr" className="h-6 w-auto shrink-0" />
           <span className="rounded-pill bg-gold/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-gold">Admin</span>
         </>
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src="/plugr.svg" alt="Plugr" className="h-7 w-7 shrink-0" />
       )}
     </span>
   );
@@ -99,7 +103,7 @@ export function AdminShell({
         )}
       >
         <div className={cn('flex h-16 items-center border-b border-white/5', expanded ? 'px-4' : 'justify-center px-0')}>
-          <Brand expanded={expanded} textClass="text-white" />
+          <Brand expanded={expanded} />
         </div>
 
         {/* Toggle — the collapse/expand control (never hover-driven). */}
