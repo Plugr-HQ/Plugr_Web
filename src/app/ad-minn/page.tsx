@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/src/lib/utils'
 import { DispatchQueue } from './_components/DispatchQueue'
+import { JobPipeline } from './_components/JobPipeline'
 
 const SIDEBAR_PIN_KEY = 'plugr-admin-sidebar-pinned'
 
@@ -134,7 +135,7 @@ export default function AdminDashboard() {
               isPinned ? "opacity-100 w-auto" : "opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto"
             )}
           >
-            Job Oversight
+            Job Pipeline
           </span>
         </button>
 
@@ -199,7 +200,7 @@ export default function AdminDashboard() {
           {activeTab === 'dispatch' && <DispatchQueue />}
           {activeTab === 'plugs' && <PlugsTable />}
           {activeTab === 'verifications' && <PendingVerifications />}
-          {activeTab === 'jobs' && <JobsOverview />}
+          {activeTab === 'jobs' && <JobPipeline />}
         </div>
       </main>
     </div>
@@ -304,16 +305,6 @@ function PendingVerifications() {
           </div>
         ))}
       </div>
-    </div>
-  )
-}
-
-function JobsOverview() {
-  return (
-    <div className="text-center py-12 bg-white rounded-card border-2 border-dashed border-bone">
-      <Briefcase className="w-12 h-12 text-slate/20 mx-auto mb-4" />
-      <h3 className="text-midnight font-bold">Job Monitoring Active</h3>
-      <p className="text-slate text-sm">All live jobs in Ikeja are displayed here for escrow oversight.</p>
     </div>
   )
 }
