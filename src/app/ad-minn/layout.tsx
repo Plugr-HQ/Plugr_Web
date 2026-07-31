@@ -16,8 +16,10 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 import { getToken, clearToken } from '@/src/lib/api';
 import { isAdminTokenValid, verifyAdminSession } from '@/src/lib/adminAuth';
+import { PlugrMark } from '@/src/app/demo/_components/ui';
 
 const LOGIN_PATH = '/ad-minn/login';
 
@@ -69,8 +71,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (status !== 'ok') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-bone text-sm text-slate">
-        Verifying admin access…
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bone">
+        <PlugrMark className="h-10 w-10 animate-pulse text-gold" />
+        <p className="flex items-center gap-2 text-sm text-slate">
+          <Loader2 className="h-4 w-4 animate-spin" /> Verifying admin access…
+        </p>
       </div>
     );
   }

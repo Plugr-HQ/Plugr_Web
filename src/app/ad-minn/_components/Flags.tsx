@@ -1,34 +1,24 @@
 // src/app/ad-minn/_components/Flags.tsx
-// Flags — the admin dispute queue. Lists disputes (defaulting to OPEN) and lets an admin resolve
-// one. Same table/proxy/pagination conventions as DispatchQueue / JobPipeline.
-//
-// Resolving a dispute IS the money-movement decision: the backend has no "just close the row"
-// call — POST /escrow/:jobId/resolve moves the escrow (release_to_plug / refund_to_client) AND
-// marks the Dispute RESOLVED. So the resolve modal shows the escrow amount and who's involved, and
-// makes the admin pick release vs refund. Backend errors (e.g. "No open dispute on this job.")
-// are surfaced verbatim.
+// Flags — the dispute queue. Lists disputes (defaulting to OPEN) and resolves one. Resolving IS
+// the money-movement decision: POST /escrow/:jobId/resolve moves the escrow (release/refund) AND
+// marks the Dispute RESOLVED — there is no "just close the row" call. Styled on the /app system.
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Loader2,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle2,
-  X,
-  Flag,
-  ArrowRightCircle,
-  Undo2,
-} from 'lucide-react';
+import { Flag, ArrowRightCircle, Undo2 } from 'lucide-react';
 import { authHeaders, clearToken } from '@/src/lib/api';
 import { cn } from '@/src/lib/utils';
+import { Money } from '@/src/app/demo/_components/ui';
+import {
+  TableCard, Thead, rowClass, cellClass, Chip, FilterBar, FilterSelect, RefreshButton, FieldLabel,
+  Toast, StateRow, Pager, Modal, ModalError, PillButton, type Tone,
+} from './admin-ui';
 
 const PAGE_SIZE = 20;
 const LOGIN_PATH = '/ad-minn/login';
 
 type Resolution = 'release_to_plug' | 'refund_to_client';
-
 type UserLite = { id?: string | null; name?: string | null; phone?: string | null };
 
 type DisputeRow = {
@@ -37,22 +27,17 @@ type DisputeRow = {
   raisedByUserId: string;
   reason: string;
   status: 'OPEN' | 'RESOLVED' | 'DISMISSED';
-  resolutionNote?: string | null;
   createdAt: string;
   job?: {
     id: string;
     escrowAmount?: number | null;
-    escrowStatus?: string | null;
     client?: UserLite | null;
     plug?: { user?: UserLite | null } | null;
     category?: { name?: string | null; code?: string | null } | null;
   } | null;
 };
 
-function formatMoney(v?: number | null): string {
-  if (v == null) return '—';
-  return `₦${Number(v).toLocaleString('en-NG', { maximumFractionDigits: 2 })}`;
-}
+const STATUS_TONE: Record<string, Tone> = { OPEN: 'amber', RESOLVED: 'green', DISMISSED: 'neutral' };
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -60,16 +45,6 @@ function formatDate(iso: string): string {
   return d.toLocaleString('en-NG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
-function statusPill(status: string): string {
-  const map: Record<string, string> = {
-    OPEN: 'bg-amber-100 text-amber-700',
-    RESOLVED: 'bg-green-100 text-green-700',
-    DISMISSED: 'bg-gray-200 text-gray-500',
-  };
-  return map[status] ?? 'bg-gray-100 text-gray-600';
-}
-
-// Resolve the raiser id to a name using the included relations (client / assigned plug's user).
 function raisedBy(d: DisputeRow): { name: string; role: string | null } {
   const id = d.raisedByUserId;
   const client = d.job?.client;
@@ -92,10 +67,7 @@ export function Flags() {
 
   const adminFetch = useCallback(
     async (input: string, init?: RequestInit): Promise<Response> => {
-      const res = await fetch(input, {
-        ...init,
-        headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(init?.headers || {}) },
-      });
+      const res = await fetch(input, { ...init, headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(init?.headers || {}) } });
       if (res.status === 401) {
         clearToken();
         router.replace(LOGIN_PATH);
@@ -148,158 +120,69 @@ export function Flags() {
 
   return (
     <div className="space-y-4">
-      {toast && (
-        <div className="flex items-center gap-2 rounded-card border border-green-200 bg-green-50 px-4 py-3 text-sm font-bold text-green-700">
-          <CheckCircle2 className="h-4 w-4 shrink-0" />
-          {toast}
-        </div>
-      )}
+      {toast && <Toast>{toast}</Toast>}
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <FilterBar>
         <div className="flex items-center gap-2">
-          <label htmlFor="flags-filter" className="text-xs font-bold uppercase tracking-wider text-slate">
-            Show
-          </label>
-          <select
-            id="flags-filter"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value as 'OPEN' | 'RESOLVED' | 'DISMISSED' | 'ALL')}
-            className="rounded-pill border border-bone bg-bone px-4 py-2 text-sm font-bold text-midnight focus:outline-none focus:ring-1 focus:ring-gold"
-          >
+          <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate">Show</span>
+          <FilterSelect value={filter} onChange={(e) => setFilter(e.target.value as 'OPEN' | 'RESOLVED' | 'DISMISSED' | 'ALL')}>
             <option value="OPEN">Open</option>
             <option value="RESOLVED">Resolved</option>
             <option value="DISMISSED">Dismissed</option>
             <option value="ALL">All</option>
-          </select>
+          </FilterSelect>
         </div>
-        <button
-          onClick={() => loadDisputes(page, filter)}
-          disabled={loading}
-          className="flex items-center gap-2 rounded-pill border border-bone bg-white px-3 py-1.5 text-xs font-bold text-slate transition-colors hover:text-midnight disabled:opacity-60"
-        >
-          <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} /> Refresh
-        </button>
-      </div>
+        <RefreshButton loading={loading} onClick={() => loadDisputes(page, filter)} />
+      </FilterBar>
 
-      <div className="overflow-hidden rounded-card border border-bone bg-white shadow-sm">
-        <table className="w-full text-left">
-          <thead className="bg-bone/50 text-xs font-bold uppercase tracking-wider text-slate">
-            <tr>
-              <th className="px-6 py-4">Job</th>
-              <th className="px-6 py-4">Reason</th>
-              <th className="px-6 py-4">Raised by</th>
-              <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4">Created</th>
-              <th className="px-6 py-4 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-bone">
-            {loading ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-16 text-center">
-                  <Loader2 className="mx-auto mb-3 h-6 w-6 animate-spin text-gold" />
-                  <p className="text-sm text-slate">Loading disputes…</p>
-                </td>
-              </tr>
-            ) : error ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-12 text-center">
-                  <AlertCircle className="mx-auto mb-3 h-8 w-8 text-red-400" />
-                  <p className="text-sm font-bold text-red-600">{error}</p>
-                  <button
-                    onClick={() => loadDisputes(page, filter)}
-                    className="mt-3 rounded-pill bg-midnight px-4 py-2 text-xs font-bold text-white hover:bg-midnight/90"
-                  >
-                    Try again
-                  </button>
-                </td>
-              </tr>
-            ) : disputes.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-16 text-center">
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-50">
-                    <Flag className="h-6 w-6 text-green-500" />
-                  </div>
-                  <h3 className="font-bold text-midnight">No flags</h3>
-                  <p className="text-sm text-slate">
-                    {filter === 'OPEN' ? 'No open disputes right now.' : `No ${filter.toLowerCase()} disputes.`}
-                  </p>
-                </td>
-              </tr>
-            ) : (
-              disputes.map((d) => {
-                const rb = raisedBy(d);
-                return (
-                  <tr key={d.id} className="transition-colors hover:bg-bone/20">
-                    <td className="px-6 py-4">
-                      <p className="text-sm font-bold text-midnight">{d.job?.client?.name ?? 'Unknown'}</p>
-                      <p className="text-xs capitalize text-slate">
-                        {d.job?.category?.name ?? d.job?.category?.code ?? '—'} · {formatMoney(d.job?.escrowAmount)}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="line-clamp-2 max-w-[16rem] text-sm text-slate">{d.reason}</span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate">
-                      {rb.name}
-                      {rb.role && <span className="ml-1 text-xs text-slate/60">({rb.role})</span>}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-bold uppercase', statusPill(d.status))}>
-                        {d.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate">{formatDate(d.createdAt)}</td>
-                    <td className="px-6 py-4 text-right">
-                      {d.status === 'OPEN' ? (
-                        <button
-                          onClick={() => setResolveDispute(d)}
-                          className="rounded-pill bg-midnight px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-midnight/90"
-                        >
-                          Resolve
-                        </button>
-                      ) : (
-                        <span className="text-xs text-slate/60">—</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+      <TableCard>
+        <Thead cols={[{ label: 'Job' }, { label: 'Reason' }, { label: 'Raised by' }, { label: 'Status' }, { label: 'Created' }, { label: 'Action', right: true }]} />
+        <tbody>
+          {loading ? (
+            <StateRow colSpan={6} variant="loading" title="Loading disputes…" />
+          ) : error ? (
+            <StateRow colSpan={6} variant="error" title={error} icon={<Flag className="h-6 w-6" />} onRetry={() => loadDisputes(page, filter)} />
+          ) : disputes.length === 0 ? (
+            <StateRow colSpan={6} variant="empty" title="No flags" body={filter === 'OPEN' ? 'No open disputes right now.' : `No ${filter.toLowerCase()} disputes.`} icon={<Flag className="h-6 w-6" />} />
+          ) : (
+            disputes.map((d) => {
+              const rb = raisedBy(d);
+              return (
+                <tr key={d.id} className={rowClass}>
+                  <td className={cellClass}>
+                    <p className="text-sm font-bold text-midnight">{d.job?.client?.name ?? 'Unknown'}</p>
+                    <p className="mt-0.5 flex items-center gap-1.5 text-xs capitalize text-slate">
+                      {d.job?.category?.name ?? d.job?.category?.code ?? '—'}
+                      <span className="text-slate/40">·</span>
+                      {d.job?.escrowAmount == null ? <span>—</span> : <Money amount={d.job.escrowAmount} size="sm" className="!text-xs" />}
+                    </p>
+                  </td>
+                  <td className={cellClass}><span className="line-clamp-2 max-w-[16rem] text-sm text-slate">{d.reason}</span></td>
+                  <td className={cn(cellClass, 'text-sm text-slate')}>
+                    {rb.name}
+                    {rb.role && <span className="ml-1 text-xs text-slate/60">({rb.role})</span>}
+                  </td>
+                  <td className={cellClass}><Chip tone={STATUS_TONE[d.status] ?? 'neutral'}>{d.status}</Chip></td>
+                  <td className={cn(cellClass, 'whitespace-nowrap text-sm text-slate')}>{formatDate(d.createdAt)}</td>
+                  <td className={cn(cellClass, 'text-right')}>
+                    {d.status === 'OPEN' ? (
+                      <PillButton variant="primary" className="px-4 py-2 text-xs" onClick={() => setResolveDispute(d)}>Resolve</PillButton>
+                    ) : (
+                      <span className="text-xs text-slate/50">—</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </TableCard>
 
       {!loading && !error && (disputes.length > 0 || page > 1) && (
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-slate">Page {page}</span>
-          <div className="flex gap-2">
-            <button
-              onClick={() => loadDisputes(page - 1, filter)}
-              disabled={page <= 1}
-              className="rounded-pill border border-bone bg-white px-4 py-2 text-xs font-bold text-slate transition-colors hover:text-midnight disabled:opacity-40"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => loadDisputes(page + 1, filter)}
-              disabled={!hasNext}
-              className="rounded-pill border border-bone bg-white px-4 py-2 text-xs font-bold text-slate transition-colors hover:text-midnight disabled:opacity-40"
-            >
-              Next
-            </button>
-          </div>
-        </div>
+        <Pager page={page} hasNext={hasNext} onPrev={() => loadDisputes(page - 1, filter)} onNext={() => loadDisputes(page + 1, filter)} />
       )}
 
-      {resolveDispute && (
-        <ResolveModal
-          dispute={resolveDispute}
-          adminFetch={adminFetch}
-          onClose={() => setResolveDispute(null)}
-          onResolved={onResolved}
-        />
-      )}
+      {resolveDispute && <ResolveModal dispute={resolveDispute} adminFetch={adminFetch} onClose={() => setResolveDispute(null)} onResolved={onResolved} />}
     </div>
   );
 }
@@ -323,17 +206,14 @@ function ResolveModal({
   const rb = raisedBy(dispute);
   const clientName = dispute.job?.client?.name ?? 'Client';
   const plugName = dispute.job?.plug?.user?.name ?? null;
-  const amount = formatMoney(dispute.job?.escrowAmount);
+  const amount = dispute.job?.escrowAmount;
 
   async function confirm() {
     if (!resolution || submitting) return;
     setSubmitting(true);
     setError(null);
     try {
-      const res = await adminFetch(`/api/admin/escrow/${dispute.jobId}/resolve`, {
-        method: 'POST',
-        body: JSON.stringify({ resolution, resolutionNote: note.trim() || undefined }),
-      });
+      const res = await adminFetch(`/api/admin/escrow/${dispute.jobId}/resolve`, { method: 'POST', body: JSON.stringify({ resolution, resolutionNote: note.trim() || undefined }) });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setError(data?.error || 'Could not resolve the dispute.');
@@ -348,17 +228,9 @@ function ResolveModal({
     }
   }
 
-  const Option = ({
-    value,
-    icon,
-    title,
-    sub,
-  }: {
-    value: Resolution;
-    icon: React.ReactNode;
-    title: string;
-    sub: string;
-  }) => {
+  const money = amount == null ? 'the escrow' : `₦${Number(amount).toLocaleString('en-NG')}`;
+
+  const Option = ({ value, icon, title, sub }: { value: Resolution; icon: React.ReactNode; title: string; sub: string }) => {
     const selected = resolution === value;
     return (
       <button
@@ -367,8 +239,8 @@ function ResolveModal({
           setError(null);
         }}
         className={cn(
-          'flex w-full items-center gap-3 rounded-card border px-4 py-3 text-left transition-colors',
-          selected ? 'border-gold bg-gold/5' : 'border-bone hover:bg-bone/40',
+          'flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-colors',
+          selected ? 'border-gold bg-gold/5 ring-4 ring-gold/10' : 'border-midnight/10 hover:bg-bone/60',
         )}
       >
         <span className={cn('shrink-0', selected ? 'text-gold' : 'text-slate')}>{icon}</span>
@@ -381,95 +253,57 @@ function ResolveModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-midnight/40 p-4" onClick={onClose}>
-      <div className="max-h-[88vh] w-full max-w-lg overflow-hidden rounded-card bg-white shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start justify-between border-b border-bone px-6 py-4">
-          <div>
-            <h3 className="font-display text-lg text-midnight">Resolve dispute</h3>
-            <p className="text-sm text-slate">Choose where the escrowed funds go.</p>
-          </div>
-          <button onClick={onClose} className="rounded-lg p-1 text-slate hover:bg-bone hover:text-midnight">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="max-h-[60vh] space-y-4 overflow-y-auto px-6 py-4">
-          {/* Context so the admin decides informed, not blind. */}
-          <div className="rounded-card border border-bone bg-bone/40 p-4 text-sm">
-            <div className="flex items-center justify-between border-b border-bone pb-2">
-              <span className="text-slate">Escrow amount</span>
-              <span className="font-bold text-midnight">{amount}</span>
-            </div>
-            <div className="flex items-center justify-between py-2">
-              <span className="text-slate">Client</span>
-              <span className="font-bold text-midnight">{clientName}</span>
-            </div>
-            <div className="flex items-center justify-between border-b border-bone pb-2">
-              <span className="text-slate">Plug</span>
-              <span className="font-bold text-midnight">{plugName ?? '— (none assigned)'}</span>
-            </div>
-            <div className="pt-2">
-              <span className="text-slate">Raised by </span>
-              <span className="font-bold text-midnight">
-                {rb.name}
-                {rb.role && <span className="ml-1 font-normal text-slate/70">({rb.role})</span>}
-              </span>
-              <p className="mt-1 rounded-card bg-white px-3 py-2 text-sm text-midnight">&ldquo;{dispute.reason}&rdquo;</p>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate">Decision</p>
-            <Option
-              value="release_to_plug"
-              icon={<ArrowRightCircle className="h-5 w-5" />}
-              title="Release to plug"
-              sub={`Pay the escrowed ${amount} to ${plugName ?? 'the assigned plug'}.`}
-            />
-            <Option
-              value="refund_to_client"
-              icon={<Undo2 className="h-5 w-5" />}
-              title="Refund to client"
-              sub={`Return the escrowed ${amount} to ${clientName}.`}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="resolve-note" className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate">
-              Resolution note <span className="font-normal normal-case text-slate/60">(optional, logged)</span>
-            </label>
-            <textarea
-              id="resolve-note"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              rows={2}
-              placeholder="Why this outcome?"
-              className="w-full resize-none rounded-card border border-bone bg-bone px-4 py-2.5 text-sm text-midnight focus:outline-none focus:ring-1 focus:ring-gold"
-            />
-          </div>
-
-          {error && (
-            <div className="flex items-start gap-2 rounded-card border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center justify-end gap-3 border-t border-bone px-6 py-4">
-          <button onClick={onClose} className="rounded-pill px-4 py-2 text-sm font-bold text-slate hover:text-midnight">
-            Cancel
-          </button>
-          <button
-            onClick={confirm}
-            disabled={!resolution || submitting}
-            className="flex items-center gap-2 rounded-pill bg-midnight px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-midnight/90 disabled:opacity-40"
-          >
-            {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+    <Modal
+      title="Resolve dispute"
+      sub="Choose where the escrowed funds go."
+      onClose={onClose}
+      footer={
+        <>
+          <PillButton variant="ghost" onClick={onClose}>Cancel</PillButton>
+          <PillButton variant="primary" loading={submitting} disabled={!resolution} onClick={confirm}>
             {submitting ? 'Resolving…' : 'Confirm resolution'}
-          </button>
+          </PillButton>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        {/* Context so the admin decides informed, not blind. */}
+        <div className="rounded-2xl border border-midnight/[0.06] bg-bone/50 p-4">
+          <div className="flex items-center justify-between border-b border-midnight/[0.06] pb-3">
+            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate">Escrow amount</span>
+            {amount == null ? <span className="text-sm font-bold text-midnight">—</span> : <Money amount={amount} size="sm" />}
+          </div>
+          <div className="grid grid-cols-2 gap-3 py-3 text-sm">
+            <div><span className="block text-xs text-slate">Client</span><span className="font-bold text-midnight">{clientName}</span></div>
+            <div><span className="block text-xs text-slate">Plug</span><span className="font-bold text-midnight">{plugName ?? '— none'}</span></div>
+          </div>
+          <div className="border-t border-midnight/[0.06] pt-3">
+            <span className="text-xs text-slate">Raised by </span>
+            <span className="text-sm font-bold text-midnight">{rb.name}{rb.role && <span className="ml-1 font-normal text-slate/70">({rb.role})</span>}</span>
+            <p className="mt-1.5 rounded-xl bg-white px-3 py-2 text-sm text-midnight">&ldquo;{dispute.reason}&rdquo;</p>
+          </div>
         </div>
+
+        <div className="space-y-2">
+          <span className="block text-[11px] font-bold uppercase tracking-[0.12em] text-slate">Decision</span>
+          <Option value="release_to_plug" icon={<ArrowRightCircle className="h-5 w-5" />} title="Release to plug" sub={`Pay ${money} to ${plugName ?? 'the assigned plug'}.`} />
+          <Option value="refund_to_client" icon={<Undo2 className="h-5 w-5" />} title="Refund to client" sub={`Return ${money} to ${clientName}.`} />
+        </div>
+
+        <div>
+          <FieldLabel htmlFor="resolve-note" hint="(optional, logged)">Resolution note</FieldLabel>
+          <textarea
+            id="resolve-note"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={2}
+            placeholder="Why this outcome?"
+            className="w-full resize-none rounded-2xl border border-midnight/10 bg-white px-4 py-3 text-sm text-midnight placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow"
+          />
+        </div>
+
+        {error && <ModalError>{error}</ModalError>}
       </div>
-    </div>
+    </Modal>
   );
 }

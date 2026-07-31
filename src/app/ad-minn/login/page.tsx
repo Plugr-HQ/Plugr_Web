@@ -12,10 +12,10 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { Loader2, ShieldCheck } from 'lucide-react';
 import { api, setToken, clearToken } from '@/src/lib/api';
 import { cn } from '@/src/lib/utils';
+import { Card, PrimaryButton, PlugrWordmark } from '@/src/app/demo/_components/ui';
 
 const LENGTH = 6;
 
@@ -113,21 +113,20 @@ export default function AdminLoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-bone p-6">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md demo-rise">
         <div className="mb-8 flex items-center justify-center gap-3">
-          {/* Full plugr wordmark (icon + text) at its native 80:22 ratio — no separate text label. */}
-          <Image src="/logo.svg" alt="Plugr" width={102} height={28} priority />
+          <PlugrWordmark className="h-7 w-auto text-midnight" />
           <span className="h-6 w-px bg-midnight/15" aria-hidden />
-          <span className="rounded-full bg-midnight px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.15em] text-white">
+          <span className="rounded-pill bg-midnight px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.15em] text-white">
             Admin
           </span>
         </div>
 
-        <div className="rounded-card border border-midnight/5 bg-white p-8 shadow-sm">
+        <Card className="p-8">
           <div className="mb-6 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/15 text-gold">
+            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gold/15 text-gold">
               <ShieldCheck className="h-5 w-5" />
-            </div>
+            </span>
             <div>
               <h1 className="font-display text-xl text-midnight">Admin sign in</h1>
               <p className="text-sm text-slate">
@@ -138,7 +137,7 @@ export default function AdminLoginPage() {
 
           {step === 'phone' ? (
             <form onSubmit={requestCode} className="space-y-4">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate">
+              <label className="block text-[11px] font-bold uppercase tracking-[0.12em] text-slate">
                 Phone number
               </label>
               <input
@@ -146,27 +145,17 @@ export default function AdminLoginPage() {
                 onChange={(e) => setPhone(e.target.value)}
                 inputMode="tel"
                 placeholder="+234 800 000 0001"
-                className="w-full rounded-pill border border-midnight/10 bg-bone px-4 py-3 text-sm text-midnight focus:border-gold focus:outline-none"
+                className="w-full rounded-2xl border border-midnight/10 bg-white px-4 py-3.5 text-midnight placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow"
               />
               {error && <p className="text-sm text-red-600">{error}</p>}
-              <button
-                type="submit"
-                disabled={busy}
-                className="flex w-full items-center justify-center gap-2 rounded-pill bg-midnight py-3 text-sm font-bold text-white transition-colors hover:bg-midnight/90 disabled:opacity-60"
-              >
-                {busy ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> Sending…
-                  </>
-                ) : (
-                  'Send code'
-                )}
-              </button>
+              <PrimaryButton type="submit" loading={busy}>
+                {busy ? (<><Loader2 className="h-4 w-4 animate-spin" /> Sending…</>) : 'Send code'}
+              </PrimaryButton>
             </form>
           ) : (
             <div className="space-y-4">
               {notice && <p className="text-sm text-slate">{notice}</p>}
-              <div className="flex gap-2">
+              <div className={cn('flex gap-2', error && 'otp-shake')}>
                 {digits.map((d, i) => (
                   <input
                     key={i}
@@ -182,7 +171,7 @@ export default function AdminLoginPage() {
                     readOnly={busy}
                     aria-label={`Digit ${i + 1}`}
                     className={cn(
-                      'h-14 flex-1 min-w-0 rounded-xl border bg-bone text-center font-display text-2xl text-midnight transition-colors focus:outline-none',
+                      'h-14 flex-1 min-w-0 rounded-2xl border bg-white text-center font-display text-2xl text-midnight tnum transition-shadow focus:outline-none focus:ring-4 focus:ring-gold/10',
                       error ? 'border-red-400' : d ? 'border-gold' : 'border-midnight/10 focus:border-gold'
                     )}
                   />
@@ -209,7 +198,7 @@ export default function AdminLoginPage() {
               </button>
             </div>
           )}
-        </div>
+        </Card>
 
         <p className="mt-6 text-center text-xs text-slate/70">Admin access only. All actions are logged.</p>
       </div>
