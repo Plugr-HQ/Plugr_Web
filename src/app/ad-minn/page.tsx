@@ -17,11 +17,13 @@ import {
   PanelLeft,
 } from 'lucide-react'
 import { cn } from '@/src/lib/utils'
+import { DispatchQueue } from './_components/DispatchQueue'
 
 const SIDEBAR_PIN_KEY = 'plugr-admin-sidebar-pinned'
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'plugs' | 'jobs' | 'verifications'>('plugs')
+  // Dispatch is the primary/default admin view; the other tabs are Ramon's existing screens.
+  const [activeTab, setActiveTab] = useState<'dispatch' | 'plugs' | 'jobs' | 'verifications'>('dispatch')
   const [isPinned, setIsPinned] = useState(false);
 
   // Hydrate pin state from localStorage on mount (client-only, avoids SSR mismatch)
@@ -79,6 +81,25 @@ export default function AdminDashboard() {
 
       {/* Navigation */}
       <nav className="grow p-3 space-y-2 overflow-x-hidden">
+        <button
+          onClick={() => setActiveTab('dispatch')}
+          className={cn(
+            "w-full flex items-center px-3.5 py-3 rounded-card text-sm font-bold transition-colors whitespace-nowrap",
+            isPinned ? "gap-3 justify-start" : "gap-0 justify-center group-hover:gap-3 group-hover:justify-start",
+            activeTab === 'dispatch' ? "bg-gold text-midnight" : "text-steel-blue hover:bg-white/5"
+          )}
+        >
+          <LayoutDashboard className="w-5 h-5 shrink-0" />
+          <span
+            className={cn(
+              "overflow-hidden transition-all duration-200",
+              isPinned ? "opacity-100 w-auto" : "opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto"
+            )}
+          >
+            Dispatch
+          </span>
+        </button>
+
         <button
           onClick={() => setActiveTab('plugs')}
           className={cn(
@@ -175,6 +196,7 @@ export default function AdminDashboard() {
         </header>
 
         <div className="p-8">
+          {activeTab === 'dispatch' && <DispatchQueue />}
           {activeTab === 'plugs' && <PlugsTable />}
           {activeTab === 'verifications' && <PendingVerifications />}
           {activeTab === 'jobs' && <JobsOverview />}
