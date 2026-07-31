@@ -15,16 +15,18 @@ import {
   LayoutDashboard,
   PanelLeftClose,
   PanelLeft,
+  Flag,
 } from 'lucide-react'
 import { cn } from '@/src/lib/utils'
 import { DispatchQueue } from './_components/DispatchQueue'
 import { JobPipeline } from './_components/JobPipeline'
+import { Flags } from './_components/Flags'
 
 const SIDEBAR_PIN_KEY = 'plugr-admin-sidebar-pinned'
 
 export default function AdminDashboard() {
   // Dispatch is the primary/default admin view; the other tabs are Ramon's existing screens.
-  const [activeTab, setActiveTab] = useState<'dispatch' | 'plugs' | 'jobs' | 'verifications'>('dispatch')
+  const [activeTab, setActiveTab] = useState<'dispatch' | 'plugs' | 'jobs' | 'verifications' | 'flags'>('dispatch')
   const [isPinned, setIsPinned] = useState(false);
 
   // Hydrate pin state from localStorage on mount (client-only, avoids SSR mismatch)
@@ -140,6 +142,25 @@ export default function AdminDashboard() {
         </button>
 
         <button
+          onClick={() => setActiveTab('flags')}
+          className={cn(
+            "w-full flex items-center px-3.5 py-3 rounded-card text-sm font-bold transition-colors whitespace-nowrap",
+            isPinned ? "gap-3 justify-start" : "gap-0 justify-center group-hover:gap-3 group-hover:justify-start",
+            activeTab === 'flags' ? "bg-gold text-midnight" : "text-steel-blue hover:bg-white/5"
+          )}
+        >
+          <Flag className="w-5 h-5 shrink-0" />
+          <span
+            className={cn(
+              "overflow-hidden transition-all duration-200",
+              isPinned ? "opacity-100 w-auto" : "opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto"
+            )}
+          >
+            Flags
+          </span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('verifications')}
           className={cn(
             "w-full flex items-center px-3.5 py-3 rounded-card text-sm font-bold transition-colors whitespace-nowrap",
@@ -201,6 +222,7 @@ export default function AdminDashboard() {
           {activeTab === 'plugs' && <PlugsTable />}
           {activeTab === 'verifications' && <PendingVerifications />}
           {activeTab === 'jobs' && <JobPipeline />}
+          {activeTab === 'flags' && <Flags />}
         </div>
       </main>
     </div>
