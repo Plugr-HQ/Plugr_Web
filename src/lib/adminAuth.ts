@@ -12,6 +12,7 @@
 //     real 401 are caught, not just the offline check.
 
 import { getToken } from './api';
+import { apiFetch } from './api-client';
 
 type JwtPayload = { id?: string; phone?: string; role?: string; exp?: number };
 
@@ -50,12 +51,16 @@ export async function verifyAdminSession(): Promise<boolean> {
   const token = getToken();
   if (!isAdminTokenValid(token)) return false;
   try {
-    const res = await fetch('/api/admin/verify', {
-      method: 'GET',
-      headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
-    });
-    return res.ok;
+    await apiFetch(
+      '/api/admin/verify',
+      {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
+      },
+      { skipAuthRedirect: true }
+    );
+    return true;
   } catch {
     return false;
   }

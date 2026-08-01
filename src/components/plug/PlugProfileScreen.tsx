@@ -20,6 +20,7 @@ import {
 import { cn } from '@/src/lib/utils';
 import { Card, Divider, GoldButton, Label, TextInput } from '@/src/app/demo/_components/ui';
 import { jsonFetch } from '@/src/app/demo/_lib/demo';
+import { apiFetch } from '@/src/lib/api-client';
 import { getPlugId } from '@/src/app/app/_lib/plugAuth';
 import { buildProfile } from '@/src/app/app/_lib/profile';
 import { PlugShell, BadgeChip, EmptyState, plugTier } from './PlugChrome';
@@ -78,7 +79,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
   const load = useCallback(async () => {
     if (!plugId) return;
     try {
-      const body = await jsonFetch(withSource(`/api/plugs/${plugId}`, base));
+      const body = await apiFetch(withSource(`/api/plugs/${plugId}`, base), {}, { skipAuthRedirect: base === '/demo' });
       setPlug(body.plug);
       setBio(body.plug.bio ?? '');
       setPhoto(body.plug.photo_url ?? null);
@@ -92,13 +93,11 @@ export function PlugProfileScreen({ base }: { base: string }) {
 
   async function patch(payload: any) {
     // Self-service profile edit -> the split /profile route (PLUG + ownership on the backend).
-    const res = await fetch(withSource(`/api/plugs/${plugId}/profile`, base), {
+    const body = await apiFetch(withSource(`/api/plugs/${plugId}/profile`, base), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify(payload),
-    });
-    const body = await res.json();
-    if (!res.ok) throw new Error(body?.error ?? 'Could not save.');
+    }, { skipAuthRedirect: base === '/demo' });
     setPlug(body.plug);
     return body.plug;
   }

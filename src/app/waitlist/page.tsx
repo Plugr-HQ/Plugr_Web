@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
+import { apiFetch } from '@/src/lib/api-client';
 import './waitlist.css';
 
 const WA_CHANNEL = 'https://whatsapp.com/channel/0029Vb7c8SrLNSZyrvYXE60M';
@@ -33,16 +34,11 @@ export default function WaitlistPage() {
     setStatus('loading');
 
     try {
-      const res = await fetch('/api/waitlist', {
+      await apiFetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), userType }),
       });
-
-      if (!res.ok) {
-        setStatus('error');
-        return;
-      }
 
       setStatus('success');
     } catch {

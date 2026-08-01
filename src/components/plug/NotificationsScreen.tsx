@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { Bell } from 'lucide-react';
 import { Card } from '@/src/app/demo/_components/ui';
 import { getPlugId } from '@/src/app/app/_lib/plugAuth';
+import { apiFetch } from '@/src/lib/api-client';
 import { PlugShell, EmptyState } from './PlugChrome';
 import { withSource } from '@/src/lib/apiSource';
 import { authHeaders } from '@/src/lib/api';
@@ -19,8 +20,7 @@ export function NotificationsScreen({ base }: { base: string }) {
   useEffect(() => {
     const id = getPlugId();
     if (!id) return;
-    fetch(withSource(`/api/plugs/${id}`, base), { headers: authHeaders() })
-      .then((r) => r.json())
+    apiFetch(withSource(`/api/plugs/${id}`, base), { headers: authHeaders() }, { skipAuthRedirect: base === '/demo' })
       .then((d) => setPlug(d.plug))
       .catch(() => {});
   }, [base]);

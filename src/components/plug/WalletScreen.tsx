@@ -15,6 +15,7 @@ import { Loader2, Lock, Clock, Check, Landmark, ShieldCheck, X, Wallet as Wallet
 import { cn } from '@/src/lib/utils';
 import { Card, Divider, Money, Label, TextInput, GoldButton } from '@/src/app/demo/_components/ui';
 import { jsonFetch } from '@/src/app/demo/_lib/demo';
+import { apiFetch } from '@/src/lib/api-client';
 import {
   getPlugId,
   getPlugBank,
@@ -60,7 +61,7 @@ export function WalletScreen({ base }: { base: string }) {
   const load = useCallback(async () => {
     if (!plugId) return;
     try {
-      const body = await jsonFetch(withSource(`/api/plugs/${plugId}/dashboard`, base));
+      const body = await apiFetch(withSource(`/api/plugs/${plugId}/dashboard`, base), {}, { skipAuthRedirect: base === '/demo' });
       setData(body);
       setLeft(body.lock?.seconds ?? null);
       setError(null);
@@ -87,7 +88,7 @@ export function WalletScreen({ base }: { base: string }) {
     const jobId = data?.lock?.jobId;
     if (left === 0 && jobId && !unlocked.current) {
       unlocked.current = true;
-      fetch(withSource(`/api/jobs/${jobId}/unlock`, base), { method: 'POST' }).finally(load);
+      apiFetch(withSource(`/api/jobs/${jobId}/unlock`, base), { method: 'POST' }, { skipAuthRedirect: base === '/demo' }).finally(load);
     }
   }, [left, data?.lock?.jobId, load, base]);
 
@@ -503,13 +504,11 @@ function Withdraw({
     if (!checkPlugPin(pin)) return setError('Wrong PIN. Try again.');
     setBusy(true);
     try {
-      const res = await fetch(withSource(`/api/plugs/${plugId}/withdraw`, base), {
+      await apiFetch(withSource(`/api/plugs/${plugId}/withdraw`, base), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ amount: amt }),
-      });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body?.error ?? 'Could not start that withdrawal.');
+      }, { skipAuthRedirect: base === '/demo' });
       setDone(true);
       reload();
     } catch (e: any) {

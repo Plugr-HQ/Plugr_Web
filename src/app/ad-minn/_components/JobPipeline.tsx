@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Inbox } from 'lucide-react';
 import { authHeaders, clearToken } from '@/src/lib/api';
+import { apiFetch } from '@/src/lib/api-client';
 import { cn } from '@/src/lib/utils';
 import { Money } from '@/src/app/demo/_components/ui';
 import {
@@ -66,16 +67,21 @@ export function JobPipeline() {
   const [toast, setToast] = useState<string | null>(null);
 
   const adminFetch = useCallback(
-    async (input: string, init?: RequestInit): Promise<Response> => {
-      const res = await fetch(input, { ...init, headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(init?.headers || {}) } });
-      if (res.status === 401) {
-        clearToken();
-        router.replace(LOGIN_PATH);
-        throw new Error('unauthorized');
-      }
-      return res;
+    async (input: string, init?: RequestInit): Promise<any> => {
+      return apiFetch(
+        input,
+        {
+          ...init,
+          headers: {
+            'Content-Type': 'application/json',
+            ...authHeaders(),
+            ...(init?.headers || {}),
+          },
+        },
+        { redirectTo: LOGIN_PATH }
+      );
     },
-    [router],
+    [],
   );
 
   const loadJobs = useCallback(
@@ -85,15 +91,13 @@ export function JobPipeline() {
       try {
         const qs = new URLSearchParams({ page: String(targetPage), limit: String(PAGE_SIZE) });
         if (status !== 'ALL') qs.set('status', status);
-        const res = await adminFetch(`/api/admin/jobs?${qs.toString()}`);
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data?.error || 'Could not load jobs.');
+        const data = await adminFetch(`/api/admin/jobs?${qs.toString()}`);
         const rows: JobRow[] = Array.isArray(data.jobs) ? data.jobs : [];
         setJobs(rows);
         setPage(targetPage);
         setHasNext(rows.length === PAGE_SIZE);
       } catch (e: any) {
-        if (e?.message === 'unauthorized') return;
+        if (e?.message === 'Session expired') return;
         setError(e?.message || 'Could not load jobs.');
         setJobs([]);
       } finally {
@@ -200,15 +204,10 @@ function OverrideModal({
     setSubmitting(true);
     setError(null);
     try {
-      const res = await adminFetch(`/api/admin/jobs/${job.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: target, reason: reason.trim() || undefined }) });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError(data?.error || 'Status update failed.');
-        return;
-      }
+      await adminFetch(`/api/admin/jobs/${job.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: target, reason: reason.trim() || undefined }) });
       onOverridden(target);
     } catch (e: any) {
-      if (e?.message === 'unauthorized') return;
+      if (e?.message === 'Session expired') return;
       setError(e?.message || 'Status update failed.');
     } finally {
       setSubmitting(false);

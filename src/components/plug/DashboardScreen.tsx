@@ -17,6 +17,7 @@ import { Loader2, Clock, Briefcase, ArrowRight, ShieldCheck, Wallet as WalletIco
 import { cn } from '@/src/lib/utils';
 import { Card, Money } from '@/src/app/demo/_components/ui';
 import { jsonFetch } from '@/src/app/demo/_lib/demo';
+import { apiFetch } from '@/src/lib/api-client';
 import { getPlugId, signOutPlug } from '@/src/app/app/_lib/plugAuth';
 import { PlugShell, BadgeChip, JobStatusChip, EmptyState, plugTier } from './PlugChrome';
 import { withSource } from '@/src/lib/apiSource';
@@ -44,8 +45,8 @@ export function DashboardScreen({ base }: { base: string }) {
   const load = useCallback(async () => {
     if (!plugId) return;
     try {
-      // jsonFetch tolerates non-JSON responses instead of throwing a raw parse error
-      const body = await jsonFetch(withSource(`/api/plugs/${plugId}/dashboard`, base));
+      // apiFetch automatically handles token validation and redirects on 401
+      const body = await apiFetch(withSource(`/api/plugs/${plugId}/dashboard`, base), {}, { skipAuthRedirect: base === '/demo' });
       setData(body);
       setLeft(body.lock?.seconds ?? null);
       setError(null);
@@ -83,7 +84,7 @@ export function DashboardScreen({ base }: { base: string }) {
     const jobId = data?.lock?.jobId;
     if (left === 0 && jobId && !unlocked.current) {
       unlocked.current = true;
-      fetch(withSource(`/api/jobs/${jobId}/unlock`, base), { method: 'POST' }).finally(load);
+      apiFetch(withSource(`/api/jobs/${jobId}/unlock`, base), { method: 'POST' }, { skipAuthRedirect: base === '/demo' }).finally(load);
     }
   }, [left, data?.lock?.jobId, load, base]);
 
@@ -117,11 +118,11 @@ export function DashboardScreen({ base }: { base: string }) {
       // plug-side "simulate approval" shortcut will 403 for a PLUG — it stays here only so the
       // call targets the correct split endpoint, not the removed combined PATCH. Real approval
       // belongs to the admin verifications UI (currently a mock). See the token/guards report.
-      await fetch(withSource(`/api/plugs/${plug.id}/verification`, base), {
+      await apiFetch(withSource(`/api/plugs/${plug.id}/verification`, base), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ verified: true }),
-      });
+      }, { skipAuthRedirect: base === '/demo' });
       await load();
     } finally {
       setApproving(false);

@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Star, BadgeCheck, Briefcase, MapPin } from 'lucide-react';
 import { authHeaders, clearToken } from '@/src/lib/api';
+import { apiFetch } from '@/src/lib/api-client';
 import { cn } from '@/src/lib/utils';
 import { Money } from '@/src/app/demo/_components/ui';
 import {
@@ -46,16 +47,21 @@ export function DispatchQueue() {
   const [toast, setToast] = useState<string | null>(null);
 
   const adminFetch = useCallback(
-    async (input: string, init?: RequestInit): Promise<Response> => {
-      const res = await fetch(input, { ...init, headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(init?.headers || {}) } });
-      if (res.status === 401) {
-        clearToken();
-        router.replace(LOGIN_PATH);
-        throw new Error('unauthorized');
-      }
-      return res;
+    async (input: string, init?: RequestInit): Promise<any> => {
+      return apiFetch(
+        input,
+        {
+          ...init,
+          headers: {
+            'Content-Type': 'application/json',
+            ...authHeaders(),
+            ...(init?.headers || {}),
+          },
+        },
+        { redirectTo: LOGIN_PATH }
+      );
     },
-    [router],
+    [],
   );
 
   const loadJobs = useCallback(
@@ -63,15 +69,13 @@ export function DispatchQueue() {
       setLoading(true);
       setError(null);
       try {
-        const res = await adminFetch(`/api/admin/jobs?status=SEARCHING_PLUG&page=${targetPage}&limit=${PAGE_SIZE}`);
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data?.error || 'Could not load the dispatch queue.');
+        const data = await adminFetch(`/api/admin/jobs?status=SEARCHING_PLUG&page=${targetPage}&limit=${PAGE_SIZE}`);
         const rows: JobRow[] = Array.isArray(data.jobs) ? data.jobs : [];
         setJobs(rows);
         setPage(targetPage);
         setHasNext(rows.length === PAGE_SIZE);
       } catch (e: any) {
-        if (e?.message === 'unauthorized') return;
+        if (e?.message === 'Session expired') return;
         setError(e?.message || 'Could not load the dispatch queue.');
         setJobs([]);
       } finally {
@@ -180,12 +184,10 @@ function AssignModal({
       setLoading(true);
       setLoadError(null);
       try {
-        const res = await adminFetch(`/api/admin/plugs?categoryCode=${encodeURIComponent(categoryCode)}`);
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data?.error || 'Could not load plugs.');
+        const data = await adminFetch(`/api/admin/plugs?categoryCode=${encodeURIComponent(categoryCode)}`);
         if (!cancelled) setPlugs(Array.isArray(data.plugs) ? data.plugs : []);
       } catch (e: any) {
-        if (e?.message === 'unauthorized') return;
+        if (e?.message === 'Session expired') return;
         if (!cancelled) setLoadError(e?.message || 'Could not load plugs.');
       } finally {
         if (!cancelled) setLoading(false);
@@ -201,15 +203,10 @@ function AssignModal({
     setSubmitting(true);
     setAssignError(null);
     try {
-      const res = await adminFetch(`/api/admin/jobs/${job.id}/assign`, { method: 'PATCH', body: JSON.stringify({ plugId: selectedId }) });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setAssignError(data?.error || 'Assignment failed.');
-        return;
-      }
+      await adminFetch(`/api/admin/jobs/${job.id}/assign`, { method: 'PATCH', body: JSON.stringify({ plugId: selectedId }) });
       onAssigned(job.id, plugs.find((p) => p.id === selectedId)?.name ?? 'plug');
     } catch (e: any) {
-      if (e?.message === 'unauthorized') return;
+      if (e?.message === 'Session expired') return;
       setAssignError(e?.message || 'Assignment failed.');
     } finally {
       setSubmitting(false);
