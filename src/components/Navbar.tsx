@@ -10,8 +10,8 @@ export function Navbar() {
 
   return (
     <> {/* <--- Open React Fragment here */}
-      <nav className="fixed top-0 w-full z-50 px-6 py-3 flex justify-between items-center bg-[#F5F1EC]/85">
-        <Link href="/" className="flex items-center relative gap-2 md:w-[120px] md:h-[60px] w-[90px] h-[40px]">
+      <nav className="fixed top-0 w-full z-50 px-6 py-3 flex justify-between items-center bg-bone/85">
+        <Link href="/" className="flex items-center relative gap-2 md:w-32 md:h-12 w-24 h-8">
 
           <Image src="/logo.svg" alt="Plugr Logo" fill className="bg-cover" />
         </Link>
@@ -25,7 +25,7 @@ export function Navbar() {
       </nav>
 
       {isMobileMenuOpen && (
-        <div className="fixed top-[80px] right-0 bottom-0 w-[280px] z-40 h-fit rounded-3xl bg-white/50 backdrop-blur-md md:hidden flex flex-col p-6 border-l border-gray-100 shadow-2xl animate-in slide-in-from-right duration-200">
+        <div className="fixed top-20 right-0 bottom-0 w-[70 z-40 h-fit rounded-3xl bg-white/50 backdrop-blur-md md:hidden flex flex-col p-6 border-l border-gray-100 shadow-2xl animate-in slide-in-from-right duration-200">
           <div className="pt-6 flex flex-col gap-4 items-center">
             <Link
               href="/"

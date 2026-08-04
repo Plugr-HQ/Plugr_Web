@@ -85,16 +85,16 @@ export default function MyJobsPage() {
       {!jobs && !error && (
         <div className="space-y-3">
           {[0, 1].map((i) => (
-            <Card key={i} className="p-5 h-24 animate-pulse bg-midnight/[0.03]">
+            <Card key={i} className="p-5 h-24 animate-pulse bg-midnight/3">
               <div className="flex items-center justify-between mb-3">
                 <div className="min-w-0">
                   <h4 className="font-bold text-sm text-midnight truncate">Loading...</h4>
                 </div>
-                <div className="w-10 h-4 bg-midnight/[0.03] rounded" />
+                <div className="w-10 h-4 bg-midnight/3 rounded" />
               </div>
               <div className="flex items-center justify-between pt-3 border-t border-bone">
-                <div className="w-10 h-4 bg-midnight/[0.03] rounded" />
-                <div className="w-10 h-4 bg-midnight/[0.03] rounded" />
+                <div className="w-10 h-4 bg-midnight/3 rounded" />
+                <div className="w-10 h-4 bg-midnight/3 rounded" />
               </div>
             </Card>
           ))}
