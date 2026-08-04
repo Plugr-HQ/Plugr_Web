@@ -1,14 +1,12 @@
 // src/components/plug/OtpScreen.tsx
 // AUTH-03 — OTP Verification. 6 auto-advancing boxes, auto-submit on the 6th digit,
-// resend locked 30s with a visible countdown, shake+clear on error, 10-minute expiry.
+// resend locked 30s with a visible countdown, shake+clear on error.
 //
-// On success: new plug -> PLG-ON-01, returning plug (onboarding complete) -> PLG-01.
+// On success: new plug -> PLG-ON-01, returning plug -> PLG-01. Expiry is server-driven
+// (backend TTL is 5 minutes) — verifyOtp's own error message covers "expired", so this
+// screen no longer runs its own separate 10-minute countdown that could disagree with it.
 //
 // Shared by /app and /demo — `base` keeps links inside the right namespace.
-//
-// NOTE: there is no SMS provider wired yet, so any 6-digit code verifies (same stance as
-// the 11-digit NIN). The error/expiry paths below are real and will light up as-is once a
-// provider is plugged into `verifyCode`.
 
 'use client';
 
@@ -17,17 +15,11 @@ import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Shell } from '@/src/app/demo/_components/Shell';
 import { cn } from '@/src/lib/utils';
-import { getPlugPhone, maskPlugPhone, isPlugOnboarded } from '@/src/app/app/_lib/plugAuth';
+import { getPlugPhone, maskPlugPhone, setPlugId, setPlugOnboarded } from '@/src/app/app/_lib/plugAuth';
+import { api, setToken } from '@/src/lib/api';
 
 const LENGTH = 6;
 const RESEND_SECONDS = 30;
-const EXPIRY_SECONDS = 10 * 60; // spec: OTP expires after 10 minutes
-
-/** Stand-in for the SMS provider. Any 6 digits pass until a provider is wired. */
-async function verifyCode(code: string): Promise<boolean> {
-  await new Promise((r) => setTimeout(r, 650));
-  return /^\d{6}$/.test(code);
-}
 
 export function OtpScreen({ base }: { base: string }) {
   const router = useRouter();
@@ -38,8 +30,6 @@ export function OtpScreen({ base }: { base: string }) {
   const [shake, setShake] = useState(false);
   const [resendIn, setResendIn] = useState(RESEND_SECONDS);
   const [resending, setResending] = useState(false);
-  const [expired, setExpired] = useState(false);
-  const [age, setAge] = useState(0);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
   const submitting = useRef(false);
 
@@ -52,17 +42,6 @@ export function OtpScreen({ base }: { base: string }) {
     const t = setTimeout(() => setResendIn((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [resendIn]);
-
-  // 10-minute expiry
-  useEffect(() => {
-    if (expired) return;
-    const t = setTimeout(() => setAge((a) => a + 1), 1000);
-    if (age >= EXPIRY_SECONDS) {
-      setExpired(true);
-      setError('That code expired. Request a new one.');
-    }
-    return () => clearTimeout(t);
-  }, [age, expired]);
 
   const fail = useCallback((msg: string) => {
     setError(msg);
@@ -81,23 +60,23 @@ export function OtpScreen({ base }: { base: string }) {
       setBusy(true);
       setError(null);
       try {
-        if (expired) {
-          fail('That code expired. Request a new one.');
-          return;
+        const e164 = `+234${getPlugPhone()}`;
+        const { accessToken, refreshToken, user, isNewUser } = await api.auth.verifyOtp(e164, code);
+        setToken(accessToken);
+        if (typeof window !== 'undefined' && refreshToken) {
+          localStorage.setItem('plugr_refresh_token', refreshToken);
         }
-        const ok = await verifyCode(code);
-        if (!ok) {
-          fail('Incorrect code. Try again.');
-          return;
-        }
-        // returning plug skips onboarding entirely
-        router.replace(isPlugOnboarded() ? `${base}/plug` : `${base}/onboarding`);
+        setPlugId(user.id);
+        setPlugOnboarded(!isNewUser);
+        router.replace(isNewUser ? `${base}/onboarding` : `${base}/plug`);
+      } catch (e: any) {
+        fail(e?.message ?? 'Incorrect code. Try again.');
       } finally {
         submitting.current = false;
         setBusy(false);
       }
     },
-    [base, expired, fail, router]
+    [base, fail, router]
   );
 
   function setAt(i: number, v: string) {
@@ -141,13 +120,16 @@ export function OtpScreen({ base }: { base: string }) {
     if (resendIn > 0 || resending) return;
     setResending(true);
     setError(null);
-    await new Promise((r) => setTimeout(r, 600));
-    setDigits(Array(LENGTH).fill(''));
-    setExpired(false);
-    setAge(0);
-    setResendIn(RESEND_SECONDS);
-    setResending(false);
-    inputs.current[0]?.focus();
+    try {
+      await api.auth.requestOtp(`+234${getPlugPhone()}`, 'PLUG');
+      setDigits(Array(LENGTH).fill(''));
+      setResendIn(RESEND_SECONDS);
+      inputs.current[0]?.focus();
+    } catch (e: any) {
+      setError(e?.message ?? 'Could not resend the code.');
+    } finally {
+      setResending(false);
+    }
   }
 
   return (
@@ -204,7 +186,7 @@ export function OtpScreen({ base }: { base: string }) {
       </div>
 
       <p className="mt-6 text-xs text-slate/70">
-        No SMS provider is wired yet — any 6 digits verify for now.
+        Code expires 5 minutes after it's sent.
       </p>
     </Shell>
   );

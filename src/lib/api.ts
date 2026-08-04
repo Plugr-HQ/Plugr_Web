@@ -62,14 +62,16 @@ export const api = {
       if (!res.ok) throw new Error('Login failed');
       return res.json();
     },
-    // OTP login — same phone+code flow the backend uses for everyone. Role is NOT sent:
-    // it's optional on the backend and only applied to brand-new numbers (as CLIENT/PLUG),
-    // never ADMIN. An existing admin keeps their DB role, which the caller then checks.
-    requestOtp: async (phone: string) => {
+    // OTP login — same phone+code flow the backend uses for everyone. Role is optional and
+    // only applied to brand-new numbers (as CLIENT/PLUG), never ADMIN — an existing user
+    // keeps their DB role regardless of what's passed here. Callers on a role-specific entry
+    // point (e.g. the Plug phone screen) should pass their role so a first-time signup lands
+    // in the right bucket instead of silently defaulting to CLIENT on the backend.
+    requestOtp: async (phone: string, role?: 'CLIENT' | 'PLUG') => {
       const res = await fetch(`${API_URL}/auth/otp/request`, {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ phone, ...(role ? { role } : {}) }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({} as any));

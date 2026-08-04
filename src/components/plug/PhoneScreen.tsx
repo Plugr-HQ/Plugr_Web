@@ -3,6 +3,10 @@
 // to +234. CTA activates at 10 digits, then routes to AUTH-03.
 //
 // Shared by /app and /demo — `base` keeps links inside the right namespace.
+//
+// This is the "Become a Plug" entry point, so the OTP request is sent with role: 'PLUG' —
+// a brand-new number reaching this screen should be bucketed as a Plug on the backend, not
+// silently default to CLIENT (which is what happens if role is omitted).
 
 'use client';
 
@@ -13,6 +17,7 @@ import { Shell } from '@/src/app/demo/_components/Shell';
 import { Label, GoldButton } from '@/src/app/demo/_components/ui';
 import { cn } from '@/src/lib/utils';
 import { setPlugPhone } from '@/src/app/app/_lib/plugAuth';
+import { api } from '@/src/lib/api';
 
 /** Display format: 0XX XXXX XXXX (spec). Stored as raw national digits. */
 function formatPhone(digits: string) {
@@ -40,6 +45,8 @@ export function PhoneScreen({ base }: { base: string }) {
     setBusy(true);
     setError(null);
     try {
+      const phone = `+234${digits}`;
+      await api.auth.requestOtp(phone, 'PLUG');
       setPlugPhone(digits);
       router.push(`${base}/auth/otp`);
     } catch (e: any) {
@@ -82,6 +89,7 @@ export function PhoneScreen({ base }: { base: string }) {
           readOnly={busy}
           placeholder="801 234 5678"
           aria-label="Phone number"
+          onKeyDown={(e) => e.key === 'Enter' && sendCode()}
           className="flex-1 min-w-0 bg-transparent px-4 py-3.5 font-body text-base text-midnight tnum tracking-wide placeholder:text-slate/40 focus:outline-none"
         />
 
