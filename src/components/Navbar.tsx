@@ -17,7 +17,7 @@ export function Navbar() {
         </Link>
         <div className="flex items-center gap-4 text-sm font-semibold text-[#0A1529]">
           <Link href="/privacy" className="hover:text-[#DBA134] transition-colors hidden md:inline">Privacy</Link>
-          <Link href="/onboard" className="bg-[#DBA134] text-white px-4 py-2 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Use Plugr</Link>
+          <Link href="/app" className="bg-[#DBA134] text-white px-4 py-2 rounded-full hover:text-[#DBA134] hover:bg-[#0A1529]/90 transition-colors">Use Plugr</Link>
         </div>
         <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           {isMobileMenuOpen ? <X className="w-6 h-6 text-[#0A1529]" /> : <Menu className="w-6 h-6 text-[#0A1529]" />}
@@ -49,7 +49,7 @@ export function Navbar() {
               Privacy Policy
             </Link>
             <Link
-              href="/become-a-plug"
+              href="/app"
               onClick={() => setIsMobileMenuOpen(false)}
               className="w-full py-3 text-center bg-[#DBA134] text-white rounded-full font-bold text-sm shadow-md"
             >

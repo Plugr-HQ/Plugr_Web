@@ -2,24 +2,25 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, User, Wallet, Bell } from 'lucide-react'
+import { Home, User, Wallet, Bell, Settings } from 'lucide-react'
 import { cn } from '@/src/lib/utils'
 
 export function MobileNav({ role = 'plug' }: { role?: 'plug' | 'client' }) {
   const pathname = usePathname()
   
   const plugTabs = [
-    { icon: Home, label: "Home", href: "/plug/dashboard" },
-    { icon: User, label: "Profile", href: "/plug/profile" },
-    { icon: Wallet, label: "Wallet", href: "/plug/wallet" },
-    { icon: Bell, label: "Alerts", href: "/plug/notifications" }
+    { icon: Home, label: "Home", href: "/app/plug" },
+    { icon: User, label: "Profile", href: "/app/plug/profile" },
+    { icon: Wallet, label: "Wallet", href: "/app/plug/wallet" },
+    { icon: Settings, label: "Settings", href: "/app/plug/settings" },
+    { icon: Bell, label: "Alerts", href: "/app/plug/notifications" }
   ]
 
   const clientTabs = [
     { icon: Home, label: "Home", href: "/find" },
-    { icon: Home, label: "My Jobs", href: "/client/jobs" },
-    { icon: Bell, label: "Alerts", href: "/client/notifications" },
-    { icon: User, label: "Settings", href: "/client/settings" }
+    { icon: Home, label: "My Jobs", href: "/app/client/jobs" },
+    { icon: Bell, label: "Alerts", href: "/app/client/notifications" },
+    { icon: User, label: "Settings", href: "/app/client/settings" }
   ]
 
   const tabs = role === 'plug' ? plugTabs : clientTabs
