@@ -81,8 +81,8 @@ export function LocationInput({ onLocationSelect }: LocationInputProps) {
           onChange={(e) => setAddress(e.target.value)}
           placeholder="Enter address, street, or city..."
           className="border p-2 rounded w-full"
-        >
-            <button
+        />
+        <button
           type="button"
           onClick={handleManualSearch}
           disabled={loading}
@@ -90,7 +90,6 @@ export function LocationInput({ onLocationSelect }: LocationInputProps) {
            >
            <Search className="w-4 h-4" />
            </button>
-        </input>
       </div>
 
       <button
