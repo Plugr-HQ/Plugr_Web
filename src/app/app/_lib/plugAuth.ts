@@ -15,6 +15,8 @@ export type PlugDraft = {
   lastName?: string;
   trade?: PlugTrade;
   photo?: string; // downscaled data URL
+  phone?: string;
+  address?: string;
   nin?: string;
   liveness?: boolean;
   step?: number;

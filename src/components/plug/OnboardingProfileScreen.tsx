@@ -56,6 +56,8 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [trade, setTrade] = useState<PlugTrade | ''>('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [photo, setPhoto] = useState<string>('');
   const [warn, setWarn] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +70,8 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
     if (d.lastName) setLastName(d.lastName);
     if (d.trade) setTrade(d.trade);
     if (d.photo) setPhoto(d.photo);
+    if (d.phone) setPhone(d.phone as string);
+    if (d.address) setAddress(d.address as string);
     if (typeof d.step === 'number') setStep(Math.min(d.step, 2));
   }, []);
 

@@ -19,6 +19,18 @@ import { Card, PrimaryButton } from '@/src/app/demo/_components/ui';
 
 const LENGTH = 6;
 
+/** Helper to ensure local Nigerian numbers map to canonical E.164 (+234...) */
+function formatPhone(input: string): string {
+  const trimmed = input.trim().replace(/\s+/g, '');
+  if (trimmed.startsWith('0') && trimmed.length === 11) {
+    return `+234${trimmed.slice(1)}`;
+  }
+  if (!trimmed.startsWith('+') && trimmed.startsWith('234')) {
+    return `+${trimmed}`;
+  }
+  return trimmed;
+}
+
 export default function AdminLoginPage() {
   const router = useRouter();
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
@@ -34,19 +46,28 @@ export default function AdminLoginPage() {
     e?.preventDefault();
     if (busy) return;
     setError(null);
-    if (phone.trim().length < 8) {
-      setError('Enter a valid phone number.');
+    
+    const formattedPhone = formatPhone(phone);
+    if (formattedPhone.length < 11) {
+      setError('Enter a valid phone number (e.g., +2348000000001 or 08000000001).');
       return;
     }
+
     setBusy(true);
     try {
-      await api.auth.requestOtp(phone.trim());
+      await api.auth.requestOtp(formattedPhone);
       setStep('otp');
-      setNotice('We sent a 6-digit code to your WhatsApp.');
+      setNotice(`We sent a 6-digit code via WhatsApp to ${formattedPhone}.`);
       setDigits(Array(LENGTH).fill(''));
       setTimeout(() => inputs.current[0]?.focus(), 50);
     } catch (err: any) {
-      setError(err?.message || 'Could not send code. Try again.');
+      // Extracts backend exception message or falls back gracefully
+      const serverMessage =
+        err?.response?.data?.message ||
+        err?.response?.data ||
+        err?.message ||
+        'Failed to send OTP code. Please verify server connection.';
+      setError(serverMessage);
     } finally {
       setBusy(false);
     }
@@ -57,13 +78,15 @@ export default function AdminLoginPage() {
     submitting.current = true;
     setBusy(true);
     setError(null);
+
+    const formattedPhone = formatPhone(phone);
+
     try {
-      const res = await api.auth.verifyOtp(phone.trim(), code);
+      const res = await api.auth.verifyOtp(formattedPhone, code);
       const role = res?.user?.role;
       const accessToken = res?.accessToken;
 
       if (role !== 'ADMIN' || !accessToken) {
-        // Hard reject: real code, but not an admin. Nothing is stored, no partial access.
         clearToken();
         setDigits(Array(LENGTH).fill(''));
         setError('This number is not an admin account. Access denied.');
@@ -75,7 +98,12 @@ export default function AdminLoginPage() {
       router.replace('/ad-minn');
     } catch (err: any) {
       setDigits(Array(LENGTH).fill(''));
-      setError(err?.message || 'Incorrect or expired code.');
+      const serverMessage =
+        err?.response?.data?.message ||
+        err?.response?.data ||
+        err?.message ||
+        'Incorrect or expired OTP code.';
+      setError(serverMessage);
       setTimeout(() => inputs.current[0]?.focus(), 50);
     } finally {
       submitting.current = false;
@@ -94,7 +122,6 @@ export default function AdminLoginPage() {
       return;
     }
     if (only.length > 1) {
-      // paste / fast-type: distribute across the boxes
       only.split('').slice(0, LENGTH - i).forEach((d, k) => (next[i + k] = d));
       setDigits(next);
       inputs.current[Math.min(i + only.length, LENGTH - 1)]?.focus();
@@ -115,7 +142,6 @@ export default function AdminLoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-bone p-6">
       <div className="w-full max-w-md demo-rise">
         <div className="mb-8 flex items-center justify-center gap-2.5">
-          {/* Exact brand asset — gold mark + bold "plugr" wordmark, untouched geometry/weight. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="Plugr" className="h-7 w-auto" />
           <span className="rounded-pill bg-midnight px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.15em] text-white">
@@ -148,7 +174,7 @@ export default function AdminLoginPage() {
                 placeholder="+234 800 000 0001"
                 className="w-full rounded-2xl border border-midnight/10 bg-white px-4 py-3.5 text-midnight placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow"
               />
-              {error && <p className="text-sm text-red-600">{error}</p>}
+              {error && <p className="text-sm font-medium text-red-600">{error}</p>}
               <PrimaryButton type="submit" loading={busy}>
                 {busy ? (<><Loader2 className="h-4 w-4 animate-spin" /> Sending…</>) : 'Send code'}
               </PrimaryButton>
@@ -184,7 +210,7 @@ export default function AdminLoginPage() {
                   <Loader2 className="h-4 w-4 animate-spin text-gold" /> Verifying…
                 </div>
               )}
-              {error && !busy && <p className="text-sm text-red-600">{error}</p>}
+              {error && !busy && <p className="text-sm font-medium text-red-600">{error}</p>}
 
               <button
                 type="button"
