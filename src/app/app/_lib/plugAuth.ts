@@ -27,6 +27,34 @@ export type PlugDraft = {
   step?: number;
 }; 
 
+/* ------------------------------------------------------- Plug ID & Phone Session */
+
+export function setPlugId(id: string) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(PLUG_ID_KEY, id);
+}
+
+export function getPlugId(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(PLUG_ID_KEY);
+}
+
+export function setPlugPhone(phone: string) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(PHONE_KEY, phone);
+}
+
+export function getPlugPhone(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(PHONE_KEY);
+}
+
+export function maskPlugPhone(phone?: string | null): string {
+  const p = phone ?? getPlugPhone() ?? '';
+  if (!p) return '';
+  if (p.length <= 4) return p;
+  return `${p.slice(0, 4)}••••${p.slice(-3)}`;
+}
 
 /**
  * Returning-user detection (demo-grade). The real build resolves this from the DB by phone;
@@ -115,31 +143,4 @@ export function signOutPlug() {
   [PHONE_KEY, ONBOARDED_KEY, PLUG_ID_KEY, DRAFT_KEY, BANK_KEY, PIN_KEY].forEach((k) =>
     localStorage.removeItem(k)
   );
-}
-
-export function setPlugId(id: string) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(PLUG_ID_KEY, id);
-}
-
-export function getPlugId(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem(PLUG_ID_KEY);
-}
-
-export function setPlugPhone(phone: string) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(PHONE_KEY, phone);
-}
-
-export function getPlugPhone(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem(PHONE_KEY);
-}
-
-export function maskPlugPhone(phone?: string | null): string {
-  const p = phone ?? getPlugPhone() ?? '';
-  if (!p) return '';
-  if (p.length <= 4) return p;
-  return `${p.slice(0, 4)}••••${p.slice(-3)}`;
 }
