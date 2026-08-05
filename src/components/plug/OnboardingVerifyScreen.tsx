@@ -11,6 +11,19 @@
 // NOTE: no NIMC/liveness SDK is wired yet — any 11-digit NIN passes and the liveness capture
 // self-approves. Both `verifyNin` and `verifyLiveness` are the seams a provider drops into.
 
+// src/components/plug/OnboardingVerifyScreen.tsx
+// PLG-ON-02 — Identity Verification. NIN + liveness ONLY at launch (no BVN, no guarantor,
+// no skills assessment — those are post-launch tier upgrades prompted from PLG-02).
+//
+// Each step explains itself before asking for data, per the spec's trust note. Three
+// failures on a step surfaces a "Contact support" CTA.
+//
+// On all-verified: creates the real Plug row (core tables on /app, hack_ tables on /demo),
+// then routes to PLG-01 (Pending Review).
+//
+// NOTE: no NIMC/liveness SDK is wired yet — any 11-digit NIN passes and the liveness capture
+// self-approves. Both `verifyNin` and `verifyLiveness` are the seams a provider drops into.
+
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -21,8 +34,7 @@ import { Card, Label, TextInput, GoldButton } from '@/src/app/demo/_components/u
 import { jsonFetch } from '@/src/app/demo/_lib/demo';
 import { cn } from '@/src/lib/utils';
 import { setToken } from '@/src/lib/api';
-import {
-  getPlugDraft,
+import {getPlugDraft,
   savePlugDraft,
   clearPlugDraft,
   setPlugId,
@@ -86,10 +98,6 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
 
   const startCamera = useCallback(async () => {
     setCamError(null);
-    // Stop any previously acquired stream first — without this, a failed liveness attempt
-    // that re-triggers this effect leaves the old stream's tracks running forever, orphaned,
-    // while streamRef only ever points at the newest one. That's what kept the camera
-    // indicator lit even after the flow finished.
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     try {
@@ -102,7 +110,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
     } catch {
       setCamError("We couldn't open your camera. Allow camera access, then try again.");
     }
-  }, []);;
+  }, []);
 
   // start the camera when the liveness step opens
   useEffect(() => {
@@ -114,7 +122,6 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
     setError(null);
     if (ninState === 'failed') setNinState('idle');
     if (masked) {
-      // typing while masked: apply the diff, then reveal
       if (v.length < display.length) setNin((n) => n.slice(0, -1));
       else setNin((n) => (n + v.slice(display.length)).replace(/\D/g, '').slice(0, 11));
       setMasked(false);
@@ -135,7 +142,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
     }
     savePlugDraft({ nin });
     setNinState('verified');
-    setTimeout(() => setStep(1), 700); // checkmark, then auto-advance
+    setTimeout(() => setStep(1), 700);
   }
 
   function captureFrame(): string | null {
@@ -177,6 +184,9 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
           photoUrl: d.photo ?? null,
           nin: d.nin ?? nin,
           phone: getPlugPhone(),
+          address: d.address ?? null,
+          latitude: d.latitude ?? null,
+          longitude: d.longitude ?? null,
         }),
       });
 
@@ -359,7 +369,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
 
 function SupportRow() {
   return (
-    <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-midnight/[0.06] bg-white p-4">
+    <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-midnight/6 bg-white p-4">
       <p className="text-[13px] text-slate">
         <span className="font-bold text-midnight">Stuck?</span> Our team can verify you manually.
       </p>

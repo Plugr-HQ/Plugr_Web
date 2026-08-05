@@ -31,7 +31,7 @@ export default function AppRoleSelect() {
       <Splash done={splashDone} />
 
       <main className="min-h-screen bg-bone text-midnight font-body antialiased flex justify-center">
-        <div className="w-full max-w-[440px] min-h-screen flex flex-col px-6 pt-14 pb-10">
+        <div className="w-full max-w-110 min-h-screen flex flex-col px-6 pt-14 pb-10">
           <a href="/" className="demo-rise">
             <PlugrWordmark className="h-8 text-midnight" />
           </a>
@@ -89,7 +89,7 @@ function Tile({
     <Link
       href={href}
       className={cn(
-        'group flex items-center gap-4 rounded-[22px] bg-white border border-midnight/[0.06] demo-card-shadow p-5 hover:border-gold/40 transition-all',
+        'group flex items-center gap-4 rounded-[22px] bg-white border border-midnight/6 demo-card-shadow p-5 hover:border-gold/40 transition-all',
         className
       )}
     >

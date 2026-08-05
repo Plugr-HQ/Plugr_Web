@@ -4,6 +4,9 @@
 // at the step it left off, and PLG-01/02/03 know which plug is signed in.
 
 const PHONE_KEY = 'plugr_plug_phone';
+const ADDRESS_KEY = 'plugr_plug_address';
+const LATITUDE_KEY = 'plugr_plug_latitude';
+const LONGITUDE_KEY = 'plugr_plug_longitude';
 const ONBOARDED_KEY = 'plugr_plug_onboarded';
 const PLUG_ID_KEY = 'plugr_plug_id';
 const DRAFT_KEY = 'plugr_plug_draft';
@@ -17,48 +20,13 @@ export type PlugDraft = {
   photo?: string; // downscaled data URL
   phone?: string;
   address?: string;
+  latitude?: number;
+  longitude?: number;
   nin?: string;
   liveness?: boolean;
   step?: number;
-};
+}; 
 
-/* ---------------------------------------------------------------- phone */
-
-export function setPlugPhone(digits: string) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(PHONE_KEY, digits);
-}
-
-export function getPlugPhone(): string {
-  if (typeof window === 'undefined') return '';
-  return localStorage.getItem(PHONE_KEY) ?? '';
-}
-
-/** Full display form: +234 801 2345 678 */
-export function formatPlugPhone(digits: string) {
-  const d = (digits ?? '').replace(/\D/g, '').slice(0, 10);
-  if (!d) return '';
-  return `+234 ${d.slice(0, 3)} ${d.slice(3, 7)} ${d.slice(7, 10)}`.trim();
-}
-
-/** Masked display for AUTH-03: +234 801 •••• 678 */
-export function maskPlugPhone(digits: string) {
-  const d = (digits ?? '').replace(/\D/g, '').slice(0, 10);
-  if (d.length < 10) return formatPlugPhone(d);
-  return `+234 ${d.slice(0, 3)} •••• ${d.slice(7, 10)}`;
-}
-
-/* ------------------------------------------------------- session / plug id */
-
-export function setPlugId(id: string) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(PLUG_ID_KEY, id);
-}
-
-export function getPlugId(): string {
-  if (typeof window === 'undefined') return '';
-  return localStorage.getItem(PLUG_ID_KEY) ?? '';
-}
 
 /**
  * Returning-user detection (demo-grade). The real build resolves this from the DB by phone;
@@ -147,4 +115,24 @@ export function signOutPlug() {
   [PHONE_KEY, ONBOARDED_KEY, PLUG_ID_KEY, DRAFT_KEY, BANK_KEY, PIN_KEY].forEach((k) =>
     localStorage.removeItem(k)
   );
+}
+
+export function setPlugId(id: string) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(PLUG_ID_KEY, id);
+}
+
+export function getPlugId(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(PLUG_ID_KEY);
+}
+
+export function setPlugPhone(phone: string) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(PHONE_KEY, phone);
+}
+
+export function getPlugPhone(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(PHONE_KEY);
 }

@@ -25,6 +25,9 @@ export async function POST(request: Request) {
     nin?: string;
     phone?: string;
     source?: string;
+    latitude?: number | null;
+    longitude?: number | null;
+    address?: string | null;
   };
 
   try {
@@ -47,17 +50,14 @@ export async function POST(request: Request) {
   if (!TRADES.includes(trade)) {
     return NextResponse.json({ error: `trade must be one of ${TRADES.join(' | ')}` }, { status: 400 });
   }
-  // Any 11 digits pass until the NIMC/NIN verification service is wired in.
   if (nin.length !== 11) {
     return NextResponse.json({ error: 'NIN must be 11 digits' }, { status: 400 });
   }
-  // The core tables key a Plug to a real "User" row, which needs a phone. The hack_ demo
-  // tables store the Plug standalone, so phone stays optional there.
   if (source === 'core' && !phone) {
     return NextResponse.json({ error: 'phone is required to register a Plug' }, { status: 400 });
   }
 
-  // core (/app): proxy to the NestJS backend, which mints the JWT.
+  // core (/app): proxy to NestJS backend, forwarding location data
   if (source === 'core') {
     try {
       const backendRes = await fetch(`${API_URL}/auth/register`, {
@@ -69,6 +69,9 @@ export async function POST(request: Request) {
           role: 'PLUG',
           trade,
           photoUrl: body.photoUrl ?? null,
+          latitude: body.latitude ?? null,
+          longitude: body.longitude ?? null,
+          address: body.address ?? null,
         }),
       });
 
@@ -81,7 +84,6 @@ export async function POST(request: Request) {
         );
       }
 
-      // data = { accessToken, refreshToken, user, plug }
       return NextResponse.json(data, { status: 201 });
     } catch (e: any) {
       console.error('plug register failed (backend proxy)', e);
@@ -89,8 +91,7 @@ export async function POST(request: Request) {
     }
   }
 
-  // hack (/demo): local repo only — no backend, no token. Returns { plug } (no accessToken),
-  // so OnboardingVerifyScreen skips setToken and the demo session stays token-free.
+  // hack (/demo) route
   try {
     const plug = await getRepo('hack').createPlug({
       firstName,

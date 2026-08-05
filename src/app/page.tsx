@@ -112,7 +112,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-bone text-midnight font-body antialiased overflow-x-hidden">
       {/* ---------------------------------------------------------------- Nav */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-bone/80 backdrop-blur border-b border-midnight/[0.06]">
+      <nav className="fixed top-0 inset-x-0 z-50 bg-bone/80 backdrop-blur border-b border-midnight/6">
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
           {/* Plain anchor (not next/link) so every click does a full reload of the main page */}
           <a href="/" className="flex items-center">
@@ -138,7 +138,7 @@ export default function LandingPage() {
           </div>
         </div>
         {menuOpen && (
-          <div className="fixed top-[73px] right-5 w-[180px] z-40 h-fit rounded-3xl bg-white/95 backdrop-blur-2xl md:hidden flex flex-col p-6 gap-2 border border-white/20 shadow-2xl animate-in slide-in-from-top-10 duration-1000">
+          <div className="fixed top-18.25 right-5 w-45 z-40 h-fit rounded-3xl bg-white/95 backdrop-blur-2xl md:hidden flex flex-col p-6 gap-2 border border-white/20 shadow-2xl animate-in slide-in-from-top-10 duration-1000">
             <Link href="#how" onClick={() => setMenuOpen(false)} className="text-md font-bold text-[#0A1529]">How it Works</Link>
             <Link href="#why" onClick={() => setMenuOpen(false)} className="text-md font-bold text-[#0A1529]">Why Plugr</Link>
             <Link href="#trades" onClick={() => setMenuOpen(false)} className="text-md font-bold text-[#0A1529]">Trades</Link>
@@ -198,13 +198,13 @@ export default function LandingPage() {
             transition={{ duration: 0.7, ease: [0.2, 0.7, 0.2, 1], delay: 0.15 }}
           >
             <div className="absolute -inset-6 bg-gold/10 blur-3xl rounded-full" />
-            <div className="relative rounded-[28px] overflow-hidden border border-midnight/[0.06] demo-card-shadow">
-              <img src={IMG.hero} alt="Verified artisan at work" className="w-full h-[420px] md:h-[520px] object-cover" loading="eager" />
-              <div className="absolute inset-0 bg-gradient-to-t from-midnight/40 to-transparent" />
+            <div className="relative rounded-[28px] overflow-hidden border border-midnight/6 demo-card-shadow">
+              <img src={IMG.hero} alt="Verified artisan at work" className="w-full h-105 md:h-130 object-cover" loading="eager" />
+              <div className="absolute inset-0 bg-linear-to-t from-midnight/40 to-transparent" />
             </div>
 
             <motion.div
-              className="absolute left-3 bottom-3 w-[248px] rounded-[22px] bg-white/95 backdrop-blur border border-midnight/[0.06] demo-card-shadow p-5"
+              className="absolute left-3 bottom-3 w-62 rounded-2xl bg-white/95 backdrop-blur border border-midnight/6 demo-card-shadow p-5"
               animate={reduce ? undefined : { y: [0, -10, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
             >
@@ -213,7 +213,7 @@ export default function LandingPage() {
                   <PlugrMark className="w-4 h-4" />
                   <span className="font-display text-base">Escrow</span>
                 </div>
-                <span className="inline-flex items-center gap-1.5 rounded-pill bg-gold/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[#8a5a08]">
+                <span className="inline-flex items-center gap-1.5 rounded-pill bg-gold/15 px-2.5 py-1 text-10 font-bold uppercase tracking-widest text-[#8a5a08]">
                   <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" /> Held
                 </span>
               </div>
@@ -231,7 +231,7 @@ export default function LandingPage() {
       </header>
 
       {/* ------------------------------------------------------------ How it works */}
-      <section id="how" className="py-20 px-5 bg-white border-y border-midnight/[0.06]">
+      <section id="how" className="py-20 px-5 bg-white border-y border-midnight/6">
         <div className="max-w-6xl mx-auto">
           <Reveal>
             <Eyebrow>How it works</Eyebrow>
@@ -267,7 +267,7 @@ export default function LandingPage() {
           <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {REASONS.map((r, i) => (
               <Reveal key={r.title} delay={(i % 3) * 0.08}>
-                <div className="h-full rounded-[22px] bg-white border border-midnight/[0.06] demo-card-shadow p-6 hover:-translate-y-1 transition-transform">
+                <div className="h-full rounded-[22px] bg-white border border-midnight/6 demo-card-shadow p-6 hover:-translate-y-1 transition-transform">
                   <span className="font-display text-sm text-gold">{String(i + 1).padStart(2, '0')}</span>
                   <h3 className="mt-3 font-bold text-midnight">{r.title}</h3>
                   <p className="mt-1.5 text-sm text-slate leading-relaxed">{r.body}</p>
@@ -291,7 +291,7 @@ export default function LandingPage() {
       </section>
 
       {/* ------------------------------------------------------------------ Trades */}
-      <section id="trades" className="py-20 px-5 bg-white border-y border-midnight/[0.06]">
+      <section id="trades" className="py-20 px-5 bg-white border-y border-midnight/6">
         <div className="max-w-6xl mx-auto">
           <Reveal>
             <Eyebrow>What we fix</Eyebrow>
@@ -304,7 +304,7 @@ export default function LandingPage() {
               { img: IMG.furniture, icon: <Hammer className="w-5 h-5" />, title: 'Furniture', body: 'Custom furniture, wardrobes, cabinets, repairs, and finishing.', cta: 'Find a furniture maker' },
             ].map((t, i) => (
               <Reveal key={t.title} delay={i * 0.1}>
-                <div className="group rounded-[24px] overflow-hidden bg-bone border border-midnight/[0.06] hover:border-gold/40 transition-colors">
+                <div className="group rounded-3xl overflow-hidden bg-bone border border-midnight/6 hover:border-gold/40 transition-colors">
                   <div className="relative h-52 overflow-hidden">
                     <img src={t.img} alt={t.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                     <span className="absolute top-4 left-4 grid place-items-center h-11 w-11 rounded-2xl bg-white text-gold shadow-lg">{t.icon}</span>
@@ -341,7 +341,7 @@ export default function LandingPage() {
           <div className="mt-10 grid sm:grid-cols-3 gap-4">
             {PLUGS.map((p, i) => (
               <Reveal key={p.name} delay={i * 0.09}>
-                <div className="rounded-[22px] bg-white border border-midnight/[0.06] demo-card-shadow p-5 hover:-translate-y-1 transition-transform">
+                <div className="rounded-2xl bg-white border border-midnight/6 demo-card-shadow p-5 hover:-translate-y-1 transition-transform">
                   <div className="flex items-start justify-between">
                     <div className="relative">
                       <img src={p.photo} alt={p.name} className="h-16 w-16 rounded-2xl object-cover" loading="lazy" />
@@ -369,7 +369,7 @@ export default function LandingPage() {
       </section>
 
       {/* ----------------------------------------------------------------- For clients */}
-      <section className="py-20 px-5 bg-white border-y border-midnight/[0.06]">
+      <section className="py-20 px-5 bg-white border-y border-midnight/6">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <Reveal>
             <Eyebrow>For clients</Eyebrow>
@@ -387,7 +387,7 @@ export default function LandingPage() {
             </Link>
           </Reveal>
           <Reveal delay={0.1}>
-            <div className="rounded-[28px] bg-bone border border-midnight/[0.06] p-8">
+            <div className="rounded-3xl bg-bone border border-midnight/6 p-8">
               <div className="flex items-center gap-2 text-slate mb-6">
                 <Clock className="w-4 h-4 text-gold" />
                 <span className="text-[11px] font-bold uppercase tracking-[0.14em]">Escrow timeline</span>
@@ -411,7 +411,7 @@ export default function LandingPage() {
       {/* -------------------------------------------------------------- For professionals */}
       <section className="py-20 px-5">
         <Reveal className="max-w-4xl mx-auto">
-          <div className="rounded-[32px] bg-midnight text-white p-10 md:p-14 text-center">
+          <div className="rounded-4xl bg-midnight text-white p-10 md:p-14 text-center">
             <Eyebrow>For professionals</Eyebrow>
             <h2 className="mt-5 font-display text-[3rem] md:text-[3.5rem] leading-[0.98] text-gold">Join the Plugs.</h2>
             <p className="mt-4 text-steel-blue text-lg">Build a reputation clients can trust.</p>
@@ -445,7 +445,7 @@ export default function LandingPage() {
           <div className="mt-10 space-y-3">
             {FAQS.map((f, i) => (
               <Reveal key={f.q} delay={i * 0.06}>
-                <div className="rounded-[18px] bg-white border border-midnight/[0.06] overflow-hidden">
+                <div className="rounded-2xl bg-white border border-midnight/6 overflow-hidden">
                   <button onClick={() => setOpenFaq((o) => (o === i ? null : i))} className="w-full flex items-center justify-between gap-4 p-5 text-left">
                     <span className="font-bold text-midnight">{f.q}</span>
                     <Plus className={'w-5 h-5 text-gold shrink-0 transition-transform ' + (openFaq === i ? 'rotate-45' : '')} />
@@ -459,7 +459,7 @@ export default function LandingPage() {
       </section>
 
       {/* -------------------------------------------------------------- Final CTA */}
-      <section className="py-24 px-5 bg-white border-t border-midnight/[0.06] text-center">
+        <section className="py-24 px-5 bg-white border-t border-midnight/6 text-center">
         <Reveal>
           <h2 className="font-display text-[3rem] md:text-[4rem] leading-[0.98] text-midnight">Ready to find your Plug?</h2>
           <p className="mt-3 text-slate font-semibold">Ikeja, Lagos.</p>

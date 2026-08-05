@@ -1,0 +1,107 @@
+// src/components/LocationInput.tsx
+import React, { useState } from 'react';
+
+interface LocationInputProps {
+  onLocationSelect: (location: { latitude: number; longitude: number; address: string }) => void;
+}
+
+export function LocationInput({ onLocationSelect }: LocationInputProps) {
+  const [address, setAddress] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 1. Get browser Geolocation (Latitude & Longitude)
+  const handleGetBrowserLocation = () => {
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        
+        // Reverse geocode using OpenStreetMap Nominatim (Free, no API key required)
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+          const data = await res.json();
+          const displayAddress = data.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+          setAddress(displayAddress);
+          onLocationSelect({ latitude: lat, longitude: lng, address: displayAddress });
+        } catch {
+          onLocationSelect({ latitude: lat, longitude: lng, address: `${lat.toFixed(4)}, ${lng.toFixed(4)}` });
+        } finally {
+          setLoading(false);
+        }
+      },
+      (err) => {
+        setLoading(false);
+        setError(`Location access denied: ${err.message}`);
+      }
+    );
+  };
+
+  // 2. Geocode manually typed address string
+  const handleManualSearch = async () => {
+    if (!address.trim()) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+      const data = await res.json();
+
+      if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lng = parseFloat(data[0].lon);
+        onLocationSelect({ latitude: lat, longitude: lng, address: data[0].display_name });
+      } else {
+        setError('Location not found. Please try a different address.');
+      }
+    } catch {
+      setError('Failed to look up address location.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3 my-4">
+      <label className="text-sm font-medium">Your Location</label>
+      
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          placeholder="Enter address, street, or city..."
+          className="border p-2 rounded w-full"
+        />
+        <button
+          type="button"
+          onClick={handleManualSearch}
+          disabled={loading}
+          className="bg-gray-800 text-white px-4 py-2 rounded"
+        >
+          Search
+        </button>
+      </div>
+
+      <button
+        type="button"
+        onClick={handleGetBrowserLocation}
+        disabled={loading}
+        className="bg-blue-600 text-white px-4 py-2 rounded flex items-center justify-center gap-2"
+      >
+        📍 Use Current Location (GPS)
+      </button>
+
+      {loading && <p className="text-sm text-gray-500">Detecting location...</p>}
+      {error && <p className="text-sm text-red-500">{error}</p>}
+    </div>
+  );
+}

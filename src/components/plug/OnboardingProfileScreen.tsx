@@ -1,5 +1,5 @@
 // src/components/plug/OnboardingProfileScreen.tsx
-// PLG-ON-01 — Plug Profile Setup. Three steps: name -> trade -> photo.
+// PLG-ON-01 — Plug Profile Setup. Four steps: name -> trade -> location -> photo.
 // Progress is saved to the draft at each step, so a Plug who drops off resumes here.
 //
 // Shared by /app and /demo — `base` keeps links inside the right namespace.
@@ -8,11 +8,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Zap, Droplet, Hammer, Camera, Check } from 'lucide-react';
+import { ArrowRight, Zap, Droplet, Hammer, Camera, Check, MapPin } from 'lucide-react';
 import { Shell } from '@/src/app/demo/_components/Shell';
 import { Label, TextInput, GoldButton } from '@/src/app/demo/_components/ui';
 import { cn } from '@/src/lib/utils';
 import { getPlugDraft, savePlugDraft, type PlugTrade } from '@/src/app/app/_lib/plugAuth';
+import { LocationInput } from '@/src/components/LocationInput';
 
 const TRADES: { value: PlugTrade; label: string; icon: React.ReactNode; blurb: string }[] = [
   { value: 'electrician', label: 'Electrician', icon: <Zap className="w-5 h-5" />, blurb: 'Wiring, sockets, faults, lighting' },
@@ -56,8 +57,9 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [trade, setTrade] = useState<PlugTrade | ''>('');
-  const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
   const [photo, setPhoto] = useState<string>('');
   const [warn, setWarn] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -70,20 +72,28 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
     if (d.lastName) setLastName(d.lastName);
     if (d.trade) setTrade(d.trade);
     if (d.photo) setPhoto(d.photo);
-    if (d.phone) setPhone(d.phone as string);
     if (d.address) setAddress(d.address as string);
-    if (typeof d.step === 'number') setStep(Math.min(d.step, 2));
+    if (typeof d.latitude === 'number') setLatitude(d.latitude);
+    if (typeof d.longitude === 'number') setLongitude(d.longitude);
+    if (typeof d.step === 'number') setStep(Math.min(d.step, 3));
   }, []);
 
   const canContinue =
-    step === 0 ? firstName.trim().length > 1 && lastName.trim().length > 1 : step === 1 ? !!trade : !!photo;
+    step === 0
+      ? firstName.trim().length > 1 && lastName.trim().length > 1
+      : step === 1
+      ? !!trade
+      : step === 2
+      ? !!latitude && !!longitude
+      : !!photo;
 
   function next() {
     if (!canContinue) return;
     if (step === 0) savePlugDraft({ firstName: firstName.trim(), lastName: lastName.trim(), step: 1 });
     if (step === 1) savePlugDraft({ trade: trade as PlugTrade, step: 2 });
-    if (step === 2) {
-      savePlugDraft({ photo, step: 3 });
+    if (step === 2) savePlugDraft({ address, latitude, longitude, step: 3 });
+    if (step === 3) {
+      savePlugDraft({ photo, step: 4 });
       router.push(`${base}/onboarding/verify`);
       return;
     }
@@ -107,25 +117,35 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
   return (
     <Shell
       eyebrow="Become a Plug"
-      title={step === 0 ? 'What’s your name?' : step === 1 ? 'What do you do?' : 'Add your photo'}
+      title={
+        step === 0
+          ? 'What’s your name?'
+          : step === 1
+          ? 'What do you do?'
+          : step === 2
+          ? 'Where are you based?'
+          : 'Add your photo'
+      }
       subtitle={
         step === 0
           ? 'This is the name clients will see.'
           : step === 1
-            ? 'Pick the trade you want jobs for.'
-            : 'Clients trust a face. This is the front of your identity.'
+          ? 'Pick the trade you want jobs for.'
+          : step === 2
+          ? 'Clients match with Plugs nearby.'
+          : 'Clients trust a face. This is the front of your identity.'
       }
       back={base}
       onBack={step > 0 ? () => setStep((s) => s - 1) : undefined}
       footer={
         <GoldButton onClick={next} disabled={!canContinue}>
-          {step === 2 ? 'Continue to verification' : 'Continue'} <ArrowRight className="w-4 h-4" />
+          {step === 3 ? 'Continue to verification' : 'Continue'} <ArrowRight className="w-4 h-4" />
         </GoldButton>
       }
     >
-      {/* Progress — 3 steps */}
-      <div className="flex gap-1.5 mb-8" aria-label={`Step ${step + 1} of 3`}>
-        {[0, 1, 2].map((i) => (
+      {/* Progress — 4 steps */}
+      <div className="flex gap-1.5 mb-8" aria-label={`Step ${step + 1} of 4`}>
+        {[0, 1, 2, 3].map((i) => (
           <span
             key={i}
             className={cn('h-1.5 flex-1 rounded-pill transition-colors', i <= step ? 'bg-gold' : 'bg-midnight/10')}
@@ -160,7 +180,7 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
                 onClick={() => setTrade(t.value)}
                 className={cn(
                   'w-full flex items-center gap-4 rounded-[22px] border bg-white p-4 text-left transition-colors',
-                  active ? 'border-gold' : 'border-midnight/[0.06] hover:border-midnight/20'
+                  active ? 'border-gold' : 'border-midnight/6 hover:border-midnight/20'
                 )}
               >
                 <span
@@ -189,8 +209,33 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
         </div>
       )}
 
-      {/* Step 3 — Photo */}
+      {/* Step 3 — Location */}
       {step === 2 && (
+        <div className="space-y-4 demo-rise">
+          <LocationInput
+            onLocationSelect={(loc) => {
+              setAddress(loc.address);
+              setLatitude(loc.latitude);
+              setLongitude(loc.longitude);
+              savePlugDraft({
+                address: loc.address,
+                latitude: loc.latitude,
+                longitude: loc.longitude,
+              });
+            }}
+          />
+
+          {latitude && longitude && (
+            <div className="flex items-start gap-2 bg-emerald-50 border border-emerald-200 text-emerald-900 p-3 rounded-xl text-xs font-medium">
+              <MapPin className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
+              <span>{address || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Step 4 — Photo */}
+      {step === 3 && (
         <div className="demo-rise flex flex-col items-center">
           <button
             onClick={() => fileRef.current?.click()}
