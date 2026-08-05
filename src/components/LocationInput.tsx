@@ -86,7 +86,7 @@ export function LocationInput({ onLocationSelect }: LocationInputProps) {
           type="button"
           onClick={handleManualSearch}
           disabled={loading}
-          className="bg-gold text-white px-2 py-2 rounded-full right-0"
+          className="bg-gold text-white px-4 py-4 rounded-full"
            >
            <Search className="w-4 h-4" />
            </button>
