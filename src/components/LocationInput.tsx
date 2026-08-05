@@ -1,5 +1,6 @@
 // src/components/LocationInput.tsx
 import React, { useState } from 'react';
+import { MapPin } from 'lucide-react';
 
 interface LocationInputProps {
   onLocationSelect: (location: { latitude: number; longitude: number; address: string }) => void;
@@ -85,9 +86,9 @@ export function LocationInput({ onLocationSelect }: LocationInputProps) {
           type="button"
           onClick={handleManualSearch}
           disabled={loading}
-          className="bg-gray-800 text-white px-4 py-2 rounded"
+          className="bg-gold text-white px-4 py-2 rounded"
         >
-          Search
+          <MapPin className="w-4 h-4" /> Search
         </button>
       </div>
 
@@ -95,9 +96,9 @@ export function LocationInput({ onLocationSelect }: LocationInputProps) {
         type="button"
         onClick={handleGetBrowserLocation}
         disabled={loading}
-        className="bg-blue-600 text-white px-4 py-2 rounded flex items-center justify-center gap-2"
+        className="bg-midnight text-white px-4 py-2 rounded-pill flex items-center justify-center gap-2"
       >
-        📍 Use Current Location (GPS)
+        <MapPin className="w-4 h-4" /> Use Current Location
       </button>
 
       {loading && <p className="text-sm text-gray-500">Detecting location...</p>}
