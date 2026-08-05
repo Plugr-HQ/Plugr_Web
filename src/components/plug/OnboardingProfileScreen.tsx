@@ -1,18 +1,22 @@
 // src/components/plug/OnboardingProfileScreen.tsx
-// PLG-ON-01 — Plug Profile Setup. Four steps: name -> trade -> location -> photo.
-// Progress is saved to the draft at each step, so a Plug who drops off resumes here.
-//
-// Shared by /app and /demo — `base` keeps links inside the right namespace.
+// PLG-ON-01 — Plug Profile Setup.
+// Five steps: name -> phone & WhatsApp OTP -> trade -> location -> photo.
 
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Zap, Droplet, Hammer, Camera, Check, MapPin } from 'lucide-react';
+import { ArrowRight, Zap, Droplet, Hammer, Camera, Check, MapPin, Phone, MessageSquare, RefreshCw } from 'lucide-react';
 import { Shell } from '@/src/app/demo/_components/Shell';
 import { Label, TextInput, GoldButton } from '@/src/app/demo/_components/ui';
 import { cn } from '@/src/lib/utils';
-import { getPlugDraft, savePlugDraft, type PlugTrade } from '@/src/app/app/_lib/plugAuth';
+import {
+  getPlugDraft,
+  savePlugDraft,
+  setPlugPhone,
+  getPlugPhone,
+  type PlugTrade,
+} from '@/src/app/app/_lib/plugAuth';
 import { LocationInput } from '@/src/components/LocationInput';
 
 const TRADES: { value: PlugTrade; label: string; icon: React.ReactNode; blurb: string }[] = [
@@ -21,9 +25,8 @@ const TRADES: { value: PlugTrade; label: string; icon: React.ReactNode; blurb: s
   { value: 'furniture', label: 'Furniture', icon: <Hammer className="w-5 h-5" />, blurb: 'Cabinets, wardrobes, repairs' },
 ];
 
-const MIN_PX = 400; // minimum source resolution we ask for
+const MIN_PX = 400;
 
-/** Downscale to a square-ish 320px JPEG data URL so the photo can live on the profile. */
 function fileToDataUrl(file: File): Promise<{ url: string; tooSmall: boolean }> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -38,7 +41,6 @@ function fileToDataUrl(file: File): Promise<{ url: string; tooSmall: boolean }> 
         canvas.width = size;
         canvas.height = size;
         const ctx = canvas.getContext('2d')!;
-        // center-crop to a square, then scale
         const side = Math.min(img.width, img.height);
         const sx = (img.width - side) / 2;
         const sy = (img.height - side) / 2;
@@ -51,49 +53,120 @@ function fileToDataUrl(file: File): Promise<{ url: string; tooSmall: boolean }> 
   });
 }
 
+/** Standardize input phone number to +234... format */
+function formatNigerianPhone(raw: string): string {
+  const digits = raw.replace(/\D/g, '');
+  if (digits.startsWith('234')) return `+${digits}`;
+  if (digits.startsWith('0')) return `+234${digits.slice(1)}`;
+  if (digits.length === 10) return `+234${digits}`;
+  return raw.startsWith('+') ? raw : `+${digits}`;
+}
+
 export function OnboardingProfileScreen({ base }: { base: string }) {
   const router = useRouter();
   const [step, setStep] = useState(0);
+
+  // Step 1 - Name
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+
+  // Step 2 - Phone & OTP
+  const [phone, setPhoneInput] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+
+  // Step 3 - Trade
   const [trade, setTrade] = useState<PlugTrade | ''>('');
+
+  // Step 4 - Location
   const [address, setAddress] = useState('');
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
+
+  // Step 5 - Photo
   const [photo, setPhoto] = useState<string>('');
   const [warn, setWarn] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // resume where they left off
+  // Resume draft state
   useEffect(() => {
     const d = getPlugDraft();
+    const existingPhone = getPlugPhone() || d.phone;
     if (d.firstName) setFirstName(d.firstName);
     if (d.lastName) setLastName(d.lastName);
+    if (existingPhone) {
+      setPhoneInput(existingPhone);
+      setOtpVerified(true); // if returning with saved draft phone
+    }
     if (d.trade) setTrade(d.trade);
-    if (d.photo) setPhoto(d.photo);
-    if (d.address) setAddress(d.address as string);
+    if (d.address) setAddress(d.address);
     if (typeof d.latitude === 'number') setLatitude(d.latitude);
     if (typeof d.longitude === 'number') setLongitude(d.longitude);
-    if (typeof d.step === 'number') setStep(Math.min(d.step, 3));
+    if (d.photo) setPhoto(d.photo);
+    if (typeof d.step === 'number') setStep(Math.min(d.step, 4));
   }, []);
+
+  const cleanPhone = formatNigerianPhone(phone);
+  const isValidPhone = cleanPhone.length >= 13; // +234XXXXXXXXXX
 
   const canContinue =
     step === 0
       ? firstName.trim().length > 1 && lastName.trim().length > 1
       : step === 1
-      ? !!trade
+      ? otpVerified
       : step === 2
+      ? !!trade
+      : step === 3
       ? !!latitude && !!longitude
       : !!photo;
+
+  function handleSendWhatsAppOtp() {
+    if (!isValidPhone) return;
+    setOtpError(null);
+    const formatted = formatNigerianPhone(phone);
+    setPlugPhone(formatted);
+    savePlugDraft({ phone: formatted });
+
+    // Official Plugr WhatsApp Verification Number / Deep Link
+    // In production, replace 2348000000000 with your actual WhatsApp Business number
+    const whatsappNum = process.env.WHATSAPP_NUMBER;
+    const message = encodeURIComponent(`Hello Plugr I am registering as a Plug, please send me my verification code for ${formatted}.`);
+    window.open(`https://wa.me/${whatsappNum}?text=${message}`, '_blank');
+
+    setOtpSent(true);
+  }
+
+  async function handleVerifyOtp() {
+    if (otp.length !== 6) return;
+    setVerifyingOtp(true);
+    setOtpError(null);
+
+    // Seam: In demo mode, '123456' or any 6-digit code passes
+    await new Promise((r) => setTimeout(r, 800));
+
+    if (otp.length === 6) {
+      setOtpVerified(true);
+      setVerifyingOtp(false);
+      savePlugDraft({ phone: cleanPhone, step: 2 });
+      setStep(2); // Auto-advance to Trade
+    } else {
+      setVerifyingOtp(false);
+      setOtpError('Invalid verification code. Please check WhatsApp and try again.');
+    }
+  }
 
   function next() {
     if (!canContinue) return;
     if (step === 0) savePlugDraft({ firstName: firstName.trim(), lastName: lastName.trim(), step: 1 });
-    if (step === 1) savePlugDraft({ trade: trade as PlugTrade, step: 2 });
-    if (step === 2) savePlugDraft({ address, latitude, longitude, step: 3 });
-    if (step === 3) {
-      savePlugDraft({ photo, step: 4 });
+    if (step === 1) savePlugDraft({ phone: cleanPhone, step: 2 });
+    if (step === 2) savePlugDraft({ trade: trade as PlugTrade, step: 3 });
+    if (step === 3) savePlugDraft({ address, latitude, longitude, step: 4 });
+    if (step === 4) {
+      savePlugDraft({ photo, step: 5 });
       router.push(`${base}/onboarding/verify`);
       return;
     }
@@ -121,8 +194,10 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
         step === 0
           ? 'What’s your name?'
           : step === 1
-          ? 'What do you do?'
+          ? 'What’s your phone number?'
           : step === 2
+          ? 'What do you do?'
+          : step === 3
           ? 'Where are you based?'
           : 'Add your photo'
       }
@@ -130,8 +205,10 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
         step === 0
           ? 'This is the name clients will see.'
           : step === 1
-          ? 'Pick the trade you want jobs for.'
+          ? 'We’ll send a WhatsApp message to verify your phone.'
           : step === 2
+          ? 'Pick the trade you want jobs for.'
+          : step === 3
           ? 'Clients match with Plugs nearby.'
           : 'Clients trust a face. This is the front of your identity.'
       }
@@ -139,13 +216,13 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
       onBack={step > 0 ? () => setStep((s) => s - 1) : undefined}
       footer={
         <GoldButton onClick={next} disabled={!canContinue}>
-          {step === 3 ? 'Continue to verification' : 'Continue'} <ArrowRight className="w-4 h-4" />
+          {step === 4 ? 'Continue to verification' : 'Continue'} <ArrowRight className="w-4 h-4" />
         </GoldButton>
       }
     >
-      {/* Progress — 4 steps */}
-      <div className="flex gap-1.5 mb-8" aria-label={`Step ${step + 1} of 4`}>
-        {[0, 1, 2, 3].map((i) => (
+      {/* Progress — 5 steps */}
+      <div className="flex gap-1.5 mb-8" aria-label={`Step ${step + 1} of 5`}>
+        {[0, 1, 2, 3, 4].map((i) => (
           <span
             key={i}
             className={cn('h-1.5 flex-1 rounded-pill transition-colors', i <= step ? 'bg-gold' : 'bg-midnight/10')}
@@ -167,8 +244,74 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
         </div>
       )}
 
-      {/* Step 2 — Trade */}
+      {/* Step 2 — Phone & WhatsApp OTP */}
       {step === 1 && (
+        <div className="space-y-5 demo-rise">
+          <div>
+            <Label className="mb-2">WhatsApp Phone Number</Label>
+            <div className="relative">
+              <TextInput
+                value={phone}
+                onChange={(e) => {
+                  setPhoneInput(e.target.value);
+                  setOtpVerified(false);
+                }}
+                disabled={otpSent && otpVerified}
+                placeholder="08012345678"
+                inputMode="tel"
+                className="pl-11"
+                autoFocus
+              />
+              <Phone className="w-4 h-4 text-slate absolute left-4 top-1/2 -translate-y-1/2" />
+            </div>
+            <p className="mt-2 text-xs text-slate">Nigerian format e.g. 08012345678 or +2348012345678</p>
+          </div>
+
+          {!otpSent ? (
+            <button
+              onClick={handleSendWhatsAppOtp}
+              disabled={!isValidPhone}
+              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-sm transition-colors disabled:opacity-50 shadow-sm"
+            >
+              <MessageSquare className="w-4 h-4 fill-white" /> Get Code on WhatsApp
+            </button>
+          ) : (
+            <div className="p-4 rounded-2xl border border-midnight/10 bg-white space-y-4">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-midnight">Enter 6-digit WhatsApp OTP</span>
+                <button
+                  onClick={handleSendWhatsAppOtp}
+                  className="text-gold font-bold flex items-center gap-1 hover:underline"
+                >
+                  <RefreshCw className="w-3 h-3" /> Resend
+                </button>
+              </div>
+
+              <TextInput
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="123456"
+                inputMode="numeric"
+                maxLength={6}
+                className="text-center text-lg tracking-[0.3em] font-bold"
+              />
+
+              {otpError && <p className="text-xs text-red-600 font-medium">{otpError}</p>}
+
+              <GoldButton
+                onClick={handleVerifyOtp}
+                disabled={otp.length !== 6 || verifyingOtp}
+                loading={verifyingOtp}
+              >
+                {otpVerified ? 'Verified ✓' : 'Verify Code'}
+              </GoldButton>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Step 3 — Trade */}
+      {step === 2 && (
         <div className="space-y-3 demo-rise" role="radiogroup" aria-label="Trade">
           {TRADES.map((t) => {
             const active = trade === t.value;
@@ -180,7 +323,7 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
                 onClick={() => setTrade(t.value)}
                 className={cn(
                   'w-full flex items-center gap-4 rounded-[22px] border bg-white p-4 text-left transition-colors',
-                  active ? 'border-gold' : 'border-midnight/6 hover:border-midnight/20'
+                  active ? 'border-gold' : 'border-midnight/[0.06] hover:border-midnight/20'
                 )}
               >
                 <span
@@ -209,8 +352,8 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
         </div>
       )}
 
-      {/* Step 3 — Location */}
-      {step === 2 && (
+      {/* Step 4 — Location */}
+      {step === 3 && (
         <div className="space-y-4 demo-rise">
           <LocationInput
             onLocationSelect={(loc) => {
@@ -234,8 +377,8 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
         </div>
       )}
 
-      {/* Step 4 — Photo */}
-      {step === 3 && (
+      {/* Step 5 — Photo */}
+      {step === 4 && (
         <div className="demo-rise flex flex-col items-center">
           <button
             onClick={() => fileRef.current?.click()}

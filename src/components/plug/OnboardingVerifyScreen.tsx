@@ -181,12 +181,12 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
           firstName: d.firstName,
           lastName: d.lastName,
           trade: d.trade,
-          photoUrl: d.photo ?? null,
+          photoUrl: d.photo,
           nin: d.nin ?? nin,
-          phone: getPlugPhone(),
-          address: d.address ?? null,
-          latitude: d.latitude ?? null,
-          longitude: d.longitude ?? null,
+          phone: getPlugPhone() ?? d.phone,
+          address: d.address ,
+          latitude: d.latitude ,
+          longitude: d.longitude ,
         }),
       });
 
