@@ -136,3 +136,10 @@ export function getPlugPhone(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem(PHONE_KEY);
 }
+
+export function maskPlugPhone(phone?: string | null): string {
+  const p = phone ?? getPlugPhone() ?? '';
+  if (!p) return '';
+  if (p.length <= 4) return p;
+  return `${p.slice(0, 4)}••••${p.slice(-3)}`;
+}
