@@ -61,8 +61,8 @@ export function SiteFooter() {
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/50 mb-4">Legal</p>
           <ul className="space-y-2.5 text-sm text-steel-blue">
             <li><Link href="/privacy" className="hover:text-gold transition-colors">Privacy Policy</Link></li>
-            <li><a href="#" className="hover:text-gold transition-colors">Terms of Service</a></li>
-            <li><a href="#" className="hover:text-gold transition-colors">Dispute Policy</a></li>
+            <li><a href="/terms" className="hover:text-gold transition-colors">Terms of Service</a></li>
+            <li><a href="/dispute" className="hover:text-gold transition-colors">Dispute Policy</a></li>
           </ul>
         </div>
       </div>

@@ -1,10 +1,10 @@
 // app/privacy/page.tsx
 import type { Metadata } from 'next';
-import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Download, ShieldCheck } from 'lucide-react';
 import { PlugrWordmark } from '@/src/components/Brand';
 import { SiteFooter } from '@/src/components/SiteFooter';
+import { Section, SubSection, BulletList, Note, LegalHeader } from '@/src/components/legal/LegalPageParts';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Plugr',
@@ -15,7 +15,7 @@ export default function PrivacyPolicyPage() {
   return (
     <main className="min-h-screen bg-bone text-midnight font-body antialiased">
       {/* Nav — matches the landing */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-bone/80 backdrop-blur border-b border-midnight/[0.06]">
+      <nav className="fixed top-0 inset-x-0 z-50 bg-bone/80 backdrop-blur border-b border-midnight/6">
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center">
             <PlugrWordmark className="h-6 text-midnight" />
@@ -34,32 +34,22 @@ export default function PrivacyPolicyPage() {
         </div>
       </nav>
 
-      {/* Header */}
-      <header className="pt-28 md:pt-36 pb-14 px-5 border-b border-midnight/[0.06]">
-        <div className="max-w-3xl mx-auto">
-          <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-gold">
-            <span className="h-px w-6 bg-gold/50" /> Legal
-          </span>
-          <h1 className="mt-4 font-display text-[2.75rem] md:text-[3.5rem] leading-[1.02] text-midnight">
-            Privacy <span className="text-gold">Policy</span>
-          </h1>
-          <p className="mt-4 text-sm text-slate">
-            Version 1.0 &nbsp;·&nbsp; Effective July 2026 &nbsp;·&nbsp; getplugr.com
-          </p>
-        </div>
-      </header>
+      <LegalHeader
+        eyebrow="Legal"
+        title="Privacy"
+        highlight="Policy"
+        version="Version 1.0 &nbsp;·&nbsp; Effective July 2026 &nbsp;·&nbsp; getplugr.com"
+      />
 
-      {/* Content */}
       <div className="max-w-3xl mx-auto px-5 py-12">
-        {/* Intro + download */}
         <div className="flex flex-col-reverse sm:flex-row sm:items-start sm:justify-between gap-6 mb-12">
           <p className="flex-1 text-[15px] leading-relaxed text-slate">
-            Plugr Technologies Limited (“Plugr,” “we,” “our,” or “us”) is committed to protecting your
-            personal information. This Privacy Policy explains how we collect, use, share, and safeguard
-            your data when you use the Plugr platform — including our website at{' '}
-            <strong className="text-midnight font-semibold">getplugr.com</strong>, mobile applications, and
-            WhatsApp-based services. By accessing or using Plugr, you agree to the practices described in
-            this policy.
+            Plugr Technologies Limited (&ldquo;Plugr,&rdquo; &ldquo;we,&rdquo; &ldquo;our,&rdquo; or
+            &ldquo;us&rdquo;) is committed to protecting your personal information. This Privacy Policy
+            explains how we collect, use, share, and safeguard your data when you use the Plugr platform —
+            including our website at <strong className="text-midnight font-semibold">getplugr.com</strong>,
+            mobile applications, and WhatsApp-based services. By accessing or using Plugr, you agree to the
+            practices described in this policy.
           </p>
           <a
             href="/Plugr_Privacy_Policy.pdf"
@@ -99,7 +89,7 @@ export default function PrivacyPolicyPage() {
             <BulletList items={[
               <><strong className="text-midnight font-semibold">NIMC:</strong> To verify your NIN during onboarding.</>,
               <><strong className="text-midnight font-semibold">Meta Platforms:</strong> When you interact with us via WhatsApp Business API.</>,
-              <><strong className="text-midnight font-semibold">Payment Processors:</strong> Transaction status and confirmation data (we do not store full card details).</>,
+              <><strong className="text-midnight font-semibold">Alatpay:</strong> Transaction status and confirmation data (we do not store full card details).</>,
             ]} />
           </SubSection>
 
@@ -138,7 +128,11 @@ export default function PrivacyPolicyPage() {
             <><strong className="text-midnight font-semibold">Contractual Necessity:</strong> Processing required to provide the services you have requested.</>,
             <><strong className="text-midnight font-semibold">Legitimate Interests:</strong> Processing necessary for fraud prevention, platform security, and service improvement.</>,
             <><strong className="text-midnight font-semibold">Legal Obligation:</strong> Processing required to comply with applicable Nigerian laws.</>,
-            <><strong className="text-midnight font-semibold">Consent:</strong> Processing based on your explicit consent, which you may withdraw at any time.</>,
+            <><strong className="text-midnight font-semibold">Consent:</strong> Processing based on your explicit consent, which you may withdraw at any time. See our{' '}
+              <Link href="/consent" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+                Data Consent &amp; Processing Agreement
+              </Link>{' '}
+              for the itemized record of what you&rsquo;ve agreed to.</>,
           ]} />
         </Section>
 
@@ -155,7 +149,7 @@ export default function PrivacyPolicyPage() {
               <><strong className="text-midnight font-semibold">Cloud Infrastructure:</strong> Render (hosting), Neon (database), Upstash (caching).</>,
               <><strong className="text-midnight font-semibold">AI Services:</strong> Google Gemini for conversational AI features.</>,
               <><strong className="text-midnight font-semibold">Identity Verification:</strong> NIMC-accredited NIN verification providers.</>,
-              <><strong className="text-midnight font-semibold">Payment Processing:</strong> Paystack for secure payment handling.</>,
+              <><strong className="text-midnight font-semibold">Payment Processing:</strong> Alatpay for secure payment handling. Plugr may change its payment processing partner from time to time; the current partner is always disclosed here.</>,
               <><strong className="text-midnight font-semibold">Messaging:</strong> Meta Platforms for WhatsApp Business API services.</>,
             ]} />
           </SubSection>
@@ -231,7 +225,7 @@ export default function PrivacyPolicyPage() {
           ]} />
           <p className="text-sm text-slate mt-4">
             Plugr is not responsible for the privacy practices of third-party platforms. We encourage you
-            to review the privacy policies of Meta, Paystack, and other service providers you interact with.
+            to review the privacy policies of Meta, Alatpay, and other service providers you interact with.
           </p>
         </Section>
 
@@ -306,49 +300,5 @@ export default function PrivacyPolicyPage() {
 
       <SiteFooter />
     </main>
-  );
-}
-
-// ── COMPONENTS ────────────────────────────────────────────────────────────────
-
-function Section({ number, title, children }: { number: string; title: string; children: ReactNode }) {
-  return (
-    <section className="mb-12 border-t border-midnight/[0.08] pt-8">
-      <div className="flex items-baseline gap-3 mb-5">
-        <span className="font-display text-lg text-gold tnum">{number.padStart(2, '0')}</span>
-        <h2 className="font-display text-[1.6rem] leading-tight text-midnight">{title}</h2>
-      </div>
-      <div className="space-y-4">{children}</div>
-    </section>
-  );
-}
-
-function SubSection({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="mb-4">
-      <h3 className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-3">{title}</h3>
-      <div className="space-y-2">{children}</div>
-    </div>
-  );
-}
-
-function BulletList({ items }: { items: ReactNode[] }) {
-  return (
-    <ul className="space-y-2.5 mt-2">
-      {items.map((item, i) => (
-        <li key={i} className="flex gap-3 text-sm leading-relaxed text-slate">
-          <span className="mt-2 h-1.5 w-1.5 rounded-full bg-gold shrink-0" />
-          <span>{item}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function Note({ children }: { children: ReactNode }) {
-  return (
-    <div className="rounded-2xl bg-gold/[0.08] border border-gold/20 p-4 mt-4">
-      <p className="text-sm font-medium leading-relaxed text-midnight">{children}</p>
-    </div>
   );
 }
