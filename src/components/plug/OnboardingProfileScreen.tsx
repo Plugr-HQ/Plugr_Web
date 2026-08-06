@@ -323,7 +323,7 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
                 onClick={() => setTrade(t.value)}
                 className={cn(
                   'w-full flex items-center gap-4 rounded-[22px] border bg-white p-4 text-left transition-colors',
-                  active ? 'border-gold' : 'border-midnight/[0.06] hover:border-midnight/20'
+                  active ? 'border-gold' : 'border-midnight/6 hover:border-midnight/20'
                 )}
               >
                 <span
