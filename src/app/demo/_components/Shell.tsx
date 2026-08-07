@@ -41,11 +41,11 @@ export function Shell({
 
   return (
     <main className="min-h-screen bg-bone text-midnight font-body antialiased flex justify-center">
-      <div className="relative w-full max-w-[440px] min-h-screen flex flex-col">
+      <div className="relative w-full max-w-110 min-h-screen flex flex-col">
         <div className="flex-1 px-5 pt-6 pb-32">
           {(back || onBack || mark || title || eyebrow) && (
             <header className="mb-7">
-              <div className="flex items-center justify-between mb-6 min-h-[22px]">
+              <div className="flex items-center justify-between mb-6 min-h-5.5">
                 {back || onBack ? (
                   <button
                     onClick={goBack}
@@ -56,7 +56,7 @@ export function Shell({
                 ) : (
                   <span />
                 )}
-                {mark && <PlugrMark className="w-[18px] h-[18px] text-midnight/75" />}
+                {mark && <PlugrMark className="w-4.5 h-4.5 text-midnight/75" />}
               </div>
 
               {eyebrow && (
@@ -76,8 +76,8 @@ export function Shell({
 
         {footer && (
           <div className="sticky bottom-0 z-20">
-            <div className="pointer-events-none absolute -top-8 inset-x-0 h-8 bg-gradient-to-t from-bone to-transparent" />
-            <div className="relative bg-bone/92 backdrop-blur px-5 pb-6 pt-3 border-t border-midnight/[0.06]">{footer}</div>
+            <div className="pointer-events-none absolute -top-8 inset-x-0 h-8 bg-linear-to-t from-bone to-transparent" />
+            <div className="relative bg-bone/92 backdrop-blur px-5 pb-6 pt-3 border-t border-midnight/6">{footer}</div>
           </div>
         )}
       </div>
