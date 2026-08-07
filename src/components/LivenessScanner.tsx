@@ -121,7 +121,7 @@ export default function LivenessScanner({ onSuccess }: LivenessScannerProps) {
         {cameraState === 'simulated' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 text-slate-400 overflow-hidden">
             {/* Ambient tech styling backdrops for the simulation mode */}
-            <div className="absolute inset-0 bg-[radial-gradient(#EB9E27_1px,transparent_1px)] [background-size:16px_16px] opacity-15" />
+            <div className="absolute inset-0 bg-[radial-gradient(#EB9E27_1px,transparent_1px)] bg-size:[16px_16px] opacity-15" />
             
             {/* Simulated target silhouette */}
             <div className="relative w-36 h-36 border-2 border-slate-700 rounded-full flex items-center justify-center opacity-60">
@@ -156,14 +156,14 @@ export default function LivenessScanner({ onSuccess }: LivenessScannerProps) {
           <>
             {/* Standard laser scanning horizontal bar */}
             <div 
-              className="absolute left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#EB9E27] to-transparent shadow-[0_0_12px_#EB9E27] z-20"
+              className="absolute left-0 w-full h-1 bg-linear-to-r from-transparent via-[#EB9E27] to-transparent shadow-[0_0_12px_#EB9E27] z-20"
               style={{
                 top: `${progress}%`,
                 transition: 'top 0.1s linear'
               }}
             />
             {/* Standard radar display sweep */}
-            <div className="absolute inset-0 border-[10px] border-solid border-[#EB9E27]/10 animate-pulse rounded-full" />
+            <div className="absolute inset-0 border-10px border-solid border-[#EB9E27]/10 animate-pulse rounded-full" />
           </>
         )}
 
@@ -186,7 +186,7 @@ export default function LivenessScanner({ onSuccess }: LivenessScannerProps) {
         {scanStatus === 'success' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 z-20 animate-fade-in">
             <div className="w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-lg animate-bounce">
-              <Check className="h-8 w-8 stroke-[3]" />
+              <Check className="h-8 w-8 stroke-3" />
             </div>
             <span className="font-display font-semibold text-white mt-4 tracking-wide text-sm">Face Matched!</span>
           </div>

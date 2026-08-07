@@ -79,7 +79,7 @@ function PendingVerifications() {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {[1, 2].map((i) => (
-          <div key={i} className={cn('rounded-[22px] border border-midnight/[0.06] bg-white p-6 demo-card-shadow demo-rise', i === 2 && 'demo-rise-1')}>
+          <div key={i} className={cn('rounded-[22px] border border-midnight/6 bg-white p-6 demo-card-shadow demo-rise', i === 2 && 'demo-rise-1')}>
             <div className="mb-4 flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <Avatar name="David Adeosun" tone="midnight" />
@@ -92,11 +92,11 @@ function PendingVerifications() {
             </div>
 
             <div className="mb-6 space-y-2">
-              <div className="flex items-center justify-between border-b border-midnight/[0.06] py-2 text-xs">
+              <div className="flex items-center justify-between border-b border-midnight/6 py-2 text-xs">
                 <span className="text-slate">NIN Status</span>
                 <span className="flex items-center gap-1 font-bold text-emerald-600"><Check className="h-3 w-3" /> MATCHED</span>
               </div>
-              <div className="flex items-center justify-between border-b border-midnight/[0.06] py-2 text-xs">
+              <div className="flex items-center justify-between border-b border-midnight/6 py-2 text-xs">
                 <span className="text-slate">Liveness Score</span>
                 <span className="font-bold text-emerald-600">98.4%</span>
               </div>

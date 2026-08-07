@@ -1,12 +1,12 @@
 // src/app/ad-minn/_components/DispatchQueue.tsx
 // Dispatch Queue — jobs sitting in SEARCHING_PLUG (the state jobs auto-advance to on creation).
-// The admin assigns a plug in the job's category. Styled on the /app design system via admin-ui.
+// The admin assigns a plug in the job's category or deletes unassigned requests.
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Star, BadgeCheck, Briefcase, MapPin } from 'lucide-react';
-import { authHeaders, clearToken } from '@/src/lib/api';
+import { Loader2, Star, BadgeCheck, Briefcase, MapPin, Trash2 } from 'lucide-react';
+import { authHeaders } from '@/src/lib/api';
 import { apiFetch } from '@/src/lib/api-client';
 import { cn } from '@/src/lib/utils';
 import { Money } from '@/src/app/demo/_components/ui';
@@ -45,6 +45,10 @@ export function DispatchQueue() {
   const [hasNext, setHasNext] = useState(false);
   const [assignJob, setAssignJob] = useState<JobRow | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+
+  // Deletion states
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const adminFetch = useCallback(
     async (input: string, init?: RequestInit): Promise<any> => {
@@ -96,6 +100,25 @@ export function DispatchQueue() {
     setTimeout(() => setToast(null), 4000);
   }, []);
 
+  const handleDeleteJob = async (jobId: string) => {
+    setDeletingId(jobId);
+    try {
+      await adminFetch(`/api/admin/jobs/${jobId}`, {
+        method: 'DELETE',
+      });
+      setJobs((prev) => prev.filter((j) => j.id !== jobId));
+      setToast('Job deleted successfully.');
+      setConfirmDeleteId(null);
+      setTimeout(() => setToast(null), 4000);
+    } catch (e: any) {
+      if (e?.message === 'Session expired') return;
+      setToast(e?.message || 'Failed to delete job.');
+      setTimeout(() => setToast(null), 4000);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {toast && <Toast>{toast}</Toast>}
@@ -133,15 +156,46 @@ export function DispatchQueue() {
                 <td className={cellClass}>
                   <span className="flex items-center gap-1.5 text-sm text-slate">
                     <MapPin className="h-3.5 w-3.5 shrink-0 text-slate/50" />
-                    <span className="line-clamp-1 max-w-[13rem]">{job.address ?? '—'}</span>
+                    <span className="line-clamp-1 max-w-52">{job.address ?? '—'}</span>
                   </span>
                 </td>
                 <td className={cellClass}>{job.escrowAmount == null ? <span className="text-sm text-slate">—</span> : <Money amount={job.escrowAmount} size="sm" />}</td>
                 <td className={cn(cellClass, 'whitespace-nowrap text-sm text-slate')}>{formatDate(job.createdAt)}</td>
                 <td className={cn(cellClass, 'text-right')}>
-                  <PillButton variant="primary" className="px-4 py-2 text-xs" onClick={() => setAssignJob(job)}>
-                    Assign plug
-                  </PillButton>
+                  <div className="flex items-center justify-end gap-2">
+                    {confirmDeleteId === job.id ? (
+                      <div className="flex items-center gap-1.5 rounded-full bg-red-50 p-1 pl-3">
+                        <span className="text-xs font-bold text-red-600">Delete job?</span>
+                        <button
+                          disabled={deletingId === job.id}
+                          onClick={() => handleDeleteJob(job.id)}
+                          className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-bold text-white transition hover:bg-red-700 disabled:opacity-50"
+                        >
+                          {deletingId === job.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Yes'}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="rounded-full bg-slate/10 px-2.5 py-1 text-xs font-bold text-midnight hover:bg-slate/20"
+                        >
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          title="Delete Job"
+                          onClick={() => setConfirmDeleteId(job.id)}
+                          className="rounded-full p-2 text-red-500/70 transition-colors hover:bg-red-50 hover:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                        <PillButton variant="primary" className="px-4 py-2 text-xs" onClick={() => setAssignJob(job)}>
+                          Assign plug
+                        </PillButton>
+                      </>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))
@@ -165,10 +219,10 @@ function AssignModal({
   onAssigned,
 }: {
   job: JobRow;
-  adminFetch: (input: string, init?: RequestInit) => Promise<Response>;
+  adminFetch: (input: string, init?: RequestInit) => Promise<any>; // <-- Change Promise<Response> to Promise<any>
   onClose: () => void;
   onAssigned: (jobId: string, plugName: string) => void;
-}) {
+}){
   const [plugs, setPlugs] = useState<PlugRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
