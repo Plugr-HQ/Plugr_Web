@@ -1,12 +1,9 @@
 // src/app/api/jobs/route.ts
-// GET  — list recent jobs (optionally ?status=paid_escrow,accepted), for the Plug view.
-// POST — create a job (Screen: Book). Inserts at status 'requested'; the returned id becomes
-// the ALATPay orderId so the payment can be correlated back.
-//
-// ?source=core targets the real product tables; anything else stays on the hack_ demo tables.
-
 import { NextResponse } from 'next/server';
 import { getRepo, resolveSource } from '@/src/lib/repo';
+
+// Your WhatsApp bot phone number in international format without '+' or spaces (e.g. 2349000000000)
+const WA_BOT_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_BOT_NUMBER || '2349000000000';
 
 export async function GET(request: Request) {
   const repo = getRepo(resolveSource(request));
@@ -41,6 +38,9 @@ export async function POST(request: Request) {
   const { plugId, clientName, jobDescription } = body;
   const amount = Number(body.amount);
 
+  // Sanitize phone number (strip whitespace like "+234 906 ...")
+  const clientPhone = body.clientPhone ? body.clientPhone.replace(/\s+/g, '') : null;
+
   if (!plugId || !clientName || !Number.isFinite(amount) || amount <= 0) {
     return NextResponse.json(
       { error: 'plugId, clientName and a positive amount are required' },
@@ -52,19 +52,28 @@ export async function POST(request: Request) {
     const job = await repo.createJob({
       plugId,
       clientName,
-      clientPhone: body.clientPhone ?? null,
+      clientPhone,
       jobDescription: jobDescription ?? null,
       amount,
     });
-    return NextResponse.json({ job }, { status: 201 });
+
+    // Construct pre-filled WhatsApp bot message
+    const waMessage = `Hi! I'm ${clientName}.\nI want to confirm my booking (Ref: ${job.id.slice(-6)}):\n• Task: ${jobDescription || 'Service request'}\n• Amount: ₦${amount.toLocaleString()}`;
+    const whatsappUrl = `https://wa.me/${WA_BOT_NUMBER}?text=${encodeURIComponent(waMessage)}`;
+
+    return NextResponse.json({ job, whatsappUrl }, { status: 201 });
   } catch (e: any) {
     console.error('create job failed', e);
-    // The core backend rejects a booking with no phone (User.phone is NOT NULL UNIQUE) —
-    // surface that as a 400 rather than a blanket 500.
+
     const message = String(e?.message ?? '');
     if (message.includes('clientPhone is required') || message.includes('plug not found')) {
       return NextResponse.json({ error: message }, { status: 400 });
     }
-    return NextResponse.json({ error: 'could not create job' }, { status: 500 });
+
+    // Surface actual error message for debugging
+    return NextResponse.json(
+      { error: e?.message || 'could not create job' },
+      { status: 500 }
+    );
   }
 }

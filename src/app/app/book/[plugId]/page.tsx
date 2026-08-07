@@ -1,5 +1,5 @@
 // src/app/app/book/[plugId]/page.tsx
-// Client books a job, then continues to escrow payment.
+// Client books a job, then continues to escrow payment or WhatsApp onboarding.
 
 'use client';
 
@@ -34,13 +34,31 @@ export default function AppBookPage() {
     setSubmitting(true);
     try {
       const { name, phone } = getDemoIdentity();
-      const { job } = await jsonFetch('/api/jobs?source=core', {
+      const res = await jsonFetch('/api/jobs?source=core', {
         method: 'POST',
-        body: JSON.stringify({ plugId, clientName: name || 'Client', clientPhone: phone, jobDescription: description.trim(), amount: amt }),
+        body: JSON.stringify({
+          plugId,
+          clientName: name || 'Client',
+          clientPhone: phone,
+          jobDescription: description.trim(),
+          amount: amt,
+        }),
       });
-      router.push(`/app/pay/${job.id}`);
+
+      // If backend generated a WhatsApp deep link, hand off the user to WhatsApp
+      if (res.whatsappUrl) {
+        window.location.href = res.whatsappUrl;
+        return;
+      }
+
+      // Fallback to web payment flow if no whatsappUrl is provided
+      if (res.job?.id) {
+        router.push(`/app/pay/${res.job.id}`);
+      } else {
+        throw new Error('Could not process job booking');
+      }
     } catch (e: any) {
-      setError(e.message);
+      setError(e.message || 'Failed to create job');
       setSubmitting(false);
     }
   }
