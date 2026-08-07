@@ -1,12 +1,19 @@
 // src/components/plug/OnboardingProfileScreen.tsx
 // PLG-ON-01 — Plug Profile Setup.
-// Five steps: name -> phone & WhatsApp OTP -> trade -> location -> photo.
+// Six steps: name -> consent (optional) -> phone & WhatsApp OTP -> trade -> location -> photo.
+//
+// IMPORTANT: the consent step below does NOT block signup — a Plug can continue without
+// ticking it. That means consentAgreed may be false by the time this draft reaches
+// /onboarding/verify. Identity verification submits a NIN, which is sensitive data — the
+// verify screen (or its API route) MUST check consentAgreed (or re-prompt) before accepting
+// that submission. Do not treat "made it through onboarding" as implied consent.
 
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Zap, Droplet, Hammer, Camera, Check, MapPin, Phone, MessageSquare, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowRight, Zap, Droplet, Hammer, Camera, Check, MapPin, Phone, MessageSquare, RefreshCw, ShieldCheck, ExternalLink } from 'lucide-react';
 import { Shell } from '@/src/app/demo/_components/Shell';
 import { Label, TextInput, GoldButton } from '@/src/app/demo/_components/ui';
 import { cn } from '@/src/lib/utils';
@@ -26,6 +33,10 @@ const TRADES: { value: PlugTrade; label: string; icon: React.ReactNode; blurb: s
 ];
 
 const MIN_PX = 400;
+
+// Bump this whenever the consent copy on /consent changes — it's what gets stamped onto
+// the draft (and eventually the ConsentRecord rows) so you can tell which version a Plug agreed to.
+const CONSENT_DOC_VERSION = '2026-08-06';
 
 function fileToDataUrl(file: File): Promise<{ url: string; tooSmall: boolean }> {
   return new Promise((resolve, reject) => {
@@ -66,9 +77,12 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
   const router = useRouter();
   const [step, setStep] = useState(0);
 
-  // Step 1 - Name
+  // Step 0 - Name
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+
+  // Step 1 - Consent
+  const [consentAgreed, setConsentAgreed] = useState(false);
 
   // Step 2 - Phone & OTP
   const [phone, setPhoneInput] = useState('');
@@ -98,6 +112,7 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
     const existingPhone = getPlugPhone() || d.phone;
     if (d.firstName) setFirstName(d.firstName);
     if (d.lastName) setLastName(d.lastName);
+    if (d.consentAgreed) setConsentAgreed(true);
     if (existingPhone) {
       setPhoneInput(existingPhone);
       setOtpVerified(true); // if returning with saved draft phone
@@ -107,7 +122,7 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
     if (typeof d.latitude === 'number') setLatitude(d.latitude);
     if (typeof d.longitude === 'number') setLongitude(d.longitude);
     if (d.photo) setPhoto(d.photo);
-    if (typeof d.step === 'number') setStep(Math.min(d.step, 4));
+    if (typeof d.step === 'number') setStep(Math.min(d.step, 5));
   }, []);
 
   const cleanPhone = formatNigerianPhone(phone);
@@ -117,10 +132,12 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
     step === 0
       ? firstName.trim().length > 1 && lastName.trim().length > 1
       : step === 1
-      ? otpVerified
+      ? true // consent is optional at signup — see IMPORTANT note above the component
       : step === 2
-      ? !!trade
+      ? otpVerified
       : step === 3
+      ? !!trade
+      : step === 4
       ? !!latitude && !!longitude
       : !!photo;
 
@@ -151,22 +168,36 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
     if (otp.length === 6) {
       setOtpVerified(true);
       setVerifyingOtp(false);
-      savePlugDraft({ phone: cleanPhone, step: 2 });
-      setStep(2); // Auto-advance to Trade
+      savePlugDraft({ phone: cleanPhone, step: 3 });
+      setStep(3); // Auto-advance to Trade
     } else {
       setVerifyingOtp(false);
       setOtpError('Invalid verification code. Please check WhatsApp and try again.');
     }
   }
 
+  function handleConsentToggle(checked: boolean) {
+    setConsentAgreed(checked);
+    // Ticking this box stands in for every item on /consent (account creation, identity
+    // verification, data sharing, AND marketing) — see note above the component about
+    // splitting marketing back out into its own, genuinely-optional toggle if you want
+    // that distinction preserved for Plugs.
+    savePlugDraft({
+      consentAgreed: checked,
+      consentDocVersion: checked ? CONSENT_DOC_VERSION : undefined,
+      consentAt: checked ? new Date().toISOString() : undefined,
+    });
+  }
+
   function next() {
     if (!canContinue) return;
     if (step === 0) savePlugDraft({ firstName: firstName.trim(), lastName: lastName.trim(), step: 1 });
-    if (step === 1) savePlugDraft({ phone: cleanPhone, step: 2 });
-    if (step === 2) savePlugDraft({ trade: trade as PlugTrade, step: 3 });
-    if (step === 3) savePlugDraft({ address, latitude, longitude, step: 4 });
-    if (step === 4) {
-      savePlugDraft({ photo, step: 5 });
+    if (step === 1) savePlugDraft({ consentAgreed: true, consentDocVersion: CONSENT_DOC_VERSION, consentAt: new Date().toISOString(), step: 2 });
+    if (step === 2) savePlugDraft({ phone: cleanPhone, step: 3 });
+    if (step === 3) savePlugDraft({ trade: trade as PlugTrade, step: 4 });
+    if (step === 4) savePlugDraft({ address, latitude, longitude, step: 5 });
+    if (step === 5) {
+      savePlugDraft({ photo, step: 6 });
       router.push(`${base}/onboarding/verify`);
       return;
     }
@@ -194,10 +225,12 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
         step === 0
           ? 'What’s your name?'
           : step === 1
-          ? 'What’s your phone number?'
+          ? 'Before we continue'
           : step === 2
-          ? 'What do you do?'
+          ? 'What’s your phone number?'
           : step === 3
+          ? 'What do you do?'
+          : step === 4
           ? 'Where are you based?'
           : 'Add your photo'
       }
@@ -205,10 +238,12 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
         step === 0
           ? 'This is the name clients will see.'
           : step === 1
-          ? 'We’ll send a WhatsApp message to verify your phone.'
+          ? 'Optional for now — you’ll need to agree before we can verify your identity.'
           : step === 2
-          ? 'Pick the trade you want jobs for.'
+          ? 'We’ll send a WhatsApp message to verify your phone.'
           : step === 3
+          ? 'Pick the trade you want jobs for.'
+          : step === 4
           ? 'Clients match with Plugs nearby.'
           : 'Clients trust a face. This is the front of your identity.'
       }
@@ -216,13 +251,13 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
       onBack={step > 0 ? () => setStep((s) => s - 1) : undefined}
       footer={
         <GoldButton onClick={next} disabled={!canContinue}>
-          {step === 4 ? 'Continue to verification' : 'Continue'} <ArrowRight className="w-4 h-4" />
+          {step === 5 ? 'Continue to verification' : 'Continue'} <ArrowRight className="w-4 h-4" />
         </GoldButton>
       }
     >
-      {/* Progress — 5 steps */}
-      <div className="flex gap-1.5 mb-8" aria-label={`Step ${step + 1} of 5`}>
-        {[0, 1, 2, 3, 4].map((i) => (
+      {/* Progress — 6 steps */}
+      <div className="flex gap-1.5 mb-8" aria-label={`Step ${step + 1} of 6`}>
+        {[0, 1, 2, 3, 4, 5].map((i) => (
           <span
             key={i}
             className={cn('h-1.5 flex-1 rounded-pill transition-colors', i <= step ? 'bg-gold' : 'bg-midnight/10')}
@@ -244,8 +279,66 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
         </div>
       )}
 
-      {/* Step 2 — Phone & WhatsApp OTP */}
+      {/* Step 2 — Consent */}
       {step === 1 && (
+        <div className="space-y-4 demo-rise">
+          <div className="rounded-[22px] border border-midnight/10 bg-white p-5">
+            <div className="flex items-start gap-3 mb-4">
+              <span className="grid place-items-center h-10 w-10 rounded-2xl bg-gold/15 shrink-0">
+                <ShieldCheck className="w-5 h-5 text-gold" />
+              </span>
+              <p className="text-sm leading-relaxed text-slate">
+                To list you as a verified Plug, we&rsquo;ll eventually need your consent to verify your
+                identity (NIN), match you with Clients, and process your data as described in our{' '}
+                <Link href="/consent" target="_blank" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+                  Data Consent &amp; Processing Agreement
+                </Link>
+                ,{' '}
+                <Link href="/privacy" target="_blank" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+                  Privacy Policy
+                </Link>
+                , and{' '}
+                <Link href="/terms" target="_blank" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+                  Terms of Service
+                </Link>
+                .
+              </p>
+            </div>
+
+            <label
+              htmlFor="onboarding-consent"
+              className="flex items-start gap-3 rounded-2xl border border-midnight/10 bg-bone/60 p-4 cursor-pointer hover:border-gold/40 transition-colors"
+            >
+              <input
+                id="onboarding-consent"
+                type="checkbox"
+                checked={consentAgreed}
+                onChange={(e) => handleConsentToggle(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-midnight/30 text-gold focus:ring-gold"
+              />
+              <span className="text-sm font-medium text-midnight">
+                I agree to Plugr verifying my identity and processing my data as described above.
+              </span>
+            </label>
+
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <Link
+                href="/consent"
+                target="_blank"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate hover:text-gold transition-colors"
+              >
+                Review the full consent form <ExternalLink className="w-3 h-3" />
+              </Link>
+              {!consentAgreed && (
+                <span className="text-xs text-slate/70">You can skip this and agree later</span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3 — Phone & WhatsApp OTP */}
+      {step === 2 && (
         <div className="space-y-5 demo-rise">
           <div>
             <Label className="mb-2">WhatsApp Phone Number</Label>
@@ -310,8 +403,8 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
         </div>
       )}
 
-      {/* Step 3 — Trade */}
-      {step === 2 && (
+      {/* Step 4 — Trade */}
+      {step === 3 && (
         <div className="space-y-3 demo-rise" role="radiogroup" aria-label="Trade">
           {TRADES.map((t) => {
             const active = trade === t.value;
@@ -352,8 +445,8 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
         </div>
       )}
 
-      {/* Step 4 — Location */}
-      {step === 3 && (
+      {/* Step 5 — Location */}
+      {step === 4 && (
         <div className="space-y-4 demo-rise">
           <LocationInput
             onLocationSelect={(loc) => {
@@ -377,8 +470,8 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
         </div>
       )}
 
-      {/* Step 5 — Photo */}
-      {step === 4 && (
+      {/* Step 6 — Photo */}
+      {step === 5 && (
         <div className="demo-rise flex flex-col items-center">
           <button
             onClick={() => fileRef.current?.click()}

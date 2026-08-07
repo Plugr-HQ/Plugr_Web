@@ -25,6 +25,11 @@ export type PlugDraft = {
   nin?: string;
   liveness?: boolean;
   step?: number;
+  // Consent — set when the Plug ticks the box in OnboardingProfileScreen (optional there)
+  // or the consent gate in OnboardingVerifyScreen (required there, before NIN entry).
+  consentAgreed?: boolean;
+  consentDocVersion?: string;
+  consentAt?: string; // ISO timestamp
 }; 
 
 /* ------------------------------------------------------- Plug ID & Phone Session */

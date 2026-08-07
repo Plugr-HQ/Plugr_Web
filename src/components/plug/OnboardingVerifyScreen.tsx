@@ -5,18 +5,14 @@
 // Each step explains itself before asking for data, per the spec's trust note. Three
 // failures on a step surfaces a "Contact support" CTA.
 //
-// On all-verified: creates the real Plug row (core tables on /app, hack_ tables on /demo),
-// then routes to PLG-01 (Pending Review).
-//
-// NOTE: no NIMC/liveness SDK is wired yet — any 11-digit NIN passes and the liveness capture
-// self-approves. Both `verifyNin` and `verifyLiveness` are the seams a provider drops into.
-
-// src/components/plug/OnboardingVerifyScreen.tsx
-// PLG-ON-02 — Identity Verification. NIN + liveness ONLY at launch (no BVN, no guarantor,
-// no skills assessment — those are post-launch tier upgrades prompted from PLG-02).
-//
-// Each step explains itself before asking for data, per the spec's trust note. Three
-// failures on a step surfaces a "Contact support" CTA.
+// CONSENT GATE: since consent is optional during PLG-ON-01 (OnboardingProfileScreen), a Plug
+// can arrive here with draft.consentAgreed === false. The NIN field is the actual point of
+// collection for sensitive data — verifyNin() is the seam a real NIMC/Prembly/Dojah provider
+// drops into — so we block that field entirely behind a consent gate rendered in place of
+// Step 0 until consent is confirmed. This is a client-side UX gate only; the register
+// endpoint (POST /api/plugs/register) must independently reject requests without a valid
+// consentAgreed/consentDocVersion/consentAt, since this check can be bypassed by calling
+// the API directly.
 //
 // On all-verified: creates the real Plug row (core tables on /app, hack_ tables on /demo),
 // then routes to PLG-01 (Pending Review).
@@ -28,7 +24,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, Check, Loader2, Camera, ScanFace, LifeBuoy } from 'lucide-react';
+import Link from 'next/link';
+import { ShieldCheck, Check, Loader2, Camera, ScanFace, LifeBuoy, ExternalLink } from 'lucide-react';
 import { Shell } from '@/src/app/demo/_components/Shell';
 import { Card, Label, TextInput, GoldButton } from '@/src/app/demo/_components/ui';
 import { jsonFetch } from '@/src/app/demo/_lib/demo';
@@ -44,6 +41,7 @@ import {getPlugDraft,
 import { withSource } from '@/src/lib/apiSource';
 
 const MAX_ATTEMPTS = 3;
+const CONSENT_DOC_VERSION = '2026-08-06';
 
 /** Seam for the NIN provider (NIMC / Prembly / Dojah). Any 11 digits pass for now. */
 async function verifyNin(nin: string): Promise<boolean> {
@@ -63,6 +61,11 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
   const router = useRouter();
   const [step, setStep] = useState<0 | 1>(0);
 
+  // Consent gate — resolved on mount from the draft. Starts `null` (not "unagreed") so we
+  // don't flash the gate open for the common case where consent was already given.
+  const [consentAgreed, setConsentAgreed] = useState<boolean | null>(null);
+  const [gateChecked, setGateChecked] = useState(false);
+
   // NIN
   const [nin, setNin] = useState('');
   const [masked, setMasked] = useState(false);
@@ -78,6 +81,20 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
 
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const d = getPlugDraft();
+    setConsentAgreed(!!d.consentAgreed);
+  }, []);
+
+  function agreeToConsent() {
+    savePlugDraft({
+      consentAgreed: true,
+      consentDocVersion: CONSENT_DOC_VERSION,
+      consentAt: new Date().toISOString(),
+    });
+    setConsentAgreed(true);
+  }
 
   const maskedNin = nin.length > 4 ? '•'.repeat(nin.length - 4) + nin.slice(-4) : nin;
   const display = masked ? maskedNin : nin;
@@ -112,11 +129,11 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
     }
   }, []);
 
-  // start the camera when the liveness step opens
+  // start the camera when the liveness step opens (only once consent is resolved & agreed)
   useEffect(() => {
-    if (step === 1 && liveState !== 'verified') startCamera();
+    if (consentAgreed && step === 1 && liveState !== 'verified') startCamera();
     else stopCamera();
-  }, [step, liveState, startCamera, stopCamera]);
+  }, [consentAgreed, step, liveState, startCamera, stopCamera]);
 
   function onNinChange(v: string) {
     setError(null);
@@ -131,7 +148,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
   }
 
   async function submitNin() {
-    if (nin.length !== 11 || ninState === 'verifying') return;
+    if (!consentAgreed || nin.length !== 11 || ninState === 'verifying') return;
     setNinState('verifying');
     setMasked(true);
     const ok = await verifyNin(nin);
@@ -187,6 +204,11 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
           address: d.address ,
           latitude: d.latitude ,
           longitude: d.longitude ,
+          // The register endpoint must independently verify these — see CONSENT GATE note
+          // at the top of this file. Do not treat their presence here as authoritative.
+          consentAgreed: d.consentAgreed ?? consentAgreed,
+          consentDocVersion: d.consentDocVersion ?? CONSENT_DOC_VERSION,
+          consentAt: d.consentAt,
         }),
       });
 
@@ -203,6 +225,78 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
 
   const ninLocked = ninTries >= MAX_ATTEMPTS;
   const liveLocked = liveTries >= MAX_ATTEMPTS;
+
+  // Consent not yet resolved from the draft — avoid flashing either state.
+  if (consentAgreed === null) {
+    return (
+      <Shell eyebrow="Become a Plug" title="One moment" subtitle="" back={`${base}/onboarding`} footer={null}>
+        <div className="flex justify-center py-16">
+          <Loader2 className="w-6 h-6 animate-spin text-gold" />
+        </div>
+      </Shell>
+    );
+  }
+
+  // Consent gate — replaces Step 0 entirely until agreed.
+  if (!consentAgreed) {
+    return (
+      <Shell
+        eyebrow="Become a Plug"
+        title="Before we verify you"
+        subtitle="We need your consent to check your NIN and process your data."
+        back={`${base}/onboarding`}
+        footer={
+          <GoldButton onClick={agreeToConsent} disabled={!gateChecked}>
+            I agree — continue
+          </GoldButton>
+        }
+      >
+        <div className="demo-rise rounded-[22px] border border-midnight/10 bg-white p-5">
+          <div className="flex items-start gap-3 mb-4">
+            <span className="grid place-items-center h-10 w-10 rounded-2xl bg-gold/15 shrink-0">
+              <ShieldCheck className="w-5 h-5 text-gold" />
+            </span>
+            <p className="text-sm leading-relaxed text-slate">
+              Verifying your identity means checking your NIN against the national register and
+              running a face-match liveness scan. This is covered by our{' '}
+              <Link href="/consent" target="_blank" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+                Data Consent &amp; Processing Agreement
+              </Link>{' '}
+              and{' '}
+              <Link href="/privacy" target="_blank" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+                Privacy Policy
+              </Link>
+              . We can&rsquo;t start verification without it.
+            </p>
+          </div>
+
+          <label
+            htmlFor="verify-consent"
+            className="flex items-start gap-3 rounded-2xl border border-midnight/10 bg-bone/60 p-4 cursor-pointer hover:border-gold/40 transition-colors"
+          >
+            <input
+              id="verify-consent"
+              type="checkbox"
+              checked={gateChecked}
+              onChange={(e) => setGateChecked(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-midnight/30 text-gold focus:ring-gold"
+            />
+            <span className="text-sm font-medium text-midnight">
+              I agree to Plugr verifying my identity and processing my data as described above.
+            </span>
+          </label>
+
+          <Link
+            href="/consent"
+            target="_blank"
+            className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-slate hover:text-gold transition-colors"
+          >
+            Review the full consent form <ExternalLink className="w-3 h-3" />
+          </Link>
+        </div>
+      </Shell>
+    );
+  }
 
   return (
     <Shell
