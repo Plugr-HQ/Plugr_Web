@@ -10,7 +10,7 @@ import { cn } from '@/src/lib/utils';
 
 // Public bot number (same convention as the job-create proxy). Client-side, so it must be a
 // NEXT_PUBLIC_ var to be readable in the browser.
-const WA_BOT_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_BOT_NUMBER || '2349000000000';
+const WA_BOT_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_BOT_NUMBER || '2349119253019';
 
 export function RequestPlugButton({
   plugId,

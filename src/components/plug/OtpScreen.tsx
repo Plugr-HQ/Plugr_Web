@@ -62,6 +62,14 @@ export function OtpScreen({ base }: { base: string }) {
       try {
         const e164 = `+234${getPlugPhone()}`;
         const { accessToken, refreshToken, user, isNewUser } = await api.auth.verifyOtp(e164, code);
+
+        // A client (or any non-Plug) number can't sign into the Plug app — routing them to
+        // /app/plug would 403 the dashboard ("Access Denied: Required Role is [PLUG, ADMIN]").
+        if (!isNewUser && user.role !== 'PLUG' && user.role !== 'ADMIN') {
+          fail('This number is registered as a client account, not a Plug. Use a different number to become a Plug.');
+          return;
+        }
+
         setToken(accessToken);
         if (typeof window !== 'undefined' && refreshToken) {
           localStorage.setItem('plugr_refresh_token', refreshToken);

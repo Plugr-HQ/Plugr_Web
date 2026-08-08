@@ -91,7 +91,11 @@ export default function AppLoginPage() {
         )}
       >
         <span className="flex items-center gap-2 px-4 border-r border-midnight/10 bg-bone/60 select-none">
-          <span aria-hidden className="text-base leading-none">🇳🇬</span>
+          <svg viewBox="0 0 6 3" preserveAspectRatio="none" aria-hidden className="h-3.5 w-6 shrink-0 rounded-[2px] border border-midnight/10">
+            <rect width="6" height="3" fill="#fff" />
+            <rect width="2" height="3" fill="#008751" />
+            <rect x="4" width="2" height="3" fill="#008751" />
+          </svg>
           <span className="font-body text-base font-bold text-midnight tnum">+234</span>
         </span>
 

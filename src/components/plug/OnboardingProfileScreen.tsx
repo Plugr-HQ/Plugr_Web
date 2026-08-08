@@ -169,10 +169,29 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
     setVerifyingOtp(true);
     setOtpError(null);
     try {
-      // verifyOnly — confirm the code without creating the account. The Plug account is
-      // created at the end of onboarding (POST /api/plugs/register), so we only prove
-      // ownership of the number here.
-      await api.auth.verifyOtp(cleanPhone, otp, true);
+      // verifyOnly — confirm the code AND find out whether this number is already registered,
+      // so a duplicate is caught here (step 2) instead of at the very end after NIN + liveness.
+      // The account is still created at the end via POST /api/plugs/register.
+      const res: any = await api.auth.verifyOtp(cleanPhone, otp, true);
+
+      if (res?.exists) {
+        // One role per number: a client (or admin) number can't be turned into a Plug.
+        if (res.role && res.role !== 'PLUG') {
+          setOtpError(
+            `This number is already registered as a ${String(res.role).toLowerCase()} account. ` +
+            `Use a different number to register as a Plug.`
+          );
+          return;
+        }
+        // A Plug who already finished onboarding — send them to sign in, not through signup again.
+        if (res.hasProfile) {
+          setOtpError('This number is already a Plug account. Taking you to sign in…');
+          setTimeout(() => router.replace(`${base}/auth/phone`), 1400);
+          return;
+        }
+        // Otherwise: a Plug mid-onboarding (no profile yet) — fine to continue; register completes it.
+      }
+
       setOtpVerified(true);
       savePlugDraft({ phone: cleanPhone, step: 3 });
       setStep(3); // Auto-advance to Trade
@@ -403,7 +422,7 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
                 disabled={otp.length !== 6 || verifyingOtp}
                 loading={verifyingOtp}
               >
-                {otpVerified ? 'Verified ✓' : 'Verify Code'}
+                {verifyingOtp ? 'Verifying…' : 'Verify'}
               </GoldButton>
             </div>
           )}

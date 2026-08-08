@@ -2,8 +2,8 @@
 import { NextResponse } from 'next/server';
 import { getRepo, resolveSource } from '@/src/lib/repo';
 
-// Your WhatsApp bot phone number in international format without '+' or spaces (e.g. 2349000000000)
-const WA_BOT_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_BOT_NUMBER || '2349000000000';
+// Your WhatsApp bot phone number in international format without '+' or spaces (e.g. 2349119253019)
+const WA_BOT_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_BOT_NUMBER || '2349119253019';
 
 export async function GET(request: Request) {
   const repo = getRepo(resolveSource(request));
