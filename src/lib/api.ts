@@ -80,11 +80,14 @@ export const api = {
       return res.json();
     },
     // Returns { accessToken, refreshToken, user: { id, phone, name, role, status }, isNewUser }.
-    verifyOtp: async (phone: string, otp: string) => {
+    // With verifyOnly: true the backend just confirms the code (no account created, no tokens)
+    // and returns { verified: true } — used by Plug onboarding, where the account is created
+    // at the end via POST /auth/register.
+    verifyOtp: async (phone: string, otp: string, verifyOnly?: boolean) => {
       const res = await fetch(`${API_URL}/auth/otp/verify`, {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ phone, otp }),
+        body: JSON.stringify({ phone, otp, ...(verifyOnly ? { verifyOnly: true } : {}) }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({} as any));

@@ -17,6 +17,7 @@ import { ArrowRight, Zap, Droplet, Hammer, Camera, Check, MapPin, Phone, Message
 import { Shell } from '@/src/components/Shell';
 import { Label, TextInput, GoldButton } from '@/src/components/ui';
 import { cn } from '@/src/lib/utils';
+import { api } from '@/src/lib/api';
 import {
   getPlugDraft,
   savePlugDraft,
@@ -141,38 +142,44 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
       ? !!latitude && !!longitude
       : !!photo;
 
-  function handleSendWhatsAppOtp() {
-    if (!isValidPhone) return;
+  const [sendingOtp, setSendingOtp] = useState(false);
+
+  async function handleSendWhatsAppOtp() {
+    if (!isValidPhone || sendingOtp) return;
     setOtpError(null);
+    setSendingOtp(true);
     const formatted = formatNigerianPhone(phone);
     setPlugPhone(formatted);
     savePlugDraft({ phone: formatted });
-
-    // Official Plugr WhatsApp Verification Number / Deep Link
-    // In production, replace 2348000000000 with your actual WhatsApp Business number
-    const whatsappNum = process.env.WHATSAPP_NUMBER;
-    const message = encodeURIComponent(`Hello Plugr I am registering as a Plug, please send me my verification code for ${formatted}.`);
-    window.open(`https://wa.me/${whatsappNum}?text=${message}`, '_blank');
-
-    setOtpSent(true);
+    try {
+      // Real delivery: the backend generates the code and sends it over WhatsApp
+      // (approved Authentication template in production; sendText in sandbox).
+      await api.auth.requestOtp(formatted, 'PLUG');
+      setOtp('');
+      setOtpSent(true);
+    } catch (e: any) {
+      setOtpError(e?.message ?? 'Could not send the code. Check the number and try again.');
+    } finally {
+      setSendingOtp(false);
+    }
   }
 
   async function handleVerifyOtp() {
-    if (otp.length !== 6) return;
+    if (otp.length !== 6 || verifyingOtp) return;
     setVerifyingOtp(true);
     setOtpError(null);
-
-    // Seam: In demo mode, '123456' or any 6-digit code passes
-    await new Promise((r) => setTimeout(r, 800));
-
-    if (otp.length === 6) {
+    try {
+      // verifyOnly — confirm the code without creating the account. The Plug account is
+      // created at the end of onboarding (POST /api/plugs/register), so we only prove
+      // ownership of the number here.
+      await api.auth.verifyOtp(cleanPhone, otp, true);
       setOtpVerified(true);
-      setVerifyingOtp(false);
       savePlugDraft({ phone: cleanPhone, step: 3 });
       setStep(3); // Auto-advance to Trade
-    } else {
+    } catch (e: any) {
+      setOtpError(e?.message ?? 'Incorrect or expired code. Please try again.');
+    } finally {
       setVerifyingOtp(false);
-      setOtpError('Invalid verification code. Please check WhatsApp and try again.');
     }
   }
 
@@ -363,10 +370,10 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
           {!otpSent ? (
             <button
               onClick={handleSendWhatsAppOtp}
-              disabled={!isValidPhone}
+              disabled={!isValidPhone || sendingOtp}
               className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-sm transition-colors disabled:opacity-50 shadow-sm"
             >
-              <MessageSquare className="w-4 h-4 fill-white" /> Get Code on WhatsApp
+              <MessageSquare className="w-4 h-4 fill-white" /> {sendingOtp ? 'Sending…' : 'Get Code on WhatsApp'}
             </button>
           ) : (
             <div className="p-4 rounded-2xl border border-midnight/10 bg-white space-y-4">
