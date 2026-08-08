@@ -11,7 +11,7 @@
 import Link from 'next/link';
 import { User, Wrench, ArrowRight } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
-import { PlugrWordmark, Eyebrow } from '@/src/app/_shared/ui';
+import { PlugrWordmark, Eyebrow } from '@/src/components/ui';
 import { Splash, useSplash } from '@/src/components/Splash';
 import { usePlugEntryRedirect } from '@/src/app/app/_lib/entryRouting';
 
@@ -32,11 +32,11 @@ export default function AppRoleSelect() {
 
       <main className="min-h-screen bg-bone text-midnight font-body antialiased flex justify-center">
         <div className="w-full max-w-110 min-h-screen flex flex-col px-6 pt-14 pb-10">
-          <a href="/" className="demo-rise">
+          <a href="/" className="rise">
             <PlugrWordmark className="h-8 text-midnight" />
           </a>
 
-          <div className="mt-14 demo-rise demo-rise-1">
+          <div className="mt-14 rise rise-1">
             <Eyebrow>Get started</Eyebrow>
             <h1 className="mt-4 font-display text-[2.5rem] leading-[1.06] text-midnight">
               How do you want
@@ -50,21 +50,21 @@ export default function AppRoleSelect() {
               icon={<User className="w-6 h-6" />}
               title="Book a Plug"
               body="Hire a verified electrician, plumber, or furniture maker and pay safely into escrow."
-              className="demo-rise demo-rise-2"
+              className="rise rise-2"
             />
             <Tile
               href="/app/auth/phone"
               icon={<Wrench className="w-6 h-6" />}
               title="Become a Plug"
               body="Get verified, build your profile, and get paid for great work."
-              className="demo-rise demo-rise-3"
+              className="rise rise-3"
             />
             <p className="text-slate/70 text-center">
                Already have an account? <Link href="/app/auth/login" className="text-gold">Login</Link>
             </p>
           </div>
 
-          <p className="mt-auto pt-10 text-xs text-slate/70 text-center demo-rise demo-rise-4">
+          <p className="mt-auto pt-10 text-xs text-slate/70 text-center rise rise-4">
             Escrow payments powered by Alatpay.
           </p>
         </div>
@@ -89,7 +89,7 @@ function Tile({
     <Link
       href={href}
       className={cn(
-        'group flex items-center gap-4 rounded-[22px] bg-white border border-midnight/6 demo-card-shadow p-5 hover:border-gold/40 transition-all',
+        'group flex items-center gap-4 rounded-[22px] bg-white border border-midnight/6 card-shadow p-5 hover:border-gold/40 transition-all',
         className
       )}
     >

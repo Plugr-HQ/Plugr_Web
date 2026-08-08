@@ -6,9 +6,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Lock, Clock, Wallet as WalletIcon } from 'lucide-react';
-import { Shell } from '@/src/app/demo/_components/Shell';
-import { Card, Money, GoldButton } from '@/src/app/demo/_components/ui';
-import { jsonFetch, naira } from '@/src/app/demo/_lib/demo';
+import { Shell } from '@/src/components/Shell';
+import { Card, Money, GoldButton } from '@/src/components/ui';
+import { jsonFetch, naira } from '@/src/lib/net';
 
 export default function AppWallet() {
   const { plugId } = useParams<{ plugId: string }>();
@@ -43,7 +43,7 @@ export default function AppWallet() {
       </div>
 
       {locked > 0 && (
-        <div className="flex items-start gap-3 rounded-2xl bg-gold/[0.08] border border-gold/20 p-4 mb-6"><Clock className="w-5 h-5 text-gold shrink-0 mt-0.5" /><p className="text-[13px] text-midnight leading-relaxed">Locked earnings release to Available after the dispute window — <span className="font-bold">60s in this demo.</span></p></div>
+        <div className="flex items-start gap-3 rounded-2xl bg-gold/[0.08] border border-gold/20 p-4 mb-6"><Clock className="w-5 h-5 text-gold shrink-0 mt-0.5" /><p className="text-[13px] text-midnight leading-relaxed">Locked earnings release to Available after the dispute window — <span className="font-bold">60s during early access.</span></p></div>
       )}
 
       <div className="mb-8"><GoldButton onClick={() => router.push(`/app/withdraw/${plugId}`)} disabled={available <= 0}>Withdraw to bank</GoldButton></div>

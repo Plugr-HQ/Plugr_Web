@@ -7,8 +7,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Loader2, Bell, Inbox, Wallet, CheckCircle2, PlayCircle, Banknote, ArrowDownToLine } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
-import { Card } from '@/src/app/demo/_components/ui';
-import { jsonFetch } from '@/src/app/demo/_lib/demo';
+import { Card } from '@/src/components/ui';
+import { jsonFetch } from '@/src/lib/net';
 import { getPlugId, getNotifsSeenAt, markNotifsSeen } from '@/src/app/app/_lib/plugAuth';
 import { withSource } from '@/src/lib/apiSource';
 import { deriveNotifications, relativeTime, type PlugNotifKind } from '@/src/app/app/_lib/plugNotifications';
@@ -60,7 +60,7 @@ export function NotificationsScreen({ base }: { base: string }) {
           <Loader2 className="h-4 w-4 animate-spin" /> Loading…
         </div>
       ) : notifs.length === 0 ? (
-        <Card className="p-2 demo-rise">
+        <Card className="p-2 rise">
           <EmptyState
             icon={<Bell className="h-6 w-6" />}
             title="Nothing new"
@@ -76,8 +76,8 @@ export function NotificationsScreen({ base }: { base: string }) {
               <li key={n.id}>
                 <Card
                   className={cn(
-                    'flex items-start gap-3 p-4 demo-rise transition-colors',
-                    i < 4 && `demo-rise-${i}`,
+                    'flex items-start gap-3 p-4 rise transition-colors',
+                    i < 4 && `rise-${i}`,
                     unread && 'border-gold/40 bg-gold/[0.06]',
                   )}
                 >

@@ -7,9 +7,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Star, BadgeCheck, MapPin, Clock, Briefcase, Zap, ShieldCheck, Loader2, Quote, Share2 } from 'lucide-react';
-import { Shell } from '@/src/app/demo/_components/Shell';
-import { Card, Divider } from '@/src/app/demo/_components/ui';
-import { jsonFetch } from '@/src/app/demo/_lib/demo';
+import { Shell } from '@/src/components/Shell';
+import { Card, Divider } from '@/src/components/ui';
+import { jsonFetch } from '@/src/lib/net';
 import { buildProfile } from '../../_lib/profile';
 import { RequestPlugButton } from '../../_components/RequestPlugButton';
 import { DigitalId } from '../../_components/DigitalId';
@@ -34,7 +34,7 @@ export default function PlugProfilePage() {
   return (
     <Shell back="/app/browse" mark={false} footer={<RequestPlugButton plugId={plugId} />}>
       {/* Cover + identity */}
-      <div className="rounded-[24px] overflow-hidden border border-midnight/[0.06] demo-card-shadow bg-white">
+      <div className="rounded-[24px] overflow-hidden border border-midnight/[0.06] card-shadow bg-white">
         <div className="h-24 bg-gradient-to-br from-midnight to-deep-blue relative">
           <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #E8A020 0, transparent 40%)' }} />
           <button onClick={() => setShowId(true)} className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-pill bg-white/15 hover:bg-white/25 backdrop-blur text-white text-[12px] font-bold px-3 py-1.5 transition-colors">

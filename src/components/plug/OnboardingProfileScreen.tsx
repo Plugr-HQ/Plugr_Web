@@ -14,8 +14,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowRight, Zap, Droplet, Hammer, Camera, Check, MapPin, Phone, MessageSquare, RefreshCw, ShieldCheck, ExternalLink } from 'lucide-react';
-import { Shell } from '@/src/app/demo/_components/Shell';
-import { Label, TextInput, GoldButton } from '@/src/app/demo/_components/ui';
+import { Shell } from '@/src/components/Shell';
+import { Label, TextInput, GoldButton } from '@/src/components/ui';
 import { cn } from '@/src/lib/utils';
 import {
   getPlugDraft,
@@ -267,7 +267,7 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
 
       {/* Step 1 — Name */}
       {step === 0 && (
-        <div className="space-y-5 demo-rise">
+        <div className="space-y-5 rise">
           <div>
             <Label className="mb-2">First name</Label>
             <TextInput value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Emeka" autoFocus />
@@ -281,7 +281,7 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
 
       {/* Step 2 — Consent */}
       {step === 1 && (
-        <div className="space-y-4 demo-rise">
+        <div className="space-y-4 rise">
           <div className="rounded-[22px] border border-midnight/10 bg-white p-5">
             <div className="flex items-start gap-3 mb-4">
               <span className="grid place-items-center h-10 w-10 rounded-2xl bg-gold/15 shrink-0">
@@ -339,7 +339,7 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
 
       {/* Step 3 — Phone & WhatsApp OTP */}
       {step === 2 && (
-        <div className="space-y-5 demo-rise">
+        <div className="space-y-5 rise">
           <div>
             <Label className="mb-2">WhatsApp Phone Number</Label>
             <div className="relative">
@@ -405,7 +405,7 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
 
       {/* Step 4 — Trade */}
       {step === 3 && (
-        <div className="space-y-3 demo-rise" role="radiogroup" aria-label="Trade">
+        <div className="space-y-3 rise" role="radiogroup" aria-label="Trade">
           {TRADES.map((t) => {
             const active = trade === t.value;
             return (
@@ -447,7 +447,7 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
 
       {/* Step 5 — Location */}
       {step === 4 && (
-        <div className="space-y-4 demo-rise">
+        <div className="space-y-4 rise">
           <LocationInput
             onLocationSelect={(loc) => {
               setAddress(loc.address);
@@ -472,7 +472,7 @@ export function OnboardingProfileScreen({ base }: { base: string }) {
 
       {/* Step 6 — Photo */}
       {step === 5 && (
-        <div className="demo-rise flex flex-col items-center">
+        <div className="rise flex flex-col items-center">
           <button
             onClick={() => fileRef.current?.click()}
             className="group relative grid place-items-center h-40 w-40 rounded-full border-2 border-dashed border-midnight/15 bg-white overflow-hidden hover:border-gold transition-colors"

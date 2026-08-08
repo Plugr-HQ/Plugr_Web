@@ -15,8 +15,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Loader2, Clock, Briefcase, ArrowRight, ShieldCheck, Wallet as WalletIcon } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
-import { Card, Money } from '@/src/app/demo/_components/ui';
-import { jsonFetch } from '@/src/app/demo/_lib/demo';
+import { Card, Money } from '@/src/components/ui';
+import { jsonFetch } from '@/src/lib/net';
 import { apiFetch } from '@/src/lib/api-client';
 import { getPlugId, signOutPlug } from '@/src/app/app/_lib/plugAuth';
 import { PlugShell, BadgeChip, JobStatusChip, EmptyState, plugTier } from './PlugChrome';
@@ -36,7 +36,6 @@ export function DashboardScreen({ base }: { base: string }) {
   const router = useRouter();
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [approving, setApproving] = useState(false);
   const [left, setLeft] = useState<number | null>(null);
   const unlocked = useRef(false);
 
@@ -46,7 +45,7 @@ export function DashboardScreen({ base }: { base: string }) {
     if (!plugId) return;
     try {
       // apiFetch automatically handles token validation and redirects on 401
-      const body = await apiFetch(withSource(`/api/plugs/${plugId}/dashboard`, base), {}, { skipAuthRedirect: base === '/demo' });
+      const body = await apiFetch(withSource(`/api/plugs/${plugId}/dashboard`, base), {}, { skipAuthRedirect: false });
       setData(body);
       setLeft(body.lock?.seconds ?? null);
       setError(null);
@@ -84,7 +83,7 @@ export function DashboardScreen({ base }: { base: string }) {
     const jobId = data?.lock?.jobId;
     if (left === 0 && jobId && !unlocked.current) {
       unlocked.current = true;
-      apiFetch(withSource(`/api/jobs/${jobId}/unlock`, base), { method: 'POST' }, { skipAuthRedirect: base === '/demo' }).finally(load);
+      apiFetch(withSource(`/api/jobs/${jobId}/unlock`, base), { method: 'POST' }, { skipAuthRedirect: false }).finally(load);
     }
   }, [left, data?.lock?.jobId, load, base]);
 
@@ -111,28 +110,10 @@ export function DashboardScreen({ base }: { base: string }) {
   const locked = Number(plug.wallet_balance_locked);
   const counting = left !== null && left > 0;
 
-  async function simulateApproval() {
-    setApproving(true);
-    try {
-      // NOTE: verification is now the ADMIN-only /verification route on the backend. This
-      // plug-side "simulate approval" shortcut will 403 for a PLUG — it stays here only so the
-      // call targets the correct split endpoint, not the removed combined PATCH. Real approval
-      // belongs to the admin verifications UI (currently a mock). See the token/guards report.
-      await apiFetch(withSource(`/api/plugs/${plug.id}/verification`, base), {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ verified: true }),
-      }, { skipAuthRedirect: base === '/demo' });
-      await load();
-    } finally {
-      setApproving(false);
-    }
-  }
-
   return (
     <PlugShell base={base} plug={plug}>
       {/* Hero card -> PLG-02 */}
-      <Link href={`${base}/plug/profile`} className="block demo-rise">
+      <Link href={`${base}/plug/profile`} className="block rise">
         <div className="relative overflow-hidden rounded-[22px] bg-midnight p-5">
           <div className="flex items-center gap-4">
             {plug.photo_url ? (
@@ -156,7 +137,7 @@ export function DashboardScreen({ base }: { base: string }) {
 
       {/* Pending Review — features locked */}
       {pending && (
-        <Card className="mt-4 p-5 demo-rise demo-rise-1">
+        <Card className="mt-4 p-5 rise rise-1">
           <div className="flex items-start gap-3">
             <span className="grid place-items-center h-9 w-9 rounded-full bg-slate/15 shrink-0">
               <ShieldCheck className="w-5 h-5 text-slate" />
@@ -169,18 +150,11 @@ export function DashboardScreen({ base }: { base: string }) {
               </p>
             </div>
           </div>
-          <button
-            onClick={simulateApproval}
-            disabled={approving}
-            className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-pill border border-dashed border-gold/40 py-3 text-[13px] font-bold text-midnight hover:border-gold hover:bg-gold/5 disabled:opacity-50 transition-all"
-          >
-            {approving ? <><Loader2 className="w-4 h-4 animate-spin" /> Approving…</> : 'Demo: simulate ops approval'}
-          </button>
         </Card>
       )}
 
       {/* Earnings — most prominent after the hero */}
-      <div className="mt-4 grid grid-cols-2 gap-3 demo-rise demo-rise-2">
+      <div className="mt-4 grid grid-cols-2 gap-3 rise rise-2">
         <Card className="p-4">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-2">This week</p>
           <Money amount={pending ? 0 : earnings.week} size="md" />
@@ -192,7 +166,7 @@ export function DashboardScreen({ base }: { base: string }) {
       </div>
 
       {/* Wallet row -> PLG-03 */}
-      <Card className="mt-3 p-4 demo-rise demo-rise-3">
+      <Card className="mt-3 p-4 rise rise-3">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-1.5">
@@ -228,7 +202,7 @@ export function DashboardScreen({ base }: { base: string }) {
 
       {/* Active job */}
       {!pending && activeJob && (
-        <Link href={`${base}/plug/${activeJob.id}`} className="mt-6 block demo-rise demo-rise-4">
+        <Link href={`${base}/plug/${activeJob.id}`} className="mt-6 block rise rise-4">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-2.5">Active job</p>
           <Card className="p-4 hover:border-gold/40 transition-colors">
             <div className="flex items-center gap-3">
@@ -250,7 +224,7 @@ export function DashboardScreen({ base }: { base: string }) {
 
       {/* Recent jobs */}
       {!pending && (
-        <div className="mt-6 demo-rise demo-rise-4">
+        <div className="mt-6 rise rise-4">
           <div className="flex items-center justify-between mb-2.5">
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate">Recent jobs</p>
             {recentJobs.length > 0 && (

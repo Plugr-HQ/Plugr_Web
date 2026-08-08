@@ -66,7 +66,7 @@ export async function POST(
       orderId: job.id,
       description: job.job_description || `Plugr escrow for job ${job.id}`,
       customer: {
-        email: 'demo-client@getplugr.com',
+        email: 'noreply@getplugr.com',
         phone: job.client_phone || '08000000000',
         firstName,
         lastName,

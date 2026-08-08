@@ -1,5 +1,5 @@
-// src/app/demo/_components/Shell.tsx
-// Mobile-width premium shell shared by every demo/app screen. Bone light-mode canvas,
+// src/components/Shell.tsx
+// Mobile-width premium shell shared by every app screen. Bone light-mode canvas,
 // centered column, brand mark + eyebrow/title header, and an optional sticky footer.
 //
 // Back button uses real browser history (router.back) so it always returns to wherever you
@@ -60,18 +60,18 @@ export function Shell({
               </div>
 
               {eyebrow && (
-                <div className="mb-3 demo-rise">
+                <div className="mb-3 rise">
                   <Eyebrow>{eyebrow}</Eyebrow>
                 </div>
               )}
               {title && (
-                <h1 className="font-display text-[2rem] leading-[1.1] text-midnight demo-rise demo-rise-1">{title}</h1>
+                <h1 className="font-display text-[2rem] leading-[1.1] text-midnight rise rise-1">{title}</h1>
               )}
-              {subtitle && <p className="mt-2.5 text-sm text-slate demo-rise demo-rise-2">{subtitle}</p>}
+              {subtitle && <p className="mt-2.5 text-sm text-slate rise rise-2">{subtitle}</p>}
             </header>
           )}
 
-          <div className="demo-rise demo-rise-3">{children}</div>
+          <div className="rise rise-3">{children}</div>
         </div>
 
         {footer && (

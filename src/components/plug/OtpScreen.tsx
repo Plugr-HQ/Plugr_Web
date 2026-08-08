@@ -6,14 +6,14 @@
 // (backend TTL is 5 minutes) — verifyOtp's own error message covers "expired", so this
 // screen no longer runs its own separate 10-minute countdown that could disagree with it.
 //
-// Shared by /app and /demo — `base` keeps links inside the right namespace.
+// `base` keeps links inside the right namespace.
 
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { Shell } from '@/src/app/demo/_components/Shell';
+import { Shell } from '@/src/components/Shell';
 import { cn } from '@/src/lib/utils';
 import { getPlugPhone, maskPlugPhone, setPlugId, setPlugOnboarded } from '@/src/app/app/_lib/plugAuth';
 import { api, setToken } from '@/src/lib/api';

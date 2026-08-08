@@ -6,9 +6,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Clock, Check } from 'lucide-react';
-import { Shell } from '@/src/app/demo/_components/Shell';
-import { Card, Label, TextInput, Money, GoldButton, PrimaryButton } from '@/src/app/demo/_components/ui';
-import { jsonFetch, naira } from '@/src/app/demo/_lib/demo';
+import { Shell } from '@/src/components/Shell';
+import { Card, Label, TextInput, Money, GoldButton, PrimaryButton } from '@/src/components/ui';
+import { jsonFetch, naira } from '@/src/lib/net';
 
 export default function AppWithdraw() {
   const { plugId } = useParams<{ plugId: string }>();

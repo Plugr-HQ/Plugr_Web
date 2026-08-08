@@ -13,8 +13,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loader2, Lock, Clock, Check, Landmark, ShieldCheck, X, Wallet as WalletIcon } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
-import { Card, Divider, Money, Label, TextInput, GoldButton } from '@/src/app/demo/_components/ui';
-import { jsonFetch } from '@/src/app/demo/_lib/demo';
+import { Card, Divider, Money, Label, TextInput, GoldButton } from '@/src/components/ui';
+import { jsonFetch } from '@/src/lib/net';
 import { apiFetch } from '@/src/lib/api-client';
 import {
   getPlugId,
@@ -61,7 +61,7 @@ export function WalletScreen({ base }: { base: string }) {
   const load = useCallback(async () => {
     if (!plugId) return;
     try {
-      const body = await apiFetch(withSource(`/api/plugs/${plugId}/dashboard`, base), {}, { skipAuthRedirect: base === '/demo' });
+      const body = await apiFetch(withSource(`/api/plugs/${plugId}/dashboard`, base), {}, { skipAuthRedirect: false });
       setData(body);
       setLeft(body.lock?.seconds ?? null);
       setError(null);
@@ -88,7 +88,7 @@ export function WalletScreen({ base }: { base: string }) {
     const jobId = data?.lock?.jobId;
     if (left === 0 && jobId && !unlocked.current) {
       unlocked.current = true;
-      apiFetch(withSource(`/api/jobs/${jobId}/unlock`, base), { method: 'POST' }, { skipAuthRedirect: base === '/demo' }).finally(load);
+      apiFetch(withSource(`/api/jobs/${jobId}/unlock`, base), { method: 'POST' }, { skipAuthRedirect: false }).finally(load);
     }
   }, [left, data?.lock?.jobId, load, base]);
 
@@ -124,7 +124,7 @@ export function WalletScreen({ base }: { base: string }) {
   return (
     <PlugShell base={base} plug={plug}>
       {/* Balance */}
-      <Card className="relative overflow-hidden p-6 demo-rise">
+      <Card className="relative overflow-hidden p-6 rise">
         <div className="flex items-center gap-2 text-slate mb-3">
           <span className="grid place-items-center h-7 w-7 rounded-full bg-gold/15">
             <WalletIcon className="w-4 h-4 text-gold" />
@@ -147,7 +147,7 @@ export function WalletScreen({ base }: { base: string }) {
       </Card>
 
       {/* Withdraw — always enterable, even while locked */}
-      <div className="mt-4 demo-rise demo-rise-1">
+      <div className="mt-4 rise rise-1">
         <GoldButton onClick={() => setSheet(bank ? 'withdraw' : 'bank')}>Withdraw to Bank</GoldButton>
         {counting && (
           <p className="mt-2 flex items-center justify-center gap-1.5 text-[13px] text-slate">
@@ -157,7 +157,7 @@ export function WalletScreen({ base }: { base: string }) {
       </div>
 
       {/* Bank account — single active account */}
-      <Card className="mt-4 p-4 demo-rise demo-rise-2">
+      <Card className="mt-4 p-4 rise rise-2">
         <div className="flex items-center gap-3">
           <span className="grid place-items-center h-10 w-10 rounded-xl bg-midnight/[0.04] text-midnight shrink-0">
             <Landmark className="w-4 h-4" />
@@ -185,7 +185,7 @@ export function WalletScreen({ base }: { base: string }) {
       </Card>
 
       {/* Tabs */}
-      <div className="mt-6 flex gap-2 demo-rise demo-rise-3">
+      <div className="mt-6 flex gap-2 rise rise-3">
         {(['earnings', 'withdrawals'] as const).map((t) => (
           <button
             key={t}
@@ -201,7 +201,7 @@ export function WalletScreen({ base }: { base: string }) {
       </div>
 
       {tab === 'earnings' ? (
-        <div className="mt-4 demo-rise demo-rise-4">
+        <div className="mt-4 rise rise-4">
           {/* Range toggle */}
           <div className="flex gap-1.5 mb-3">
             {([['week', 'This week'], ['month', 'This month'], ['total', 'All time']] as const).map(([k, label]) => (
@@ -251,7 +251,7 @@ export function WalletScreen({ base }: { base: string }) {
           )}
         </div>
       ) : (
-        <div className="mt-4 space-y-2.5 demo-rise demo-rise-4">
+        <div className="mt-4 space-y-2.5 rise rise-4">
           {(withdrawals ?? []).length === 0 ? (
             <Card className="p-2">
               <EmptyState icon={<Landmark className="w-6 h-6" />} title="No withdrawals yet" body="Money you send to your bank will be listed here." />
@@ -314,7 +314,7 @@ function Sheets({
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-midnight/50 backdrop-blur-sm" onClick={close}>
       <div
-        className="w-full max-w-[440px] rounded-t-[24px] bg-bone p-5 pb-8 demo-rise"
+        className="w-full max-w-[440px] rounded-t-[24px] bg-bone p-5 pb-8 rise"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mx-auto mb-4 h-1 w-10 rounded-pill bg-midnight/15" />
@@ -508,7 +508,7 @@ function Withdraw({
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ amount: amt }),
-      }, { skipAuthRedirect: base === '/demo' });
+      }, { skipAuthRedirect: false });
       setDone(true);
       reload();
     } catch (e: any) {

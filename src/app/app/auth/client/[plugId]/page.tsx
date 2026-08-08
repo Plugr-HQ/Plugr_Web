@@ -4,7 +4,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { AuthForm } from '@/src/app/demo/_components/AuthForm';
+import { AuthForm } from '@/src/components/AuthForm';
 
 export default function AppClientAuthPage() {
   const { plugId } = useParams<{ plugId: string }>();

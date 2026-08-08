@@ -14,7 +14,7 @@
 // consentAgreed/consentDocVersion/consentAt, since this check can be bypassed by calling
 // the API directly.
 //
-// On all-verified: creates the real Plug row (core tables on /app, hack_ tables on /demo),
+// On all-verified: creates the real Plug row in the product tables,
 // then routes to PLG-01 (Pending Review).
 //
 // NOTE: no NIMC/liveness SDK is wired yet — any 11-digit NIN passes and the liveness capture
@@ -26,9 +26,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ShieldCheck, Check, Loader2, Camera, ScanFace, LifeBuoy, ExternalLink } from 'lucide-react';
-import { Shell } from '@/src/app/demo/_components/Shell';
-import { Card, Label, TextInput, GoldButton } from '@/src/app/demo/_components/ui';
-import { jsonFetch } from '@/src/app/demo/_lib/demo';
+import { Shell } from '@/src/components/Shell';
+import { Card, Label, TextInput, GoldButton } from '@/src/components/ui';
+import { jsonFetch } from '@/src/lib/net';
 import { cn } from '@/src/lib/utils';
 import { setToken } from '@/src/lib/api';
 import {getPlugDraft,
@@ -251,7 +251,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
           </GoldButton>
         }
       >
-        <div className="demo-rise rounded-[22px] border border-midnight/10 bg-white p-5">
+        <div className="rise rounded-[22px] border border-midnight/10 bg-white p-5">
           <div className="flex items-start gap-3 mb-4">
             <span className="grid place-items-center h-10 w-10 rounded-2xl bg-gold/15 shrink-0">
               <ShieldCheck className="w-5 h-5 text-gold" />
@@ -338,7 +338,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
 
       {/* --- Step 1: NIN --- */}
       {step === 0 && (
-        <div className="demo-rise">
+        <div className="rise">
           <Card className="p-4 mb-6 flex items-start gap-3">
             <span className="grid place-items-center h-9 w-9 rounded-full bg-gold/15 shrink-0">
               <ShieldCheck className="w-5 h-5 text-gold" />
@@ -388,7 +388,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
 
       {/* --- Step 2: Liveness --- */}
       {step === 1 && (
-        <div className="demo-rise flex flex-col items-center">
+        <div className="rise flex flex-col items-center">
           <div className="relative h-64 w-64">
             {/* circular face guide */}
             <div className="absolute inset-0 rounded-full overflow-hidden bg-midnight">

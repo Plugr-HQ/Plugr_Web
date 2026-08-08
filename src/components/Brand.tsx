@@ -1,6 +1,6 @@
 // src/components/Brand.tsx
 // Canonical Plugr brand marks, inlined from the real logo SVG so they tint via currentColor.
-// Used by the landing page and re-exported by the demo UI kit.
+// Used by the landing page and re-exported by the shared UI kit.
 
 export function PlugrMark({ className }: { className?: string }) {
   return (

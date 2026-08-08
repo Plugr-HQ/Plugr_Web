@@ -18,8 +18,8 @@ import {
   MapPin, Clock, Zap, ShieldCheck,
 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
-import { Card, Divider, GoldButton, Label, TextInput } from '@/src/app/demo/_components/ui';
-import { jsonFetch } from '@/src/app/demo/_lib/demo';
+import { Card, Divider, GoldButton, Label, TextInput } from '@/src/components/ui';
+import { jsonFetch } from '@/src/lib/net';
 import { apiFetch } from '@/src/lib/api-client';
 import { getPlugId } from '@/src/app/app/_lib/plugAuth';
 import { buildProfile } from '@/src/app/app/_lib/profile';
@@ -79,7 +79,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
   const load = useCallback(async () => {
     if (!plugId) return;
     try {
-      const body = await apiFetch(withSource(`/api/plugs/${plugId}`, base), {}, { skipAuthRedirect: base === '/demo' });
+      const body = await apiFetch(withSource(`/api/plugs/${plugId}`, base), {}, { skipAuthRedirect: false });
       setPlug(body.plug);
       setBio(body.plug.bio ?? '');
       setPhoto(body.plug.photo_url ?? null);
@@ -97,7 +97,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify(payload),
-    }, { skipAuthRedirect: base === '/demo' });
+    }, { skipAuthRedirect: false });
     setPlug(body.plug);
     return body.plug;
   }
@@ -147,7 +147,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
   return (
     <PlugShell base={base} plug={plug}>
       {/* Cover + identity — the view clients see, owned */}
-      <div className="rounded-[24px] overflow-hidden border border-midnight/[0.06] demo-card-shadow bg-white demo-rise">
+      <div className="rounded-[24px] overflow-hidden border border-midnight/[0.06] card-shadow bg-white rise">
         <div className="relative h-24 bg-gradient-to-br from-midnight to-deep-blue">
           <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #E8A020 0, transparent 40%)' }} />
           <div className="absolute top-3 right-3 flex gap-2">
@@ -201,7 +201,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
       </div>
 
       {/* Verification — NIN + Liveness only at launch */}
-      <div className="mt-4 grid grid-cols-2 gap-2 demo-rise demo-rise-1">
+      <div className="mt-4 grid grid-cols-2 gap-2 rise rise-1">
         {['NIN', 'Liveness'].map((v) => (
           <div key={v} className="rounded-2xl bg-white border border-midnight/[0.06] p-3 text-center">
             <ShieldCheck className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
@@ -211,14 +211,14 @@ export function PlugProfileScreen({ base }: { base: string }) {
       </div>
 
       {/* Stats */}
-      <div className="mt-3 grid grid-cols-3 gap-2 demo-rise demo-rise-2">
+      <div className="mt-3 grid grid-cols-3 gap-2 rise rise-2">
         <Stat icon={<Briefcase className="w-4 h-4" />} value={String(jobs)} label="Jobs done" />
         <Stat icon={<Star className="w-4 h-4" />} value={jobs > 0 ? rating.toFixed(1) : '—'} label="Avg. rating" />
         <Stat icon={<Clock className="w-4 h-4" />} value={memberSince} label="Member since" />
       </div>
 
       {/* About */}
-      <Card className="mt-4 p-5 demo-rise demo-rise-3">
+      <Card className="mt-4 p-5 rise rise-3">
         <Label className="mb-2">About</Label>
         {editing ? (
           <textarea
@@ -234,7 +234,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
       </Card>
 
       {/* Skills */}
-      <Card className="mt-4 p-5 demo-rise demo-rise-3">
+      <Card className="mt-4 p-5 rise rise-3">
         <Label className="mb-3">Skills</Label>
         <div className="flex flex-wrap gap-2">
           {p.skills.map((s: string) => (
@@ -244,7 +244,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
       </Card>
 
       {/* Experience */}
-      <Card className="mt-4 p-5 demo-rise demo-rise-4">
+      <Card className="mt-4 p-5 rise rise-4">
         <Label className="mb-4">Experience</Label>
         {p.history.map((h: any, i: number, a: any[]) => (
           <div key={h.title} className="flex gap-3">
@@ -262,7 +262,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
       </Card>
 
       {/* Raise your tier — locked upgrades, never blocking */}
-      <Card className="mt-4 p-5 demo-rise demo-rise-4">
+      <Card className="mt-4 p-5 rise rise-4">
         <div className="flex items-center justify-between mb-1">
           <Label>Raise your tier</Label>
           <BadgeChip tier={tier} />
@@ -283,7 +283,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
       </Card>
 
       {/* Work posts */}
-      <div className="mt-6 demo-rise demo-rise-4">
+      <div className="mt-6 rise rise-4">
         <div className="flex items-center justify-between mb-2.5">
           <Label>Work</Label>
           <button onClick={() => setComposing((c) => !c)} className="inline-flex items-center gap-1 text-[11px] font-bold text-gold hover:text-midnight transition-colors">
@@ -345,7 +345,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
       </div>
 
       {/* Reviews */}
-      <div className="mt-6 demo-rise demo-rise-4">
+      <div className="mt-6 rise rise-4">
         <Label className="mb-2.5">Reviews</Label>
         {reviews.length === 0 ? (
           <Card className="p-2">

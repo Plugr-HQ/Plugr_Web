@@ -1,7 +1,6 @@
-// src/app/demo/_components/AuthForm.tsx
-// Flavor sign-up used by both the Plug and Client auth screens. Collects name + phone
-// (no password, not validated — per the hackathon brief), stores the demo identity, then
-// forwards into the flow.
+// src/components/AuthForm.tsx
+// Lightweight sign-up used by both the Plug and Client auth screens. Collects name + phone,
+// stores the client identity, then forwards into the flow.
 
 'use client';
 
@@ -10,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import { Shell } from './Shell';
 import { Label, TextInput, PrimaryButton } from './ui';
-import { setDemoIdentity, type DemoRole } from '../_lib/demo';
+import { setClientIdentity, type ClientRole } from '@/src/lib/net';
 
 export function AuthForm({
   role,
@@ -20,7 +19,7 @@ export function AuthForm({
   redirectTo,
   back,
 }: {
-  role: DemoRole;
+  role: ClientRole;
   eyebrow: string;
   title: string;
   subtitle: string;
@@ -39,7 +38,7 @@ export function AuthForm({
       return;
     }
     setBusy(true);
-    setDemoIdentity(role, phone.trim(), name.trim());
+    setClientIdentity(role, phone.trim(), name.trim());
     // replace (not push) so pressing Back from the next screen doesn't return to this
     // already-completed sign-up form.
     router.replace(redirectTo);
@@ -76,7 +75,7 @@ export function AuthForm({
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
-      <p className="mt-6 text-xs text-slate/70">Flavor sign-up for the demo — no password, not validated.</p>
+      <p className="mt-6 text-xs text-slate/70">No password needed — we’ll verify your phone number.</p>
     </Shell>
   );
 }

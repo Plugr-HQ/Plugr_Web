@@ -8,7 +8,7 @@
 // localStorage across tabs and restarts — nothing was reading it at the entry points.
 //
 // There is no Supabase Auth in this build: no supabase-js, no cookies, no server
-// session. Identity is the client-side record in plugAuth.ts, which is what the demo
+// session. Identity is the client-side record in plugAuth.ts, which is what the client
 // flow is built on.
 
 'use client';

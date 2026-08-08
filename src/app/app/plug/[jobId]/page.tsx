@@ -8,9 +8,9 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Check, Wallet } from 'lucide-react';
-import { Shell } from '@/src/app/demo/_components/Shell';
-import { Card, Divider, Money, StatusChip, PrimaryButton, GoldButton } from '@/src/app/demo/_components/ui';
-import { jsonFetch } from '@/src/app/demo/_lib/demo';
+import { Shell } from '@/src/components/Shell';
+import { Card, Divider, Money, StatusChip, PrimaryButton, GoldButton } from '@/src/components/ui';
+import { jsonFetch } from '@/src/lib/net';
 
 export default function AppPlugJob() {
   const { jobId } = useParams<{ jobId: string }>();

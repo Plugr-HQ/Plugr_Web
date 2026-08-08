@@ -8,8 +8,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Loader2 } from 'lucide-react';
-import { Shell } from '@/src/app/demo/_components/Shell';
-import { Label, GoldButton } from '@/src/app/demo/_components/ui';
+import { Shell } from '@/src/components/Shell';
+import { Label, GoldButton } from '@/src/components/ui';
 import { cn } from '@/src/lib/utils';
 import { api, setToken } from '@/src/lib/api';
 

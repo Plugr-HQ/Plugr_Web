@@ -8,8 +8,8 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Star, BadgeCheck, ArrowUpRight, Info } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
-import { Shell } from '@/src/app/demo/_components/Shell';
-import { Card } from '@/src/app/demo/_components/ui';
+import { Shell } from '@/src/components/Shell';
+import { Card } from '@/src/components/ui';
 import { RequestPlugButton } from '../_components/RequestPlugButton';
 
 export type HackPlug = {
@@ -61,7 +61,7 @@ export default function AppBrowseClient({ plugs, configError }: { plugs: HackPlu
 
       <div className="space-y-3">
         {filtered.map((plug, i) => (
-          <Card key={plug.id} className={cn('p-4', `demo-rise demo-rise-${Math.min(i + 1, 4)}`)}>
+          <Card key={plug.id} className={cn('p-4', `rise rise-${Math.min(i + 1, 4)}`)}>
             <Link href={`/app/plugs/${plug.id}`} className="flex items-center gap-4 group">
               <div className="relative shrink-0">
                 <div className="grid place-items-center h-14 w-14 rounded-2xl bg-midnight text-white font-display text-xl">{plug.name?.[0] ?? '?'}</div>

@@ -7,7 +7,7 @@
 
 import { useRouter } from 'next/navigation';
 import { cn } from '@/src/lib/utils';
-import { getDemoIdentity } from '@/src/app/demo/_lib/demo';
+import { getClientIdentity } from '@/src/lib/net';
 
 export function RequestPlugButton({
   plugId,
@@ -25,7 +25,7 @@ export function RequestPlugButton({
   function go(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    const { role, name } = getDemoIdentity();
+    const { role, name } = getClientIdentity();
     const signedInAsClient = role === 'client' && !!name;
     router.push(signedInAsClient ? `/app/book/${plugId}` : `/app/auth/client/${plugId}`);
   }

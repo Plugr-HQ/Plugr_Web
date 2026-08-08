@@ -39,13 +39,13 @@
   /* 'linear' keeps the wave speed perfectly constant */
 }
 
-/* --- ALATPay demo (/demo) premium light-mode helpers --- */
+/* --- Premium light-mode animation + shadow helpers --- */
 .tnum {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "ss01" 1;
 }
 
-@keyframes demo-rise {
+@keyframes rise {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -57,28 +57,28 @@
   }
 }
 
-.demo-rise {
-  animation: demo-rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+.rise {
+  animation: rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-.demo-rise-1 {
+.rise-1 {
   animation-delay: 0.04s;
 }
 
-.demo-rise-2 {
+.rise-2 {
   animation-delay: 0.10s;
 }
 
-.demo-rise-3 {
+.rise-3 {
   animation-delay: 0.16s;
 }
 
-.demo-rise-4 {
+.rise-4 {
   animation-delay: 0.22s;
 }
 
 /* soft, warm elevation for cards on the bone canvas */
-.demo-card-shadow {
+.card-shadow {
   box-shadow: 0 1px 2px rgba(15, 31, 61, 0.04), 0 18px 40px -28px rgba(15, 31, 61, 0.28);
 }
 
@@ -114,11 +114,11 @@
 
 @media (prefers-reduced-motion: reduce) {
 
-  .demo-rise,
-  .demo-rise-1,
-  .demo-rise-2,
-  .demo-rise-3,
-  .demo-rise-4 {
+  .rise,
+  .rise-1,
+  .rise-2,
+  .rise-3,
+  .rise-4 {
     animation: none;
   }
 

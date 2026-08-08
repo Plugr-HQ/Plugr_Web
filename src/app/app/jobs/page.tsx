@@ -3,16 +3,16 @@
 // src/lib/api.ts, which carries the stored access token; the backend scopes the result to
 // req.user itself (JobsController -> findUserJobs), so no clientId/phone is passed here.
 //
-// Requires a real login (api.auth.login / accessToken in localStorage) — there is no demo
-// fallback on this screen, unlike the /demo mirror tree.
+// Requires a real login (api.auth.login / accessToken in localStorage) — there is no offline
+// fallback on this screen.
 
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Clock, CheckCircle2, XCircle, ChevronRight } from 'lucide-react';
-import { Shell } from '@/src/app/demo/_components/Shell';
-import { Card, Money } from '@/src/app/demo/_components/ui';
+import { Shell } from '@/src/components/Shell';
+import { Card, Money } from '@/src/components/ui';
 import { cn } from '@/src/lib/utils';
 import { api, getToken } from '@/src/lib/api';
 

@@ -204,7 +204,7 @@ export default function ClientDashboard({ clientName, clientCity, clientPhone, a
       setTrackingStage('requesting');
     } catch (err) {
       console.error("Failed to create job on API", err);
-      // Fallback to offline mode for demo purposes if backend fails
+      // Fallback to offline mode if backend fails
       const block: Booking = {
         id: `B-${Math.floor(1000 + Math.random() * 9000)}`,
         clientName: clientName,
@@ -413,7 +413,7 @@ export default function ClientDashboard({ clientName, clientCity, clientPhone, a
               </div>
             )}
 
-            {/* Finish and release button for demo completion flow */}
+            {/* Finish and release button for the completion flow */}
             {trackingStage === 'progress' && (
               <button
                 onClick={handleFinishJob}

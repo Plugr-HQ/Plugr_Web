@@ -9,9 +9,8 @@
 // This runs the same DB transition as /check-status; both are idempotent, so whichever
 // fires first wins and the other no-ops.
 //
-// SOURCE RESOLUTION: unlike every other route, the webhook cannot be told which backend to
-// use — ALATPay only sends us an OrderId. So we look the job up in the core tables first,
-// then the hack_ demo tables, and act on whichever owns it.
+// The webhook cannot be told which backend to use — ALATPay only sends us an OrderId — so we
+// look the job up in the product tables directly.
 
 import { NextResponse } from 'next/server';
 import { getRepo, type Repo } from '@/src/lib/repo';
@@ -19,17 +18,15 @@ import { verifyAlatPayWebhookSignature, confirmTransaction } from '@/src/lib/ala
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Find the job in either backend. Returns the repo that owns it. */
+/** Find the job. Returns the repo that owns it (or nulls if not found). */
 async function locateJob(orderId: string | null) {
   if (!orderId || !UUID_RE.test(orderId)) return { repo: null as Repo | null, job: null };
-  for (const source of ['core', 'hack'] as const) {
-    const repo = getRepo(source);
-    try {
-      const job = await repo.getJob(orderId);
-      if (job) return { repo, job };
-    } catch (e) {
-      console.warn(`webhook: job lookup failed against ${source}`, e);
-    }
+  const repo = getRepo('core');
+  try {
+    const job = await repo.getJob(orderId);
+    if (job) return { repo, job };
+  } catch (e) {
+    console.warn('webhook: job lookup failed', e);
   }
   return { repo: null as Repo | null, job: null };
 }
@@ -49,9 +46,8 @@ export async function POST(req: Request) {
   const data = payload?.Value?.Data;
 
   if (!data?.Id) {
-    // Nothing to correlate on. Park it in the demo table rather than the production one so
-    // uncorrelatable payloads never land in "transactions".
-    await getRepo('hack').insertOrphanPayload(payload);
+    // Nothing to correlate on — record the raw payload for later inspection.
+    await getRepo('core').insertOrphanPayload(payload);
     return NextResponse.json({ received: true, note: 'no transaction Id in payload' });
   }
 
@@ -60,9 +56,8 @@ export async function POST(req: Request) {
   const isSuccessful = String(data.Status).toLowerCase() === 'completed';
 
   const { repo: owner, job } = await locateJob(orderId);
-  // If the job can't be found, still record the transaction — against the demo tables, which
-  // is where an unrecognised order id is most likely to have come from.
-  const repo = owner ?? getRepo('hack');
+  // If the job can't be found, still record the transaction so nothing is silently dropped.
+  const repo = owner ?? getRepo('core');
 
   // Idempotency — ALATPay retries at 30min / 1hr / 24hr on non-200 responses.
   const existing = await repo.findTxnByAlatpayId(alatpayTransactionId);

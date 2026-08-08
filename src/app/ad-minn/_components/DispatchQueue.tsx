@@ -9,7 +9,7 @@ import { Loader2, Star, BadgeCheck, Briefcase, MapPin, Trash2 } from 'lucide-rea
 import { authHeaders } from '@/src/lib/api';
 import { apiFetch } from '@/src/lib/api-client';
 import { cn } from '@/src/lib/utils';
-import { Money } from '@/src/app/demo/_components/ui';
+import { Money } from '@/src/components/ui';
 import {
   TableCard, Thead, rowClass, cellClass, Chip, Avatar, FilterBar, RefreshButton,
   Toast, StateRow, Pager, Modal, ModalError, PillButton,

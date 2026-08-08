@@ -2,7 +2,7 @@
 // AUTH-02 — Phone Number Entry. Phone-first auth, no email anywhere. Country code locked
 // to +234. CTA activates at 10 digits, then routes to AUTH-03.
 //
-// Shared by /app and /demo — `base` keeps links inside the right namespace.
+// `base` keeps links inside the right namespace.
 //
 // This is the "Become a Plug" entry point, so the OTP request is sent with role: 'PLUG' —
 // a brand-new number reaching this screen should be bucketed as a Plug on the backend, not
@@ -13,8 +13,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Loader2 } from 'lucide-react';
-import { Shell } from '@/src/app/demo/_components/Shell';
-import { Label, GoldButton } from '@/src/app/demo/_components/ui';
+import { Shell } from '@/src/components/Shell';
+import { Label, GoldButton } from '@/src/components/ui';
 import { cn } from '@/src/lib/utils';
 import { setPlugPhone } from '@/src/app/app/_lib/plugAuth';
 import { api } from '@/src/lib/api';

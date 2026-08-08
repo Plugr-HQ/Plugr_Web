@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, ShieldCheck } from 'lucide-react';
 import { api, setToken, clearToken } from '@/src/lib/api';
 import { cn } from '@/src/lib/utils';
-import { Card, PrimaryButton } from '@/src/app/demo/_components/ui';
+import { Card, PrimaryButton } from '@/src/components/ui';
 
 const LENGTH = 6;
 
@@ -140,7 +140,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-bone p-6">
-      <div className="w-full max-w-md demo-rise">
+      <div className="w-full max-w-md rise">
         <div className="mb-8 flex items-center justify-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="Plugr" className="h-7 w-auto" />

@@ -16,9 +16,8 @@
 //    schema) and "Job"."status" carries the coarse work state. Job.status answers "how far
 //    along is the work", escrowStatus answers "where is the money".
 //
-// 2. IDENTITY. hack_jobs stored the client as loose text. "Job"."clientId" is a real FK, so
-//    booking find-or-creates a "User" keyed on phone. That is why phone is required here
-//    and was not in the demo.
+// 2. IDENTITY. "Job"."clientId" is a real FK, so booking find-or-creates a "User" keyed on
+//    phone. That is why phone is required here.
 
 import { q, one } from '../db';
 import type {
@@ -44,11 +43,11 @@ const PLACEHOLDER_LNG = 3.3792;
 //   "Job"."status"       — JobStatus enum, the work-progress state machine
 //   "Job"."escrowStatus" — free text, ONLY the money state: 'locked' | 'released' | 'refunded'
 //
-// The demo's single 5-state lifecycle maps onto that pair. Writing both keeps our rows legible
+// The API's single 5-state lifecycle maps onto that pair. Writing both keeps our rows legible
 // to the CTO's WhatsApp/AI backend, which reads the same tables and checks escrowStatus for
-// 'locked'/'released' — it would never match a demo-vocabulary value like 'paid_escrow'.
+// 'locked'/'released' — it would never match an API-vocabulary value like 'paid_escrow'.
 //
-//   demo status   "Job"."status"    "Job"."escrowStatus"
+//   api status    "Job"."status"    "Job"."escrowStatus"
 //   requested     PENDING           null        (no money yet)
 //   paid_escrow   PLUG_ASSIGNED     locked
 //   accepted      PLUG_ACCEPTED     locked
@@ -66,9 +65,9 @@ const STATE_MAP: Record<JobStatus, { work: string; escrow: string | null }> = {
   withdrawn: { work: 'COMPLETED', escrow: 'released' },
 };
 
-// Reconstruct the demo lifecycle from the two core columns. Kept as one fragment so the
+// Reconstruct the API lifecycle from the two core columns. Kept as one fragment so the
 // projection and the listJobs status filter derive it identically.
-const DEMO_STATUS_SQL = `
+const STATUS_SQL = `
   case
     when j."escrowStatus" = 'released'                                then 'released'
     when j."escrowStatus" = 'locked' and j.status = 'COMPLETED'       then 'completed'
@@ -108,7 +107,7 @@ const JOB_COLS = `
   cu.phone                                     as client_phone,
   coalesce(j.description, j.title)             as job_description,
   coalesce(j."escrowAmount", j.price, 0)       as amount,
-  ${DEMO_STATUS_SQL}                           as status,
+  ${STATUS_SQL}                           as status,
   j."createdAt"                                as created_at,
   case when j.status = 'COMPLETED' then j."updatedAt" end as completed_at,
   j."escrowReleasedAt"                         as escrow_released_at`;
@@ -222,7 +221,7 @@ export async function unlockFunds(plugId: string, amount: number): Promise<void>
 export async function listJobs(statuses?: string[]): Promise<JobRow[]> {
   return statuses?.length
     ? q<JobRow>(
-        `select ${JOB_COLS} ${JOB_FROM} and ${DEMO_STATUS_SQL} = any($1)
+        `select ${JOB_COLS} ${JOB_FROM} and ${STATUS_SQL} = any($1)
          order by j."createdAt" desc limit 50`,
         [statuses]
       )
@@ -264,7 +263,7 @@ export async function createJob(input: CreateJobInput): Promise<JobRow> {
   const description = input.jobDescription ?? null;
   const title = (description ?? 'Plugr job').slice(0, 80);
 
-  // New job = demo 'requested' = work PENDING, no escrow yet (escrowStatus null).
+  // New job = 'requested' = work PENDING, no escrow yet (escrowStatus null).
   const created = await one<{ id: string }>(
     `insert into "Job"
        (id, "clientId", "plugId", "categoryId", status, title, description,

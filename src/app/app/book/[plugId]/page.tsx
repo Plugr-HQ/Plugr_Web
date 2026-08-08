@@ -6,9 +6,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Star, BadgeCheck, ArrowRight } from 'lucide-react';
-import { Shell } from '@/src/app/demo/_components/Shell';
-import { Card, Label, TextInput, TextArea, PrimaryButton, Money } from '@/src/app/demo/_components/ui';
-import { jsonFetch, getDemoIdentity } from '@/src/app/demo/_lib/demo';
+import { Shell } from '@/src/components/Shell';
+import { Card, Label, TextInput, TextArea, PrimaryButton, Money } from '@/src/components/ui';
+import { jsonFetch, getClientIdentity } from '@/src/lib/net';
 
 export default function AppBookPage() {
   const { plugId } = useParams<{ plugId: string }>();
@@ -33,7 +33,7 @@ export default function AppBookPage() {
     }
     setSubmitting(true);
     try {
-      const { name, phone } = getDemoIdentity();
+      const { name, phone } = getClientIdentity();
       const res = await jsonFetch('/api/jobs?source=core', {
         method: 'POST',
         body: JSON.stringify({

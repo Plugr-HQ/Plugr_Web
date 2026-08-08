@@ -12,7 +12,7 @@ import { cn } from '@/src/lib/utils';
 // A Card whose table scrolls horizontally on small screens instead of breaking the layout.
 export function TableCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-[22px] border border-midnight/[0.06] bg-white demo-card-shadow">
+    <div className="overflow-hidden rounded-[22px] border border-midnight/[0.06] bg-white card-shadow">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-left">{children}</table>
       </div>
@@ -132,7 +132,7 @@ export function FieldLabel({ htmlFor, children, hint }: { htmlFor?: string; chil
 
 export function Toast({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2 rounded-[18px] border border-emerald-500/20 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700 demo-rise">
+    <div className="flex items-center gap-2 rounded-[18px] border border-emerald-500/20 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700 rise">
       <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-emerald-500/15">
         <span className="h-2 w-2 rounded-full bg-emerald-500" />
       </span>
@@ -253,7 +253,7 @@ export function Modal({
       onClick={onClose}
     >
       <div
-        className="flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-[26px] bg-white demo-card-shadow demo-rise sm:max-h-[88vh] sm:max-w-lg sm:rounded-[26px]"
+        className="flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-[26px] bg-white card-shadow rise sm:max-h-[88vh] sm:max-w-lg sm:rounded-[26px]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between border-b border-midnight/[0.06] px-6 py-4">

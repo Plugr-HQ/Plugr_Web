@@ -16,8 +16,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, ShieldCheck, Clock, Landmark, LogOut, Pencil, Check } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
-import { Card } from '@/src/app/demo/_components/ui';
-import { jsonFetch } from '@/src/app/demo/_lib/demo';
+import { Card } from '@/src/components/ui';
+import { jsonFetch } from '@/src/lib/net';
 import {
   getPlugId, getPlugPhone, maskPlugPhone, getPlugBank, setPlugBank, signOutPlug, type PlugBank,
 } from '@/src/app/app/_lib/plugAuth';
@@ -70,7 +70,7 @@ export function SettingsScreen({ base }: { base: string }) {
       ) : (
         <div className="space-y-5">
           {/* Profile */}
-          <div className="demo-rise">
+          <div className="rise">
             <SectionLabel>Profile</SectionLabel>
             <Card className="px-4">
               <Field label="Name" value={plug?.name ?? '—'} />
@@ -96,7 +96,7 @@ export function SettingsScreen({ base }: { base: string }) {
           </div>
 
           {/* Payout account */}
-          <div className="demo-rise demo-rise-1">
+          <div className="rise rise-1">
             <SectionLabel>Payout account</SectionLabel>
             <PayoutSection />
             <p className="mt-2 px-1 text-[11px] text-slate/70">
@@ -105,7 +105,7 @@ export function SettingsScreen({ base }: { base: string }) {
           </div>
 
           {/* Logout */}
-          <div className="demo-rise demo-rise-2 pt-1">
+          <div className="rise rise-2 pt-1">
             <button
               onClick={logout}
               className="flex w-full items-center justify-center gap-2 rounded-pill border border-red-500/30 py-3.5 text-sm font-bold text-red-600 transition-colors hover:bg-red-50"

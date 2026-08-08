@@ -95,7 +95,7 @@ const TABS = [
 
 /**
  * Plug app shell: sticky top nav + content + bottom tabs.
- * `base` keeps every link inside the right namespace (/app or /demo).
+ * `base` keeps every link inside the right namespace.
  */
 export function PlugShell({
   base,

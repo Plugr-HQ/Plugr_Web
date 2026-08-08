@@ -67,7 +67,7 @@ function PlugsTable() {
 function PendingVerifications() {
   return (
     <div className="space-y-4">
-      <div className="flex items-start gap-3 rounded-[22px] border border-amber-500/20 bg-amber-50 p-4 text-amber-800 demo-rise">
+      <div className="flex items-start gap-3 rounded-[22px] border border-amber-500/20 bg-amber-50 p-4 text-amber-800 rise">
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-500/15">
           <AlertCircle className="h-5 w-5 text-amber-600" />
         </span>
@@ -79,7 +79,7 @@ function PendingVerifications() {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {[1, 2].map((i) => (
-          <div key={i} className={cn('rounded-[22px] border border-midnight/6 bg-white p-6 demo-card-shadow demo-rise', i === 2 && 'demo-rise-1')}>
+          <div key={i} className={cn('rounded-[22px] border border-midnight/6 bg-white p-6 card-shadow rise', i === 2 && 'rise-1')}>
             <div className="mb-4 flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <Avatar name="David Adeosun" tone="midnight" />

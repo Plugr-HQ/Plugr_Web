@@ -7,9 +7,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
-import { Shell } from '@/src/app/demo/_components/Shell';
-import { Card, Divider, Money, GoldButton, GhostButton } from '@/src/app/demo/_components/ui';
-import { jsonFetch } from '@/src/app/demo/_lib/demo';
+import { Shell } from '@/src/components/Shell';
+import { Card, Divider, Money, GoldButton, GhostButton } from '@/src/components/ui';
+import { jsonFetch } from '@/src/lib/net';
 
 const LOCK_SECONDS = 60;
 
@@ -78,7 +78,7 @@ export default function AppConfirmPage() {
 
       {phase === 'confirm' && (
         <>
-          <div className="flex items-start gap-3 rounded-2xl bg-white border border-midnight/[0.06] p-4 mb-6 demo-card-shadow">
+          <div className="flex items-start gap-3 rounded-2xl bg-white border border-midnight/[0.06] p-4 mb-6 card-shadow">
             <span className="grid place-items-center h-9 w-9 rounded-full bg-gold/15 shrink-0"><ShieldCheck className="w-5 h-5 text-gold" /></span>
             <p className="text-[13px] leading-relaxed text-slate">Only confirm once the Plug has completed the work. Production opens a 24-hour dispute window — <span className="font-bold text-midnight">compressed to 60 seconds here.</span></p>
           </div>

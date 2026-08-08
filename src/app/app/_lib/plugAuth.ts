@@ -1,6 +1,6 @@
 // src/app/app/_lib/plugAuth.ts
 // Plug-side session (phone-first, no email) + onboarding draft.
-// Demo-grade: held client-side so AUTH-03 can show the target number, onboarding can resume
+// Held client-side so AUTH-03 can show the target number, onboarding can resume
 // at the step it left off, and PLG-01/02/03 know which plug is signed in.
 
 import { clearToken } from '@/src/lib/api';
@@ -65,7 +65,7 @@ export function maskPlugPhone(phone?: string | null): string {
 }
 
 /**
- * Returning-user detection (demo-grade). The real build resolves this from the DB by phone;
+ * Returning-user detection (lightweight). The real build resolves this from the DB by phone;
  * here a completed onboarding marks the plug as returning so AUTH-03 skips to PLG-01.
  */
 export function setPlugOnboarded(done = true) {
@@ -105,7 +105,7 @@ export function clearPlugDraft() {
 
 /* ------------------------------------------------- bank account + PIN (PLG-03) */
 // Single active account model — one linked account at a time, not a beneficiaries list.
-// Held client-side on purpose: a withdrawal PIN has no business sitting in the demo DB.
+// Held client-side on purpose: a withdrawal PIN has no business sitting in the backend DB.
 
 const BANK_KEY = 'plugr_plug_bank';
 const PIN_KEY = 'plugr_plug_pin';

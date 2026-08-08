@@ -21,9 +21,6 @@ export default function DisputeResolutionPage() {
             <PlugrWordmark className="h-6 text-midnight" />
           </a>
           <div className="flex items-center gap-4">
-            <Link href="/demo" className="hidden md:inline-flex text-sm font-semibold text-midnight/70 hover:text-gold transition-colors">
-              Try demo
-            </Link>
             <Link
               href="/app/browse"
               className="inline-flex items-center gap-1.5 rounded-pill bg-gold text-midnight text-sm font-bold px-4 sm:px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all"

@@ -1,5 +1,6 @@
-// src/app/demo/_lib/demo.ts
-// Small shared helpers for the ALATPay demo screens. Client-safe (no secrets).
+// src/lib/net.ts
+// Small shared client-side helpers: money formatting, an auth-aware fetch, the client identity
+// stored in localStorage, and job-status labels. Client-safe (no secrets).
 
 import { authHeaders } from '@/src/lib/api';
 
@@ -10,7 +11,7 @@ export async function jsonFetch<T = any>(url: string, init?: RequestInit): Promi
   const res = await fetch(url, {
     ...init,
     // authHeaders() attaches the stored access token when present so guarded /app proxy routes
-    // can forward it. Harmless for /demo (source=hack) and public routes — they ignore it.
+    // can forward it. Harmless for public routes — they ignore it.
     headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(init?.headers || {}) },
   });
   const body = await res.json().catch(() => ({} as any));
@@ -20,24 +21,24 @@ export async function jsonFetch<T = any>(url: string, init?: RequestInit): Promi
   return body as T;
 }
 
-// --- Demo "identity" (flavor only, not real auth) -------------------------------
-const ROLE_KEY = 'plugr_demo_role';
-const PHONE_KEY = 'plugr_demo_phone';
-const NAME_KEY = 'plugr_demo_name';
+// --- Client identity (lightweight, client-side; real auth is the bearer token) --------
+const ROLE_KEY = 'plugr_client_role';
+const PHONE_KEY = 'plugr_client_phone';
+const NAME_KEY = 'plugr_client_name';
 
-export type DemoRole = 'client' | 'plug';
+export type ClientRole = 'client' | 'plug';
 
-export function setDemoIdentity(role: DemoRole, phone: string, name?: string) {
+export function setClientIdentity(role: ClientRole, phone: string, name?: string) {
   if (typeof window === 'undefined') return;
   localStorage.setItem(ROLE_KEY, role);
   localStorage.setItem(PHONE_KEY, phone);
   if (name) localStorage.setItem(NAME_KEY, name);
 }
 
-export function getDemoIdentity() {
+export function getClientIdentity() {
   if (typeof window === 'undefined') return { role: null, phone: '', name: '' };
   return {
-    role: (localStorage.getItem(ROLE_KEY) as DemoRole | null) ?? null,
+    role: (localStorage.getItem(ROLE_KEY) as ClientRole | null) ?? null,
     phone: localStorage.getItem(PHONE_KEY) ?? '',
     name: localStorage.getItem(NAME_KEY) ?? '',
   };

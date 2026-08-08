@@ -162,7 +162,7 @@ export function DigitalId({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-5 bg-midnight/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-[340px] rounded-[26px] overflow-hidden bg-white shadow-2xl demo-rise" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-[340px] rounded-[26px] overflow-hidden bg-white shadow-2xl rise" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="relative bg-midnight px-5 pt-5 pb-8">
           <button onClick={onClose} aria-label="Close" className="absolute top-4 right-4 grid place-items-center h-8 w-8 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors">

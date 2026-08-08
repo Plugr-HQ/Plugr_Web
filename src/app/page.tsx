@@ -1,6 +1,6 @@
 // src/app/page.tsx
-// Plugr landing (hackathon build). Premium bone light-mode marketing page with scroll
-// animations (motion), gold-fill CTAs, and photography. "Use Plugr" (top-right) -> /demo.
+// Plugr landing. Premium bone light-mode marketing page with scroll animations (motion),
+// gold-fill CTAs, and photography. "Use Plugr" (top-right) -> /app.
 
 'use client';
 
@@ -72,8 +72,6 @@ const btnGold =
   'inline-flex items-center justify-center gap-2 rounded-pill bg-gold text-midnight font-bold px-7 py-4 hover:bg-gold-light active:scale-[0.98] transition-all shadow-[0_14px_32px_-16px_rgba(232,160,32,0.75)]';
 const btnAlt =
   'inline-flex items-center justify-center gap-2 rounded-pill bg-midnight text-white font-bold px-7 py-4 hover:bg-deep-blue active:scale-[0.98] transition-all';
-const demoBtn =
-  'inline-flex items-center justify-center gap-2 rounded-pill bg-gradient-to-r from-midnight via-gold to-midnight animate-gradient-circular text-white text-sm font-bold px-7 py-4 active:scale-[0.98] transition-all shadow-[0_14px_32px_-16px_rgba(232,160,32,0.4)]';
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-gold">
@@ -126,9 +124,6 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/demo" className="hidden md:inline-flex text-sm font-semibold text-midnight/70 hover:text-gold transition-colors">
-              Try demo
-            </Link>
             <Link href="/app" className="inline-flex items-center gap-1.5 rounded-pill bg-gold text-midnight text-sm font-bold px-4 sm:px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all">
               Use Plugr <ArrowRight className="w-4 h-4" />
             </Link>
@@ -143,7 +138,6 @@ export default function LandingPage() {
             <Link href="#why" onClick={() => setMenuOpen(false)} className="text-md font-bold text-[#0A1529]">Why Plugr</Link>
             <Link href="#trades" onClick={() => setMenuOpen(false)} className="text-md font-bold text-[#0A1529]">Trades</Link>
             <Link href="#faq" onClick={() => setMenuOpen(false)} className="text-md font-bold text-[#0A1529]">FAQ</Link>
-            <Link href="/demo" onClick={() => setMenuOpen(false)} className="text-md font-bold text-[#0A1529]">Try Demo</Link>
           </div>
         )}
       </nav>
@@ -170,11 +164,6 @@ export default function LandingPage() {
                 Become a Plug
               </Link>
             </motion.div>
-            <motion.div variants={heroItem} className="mt-4">
-              <Link href="/demo" className={demoBtn}>
-                Just exploring? Try the interactive demo <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </motion.div>
             <motion.div variants={heroItem} className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-4">
               {[
                 { icon: <UserCheck className="w-4 h-4" />, label: 'NIN Verified' },
@@ -198,13 +187,13 @@ export default function LandingPage() {
             transition={{ duration: 0.7, ease: [0.2, 0.7, 0.2, 1], delay: 0.15 }}
           >
             <div className="absolute -inset-6 bg-gold/10 blur-3xl rounded-full" />
-            <div className="relative rounded-[28px] overflow-hidden border border-midnight/6 demo-card-shadow">
+            <div className="relative rounded-[28px] overflow-hidden border border-midnight/6 card-shadow">
               <img src={IMG.hero} alt="Verified artisan at work" className="w-full h-105 md:h-130 object-cover" loading="eager" />
               <div className="absolute inset-0 bg-linear-to-t from-midnight/40 to-transparent" />
             </div>
 
             <motion.div
-              className="absolute left-3 bottom-3 w-62 rounded-2xl bg-white/95 backdrop-blur border border-midnight/6 demo-card-shadow p-5"
+              className="absolute left-3 bottom-3 w-62 rounded-2xl bg-white/95 backdrop-blur border border-midnight/6 card-shadow p-5"
               animate={reduce ? undefined : { y: [0, -10, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
             >
@@ -267,7 +256,7 @@ export default function LandingPage() {
           <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {REASONS.map((r, i) => (
               <Reveal key={r.title} delay={(i % 3) * 0.08}>
-                <div className="h-full rounded-[22px] bg-white border border-midnight/6 demo-card-shadow p-6 hover:-translate-y-1 transition-transform">
+                <div className="h-full rounded-[22px] bg-white border border-midnight/6 card-shadow p-6 hover:-translate-y-1 transition-transform">
                   <span className="font-display text-sm text-gold">{String(i + 1).padStart(2, '0')}</span>
                   <h3 className="mt-3 font-bold text-midnight">{r.title}</h3>
                   <p className="mt-1.5 text-sm text-slate leading-relaxed">{r.body}</p>
@@ -341,7 +330,7 @@ export default function LandingPage() {
           <div className="mt-10 grid sm:grid-cols-3 gap-4">
             {PLUGS.map((p, i) => (
               <Reveal key={p.name} delay={i * 0.09}>
-                <div className="rounded-2xl bg-white border border-midnight/6 demo-card-shadow p-5 hover:-translate-y-1 transition-transform">
+                <div className="rounded-2xl bg-white border border-midnight/6 card-shadow p-5 hover:-translate-y-1 transition-transform">
                   <div className="flex items-start justify-between">
                     <div className="relative">
                       <img src={p.photo} alt={p.name} className="h-16 w-16 rounded-2xl object-cover" loading="lazy" />
@@ -469,9 +458,6 @@ export default function LandingPage() {
             </Link>
             <Link href="/app/onboarding" className={btnAlt}>
               Become a Plug
-            </Link>
-            <Link href="/demo" className={`${demoBtn} px-10 py-2`}>
-              Try demo <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </Reveal>

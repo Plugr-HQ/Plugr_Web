@@ -11,7 +11,7 @@ import { Inbox } from 'lucide-react';
 import { authHeaders, clearToken } from '@/src/lib/api';
 import { apiFetch } from '@/src/lib/api-client';
 import { cn } from '@/src/lib/utils';
-import { Money } from '@/src/app/demo/_components/ui';
+import { Money } from '@/src/components/ui';
 import {
   TableCard, Thead, rowClass, cellClass, Chip, Avatar, FilterBar, FilterSelect, RefreshButton,
   FieldLabel, Toast, StateRow, Pager, Modal, ModalError, PillButton, type Tone,

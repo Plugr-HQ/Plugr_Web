@@ -1,16 +1,16 @@
 // src/app/app/pay/[jobId]/page.tsx
 // Client pays into escrow — real ALATPay virtual account, polled until confirmed.
 // Disconnected: after payment the client waits for the Plug (separate tab) to complete,
-// then confirms. A sandbox "simulate" affordance is kept for demos.
+// then confirms. A sandbox "simulate" affordance is available in test environments.
 
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ShieldCheck, Copy, Check, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
-import { Shell } from '@/src/app/demo/_components/Shell';
-import { Card, Divider, Money, PrimaryButton, GhostButton } from '@/src/app/demo/_components/ui';
-import { jsonFetch } from '@/src/app/demo/_lib/demo';
+import { Shell } from '@/src/components/Shell';
+import { Card, Divider, Money, PrimaryButton, GhostButton } from '@/src/components/ui';
+import { jsonFetch } from '@/src/lib/net';
 
 export default function AppPayPage() {
   const { jobId } = useParams<{ jobId: string }>();
@@ -93,7 +93,7 @@ export default function AppPayPage() {
 
   return (
     <Shell eyebrow="Pay" title="Pay into escrow" back="/app/browse">
-      <div className="flex items-start gap-3 rounded-2xl bg-white border border-midnight/[0.06] p-4 mb-6 demo-card-shadow">
+      <div className="flex items-start gap-3 rounded-2xl bg-white border border-midnight/[0.06] p-4 mb-6 card-shadow">
         <span className="grid place-items-center h-9 w-9 rounded-full bg-gold/15 shrink-0"><ShieldCheck className="w-5 h-5 text-gold" /></span>
         <p className="text-[13px] leading-relaxed text-slate"><span className="font-bold text-midnight">Escrow protected.</span> ALATPay holds your transfer until you confirm the job is done.</p>
       </div>

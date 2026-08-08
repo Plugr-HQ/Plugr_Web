@@ -1,24 +1,14 @@
 // src/lib/repo/index.ts
 //
-// One API, two storage backends.
+// One API, one storage backend: the real product tables.
 //
-//   /demo  -> in-memory static fixtures (src/lib/repo/demo.ts + demoData.ts) — NO database
 //   /app   -> "PlugProfile" / "User" / "Category" / "Job" / "transactions"  (core product)
 //
-// The hack_ tables /demo used to read were dropped in a DB reset, so the 'hack' source is now
-// served entirely from in-memory fixtures — no DB calls on the /demo path. The DB-backed
-// hack.ts is kept on disk for reference but is no longer wired to getRepo.
-//
-// Both backends return the SAME row shapes (snake_case), so every API response stays
-// byte-compatible and no UI component changed. The core backend maps columns in SQL (core.ts).
-//
-// Default source is 'hack'. That is deliberate: if a call site is ever missed, it serves the
-// in-memory demo fixtures rather than silently touching the production core tables.
+// Rows are snake_case; the core backend maps columns in SQL (core.ts).
 
-import * as demo from './demo';
 import * as core from './core';
 
-export type Source = 'hack' | 'core';
+export type Source = 'core';
 
 /** The escrow lifecycle, identical across both backends. */
 export type JobStatus =
@@ -141,24 +131,18 @@ export interface Repo {
   listWithdrawals(limit?: number): Promise<TxnRow[]>;
 }
 
-// The 'hack' source now resolves to the in-memory demo fixtures (no DB); 'core' is unchanged.
-const REPOS: Record<Source, Repo> = { hack: demo, core };
+const REPOS: Record<Source, Repo> = { core };
 
-export function getRepo(source: Source = 'hack'): Repo {
-  return REPOS[source] ?? REPOS.hack;
+export function getRepo(source: Source = 'core'): Repo {
+  return REPOS[source] ?? REPOS.core;
 }
 
 /**
- * Resolve the backend from the request.
- *
- * Accepts `?source=core` on any method, or a `source` field in a JSON body that the caller
- * has already parsed. Anything unrecognised falls back to 'hack' — see the note at the top
- * of this file about why that is the safe default.
+ * Resolve the backend from the request. There is only one backend (core), so this always
+ * returns 'core'; the signature is kept so call sites read intentionally.
  */
-export function resolveSource(request: Request, bodySource?: unknown): Source {
-  const fromQuery = new URL(request.url).searchParams.get('source');
-  const raw = String(bodySource ?? fromQuery ?? '').toLowerCase();
-  return raw === 'core' ? 'core' : 'hack';
+export function resolveSource(_request: Request, _bodySource?: unknown): Source {
+  return 'core';
 }
 
-export { demo, core };
+export { core };

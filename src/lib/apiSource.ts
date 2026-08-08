@@ -1,15 +1,15 @@
 // src/lib/apiSource.ts
-// Which storage backend an API call should hit. Shared plug screens are rendered on both
-// surfaces and are told which one they are via their `base` prop, so the backend follows
-// from that — /demo keeps the frozen hack_ tables, /app talks to the real product tables.
+// Which storage backend an API call should hit. There is one backend — the real product
+// tables (core) — so this always resolves to 'core'. Kept as a thin indirection so the
+// `?source=` contract the API routes read stays explicit.
 
-export type ApiSource = 'core' | 'hack';
+export type ApiSource = 'core';
 
-export function sourceFor(base?: string): ApiSource {
-  return (base ?? '').startsWith('/demo') ? 'hack' : 'core';
+export function sourceFor(_base?: string): ApiSource {
+  return 'core';
 }
 
 /** Append the backend selector to an API path, preserving any existing query string. */
-export function withSource(path: string, base?: string): string {
-  return `${path}${path.includes('?') ? '&' : '?'}source=${sourceFor(base)}`;
+export function withSource(path: string, _base?: string): string {
+  return `${path}${path.includes('?') ? '&' : '?'}source=core`;
 }

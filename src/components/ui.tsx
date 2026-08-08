@@ -1,5 +1,5 @@
-// src/app/_shared/ui.tsx
-// Shared premium UI primitives for the /app screens. Light-mode ("bone") throughout.
+// src/components/ui.tsx
+// Shared premium UI primitives. Light-mode ("bone") throughout.
 // Brand marks are inlined from Plugr's real logo SVG so they can be tinted via currentColor.
 
 'use client';
@@ -57,7 +57,7 @@ export function Label({ children, className }: { children: React.ReactNode; clas
 
 export function Card({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('rounded-[22px] bg-white border border-midnight/[0.06] demo-card-shadow', className)}>{children}</div>
+    <div className={cn('rounded-[22px] bg-white border border-midnight/[0.06] card-shadow', className)}>{children}</div>
   );
 }
 
@@ -173,13 +173,6 @@ export function TextArea({ className, ...props }: React.TextareaHTMLAttributes<H
 const STATUS_TONE: Record<string, string> = {
   requested: 'bg-slate/12 text-slate',
   paid_escrow: 'bg-gold/15 text-[#8a5a08]',
-  escrow_funded: 'bg-gold/15 text-[#8a5a08]',
-  plug_accepted: 'bg-steel-blue/20 text-midnight',
-  quoted: 'bg-steel-blue/20 text-midnight',
-  client_accepted: 'bg-steel-blue/20 text-midnight',
-  plug_declined: 'bg-red-100 text-red-700',
-  client_declined_quote: 'bg-red-100 text-red-700',
-  cancelled: 'bg-midnight/10 text-slate',
   accepted: 'bg-gold/15 text-[#8a5a08]',
   completed: 'bg-gold/15 text-[#8a5a08]',
   released: 'bg-emerald-500/12 text-emerald-700',
