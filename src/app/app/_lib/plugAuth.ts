@@ -3,6 +3,8 @@
 // Demo-grade: held client-side so AUTH-03 can show the target number, onboarding can resume
 // at the step it left off, and PLG-01/02/03 know which plug is signed in.
 
+import { clearToken } from '@/src/lib/api';
+
 const PHONE_KEY = 'plugr_plug_phone';
 const ADDRESS_KEY = 'plugr_plug_address';
 const LATITUDE_KEY = 'plugr_plug_latitude';
@@ -10,6 +12,7 @@ const LONGITUDE_KEY = 'plugr_plug_longitude';
 const ONBOARDED_KEY = 'plugr_plug_onboarded';
 const PLUG_ID_KEY = 'plugr_plug_id';
 const DRAFT_KEY = 'plugr_plug_draft';
+const NOTIFS_SEEN_KEY = 'plugr_plug_notifs_seen';
 
 export type PlugTrade = 'electrician' | 'plumber' | 'furniture';
 
@@ -143,9 +146,29 @@ export function checkPlugPin(pin: string): boolean {
   return localStorage.getItem(PIN_KEY) === pin;
 }
 
+/* ------------------------------------------------------ notifications seen */
+// Last time the plug opened the Notifications screen — anything newer reads as unread.
+
+export function getNotifsSeenAt(): number {
+  if (typeof window === 'undefined') return 0;
+  return Number(localStorage.getItem(NOTIFS_SEEN_KEY) ?? 0);
+}
+
+export function markNotifsSeen() {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(NOTIFS_SEEN_KEY, String(Date.now()));
+}
+
+/**
+ * Full logout. Clears every piece of client-side plug session state AND the backend JWT
+ * (plugr_token) — the auth-persistence fix stored the session in localStorage across tabs and
+ * restarts, so a redirect alone would leave a live token behind. This wipes both so no plug-only
+ * route or guarded API call can succeed afterwards.
+ */
 export function signOutPlug() {
   if (typeof window === 'undefined') return;
-  [PHONE_KEY, ONBOARDED_KEY, PLUG_ID_KEY, DRAFT_KEY, BANK_KEY, PIN_KEY].forEach((k) =>
+  [PHONE_KEY, ONBOARDED_KEY, PLUG_ID_KEY, DRAFT_KEY, BANK_KEY, PIN_KEY, NOTIFS_SEEN_KEY].forEach((k) =>
     localStorage.removeItem(k)
   );
+  clearToken(); // remove the plugr_token JWT so the backend session can't linger
 }

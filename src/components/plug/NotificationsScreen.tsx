@@ -1,39 +1,108 @@
 // src/components/plug/NotificationsScreen.tsx
-// Target for the Notifications tab in PLG-01's bottom nav. The spec lists the tab but
-// doesn't specify a screen, so this is deliberately just the tab's empty state — no
-// invented notification system.
-
+// PLG notifications — job/escrow status updates only (no platform announcements). Each item is
+// derived from the plug's own jobs/payouts (see plugNotifications.ts), most recent first, with
+// unread items visually distinct. Opening the screen marks everything seen.
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Bell } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Loader2, Bell, Inbox, Wallet, CheckCircle2, PlayCircle, Banknote, ArrowDownToLine } from 'lucide-react';
+import { cn } from '@/src/lib/utils';
 import { Card } from '@/src/app/demo/_components/ui';
-import { getPlugId } from '@/src/app/app/_lib/plugAuth';
-import { apiFetch } from '@/src/lib/api-client';
-import { PlugShell, EmptyState } from './PlugChrome';
+import { jsonFetch } from '@/src/app/demo/_lib/demo';
+import { getPlugId, getNotifsSeenAt, markNotifsSeen } from '@/src/app/app/_lib/plugAuth';
 import { withSource } from '@/src/lib/apiSource';
-import { authHeaders } from '@/src/lib/api';
+import { deriveNotifications, relativeTime, type PlugNotifKind } from '@/src/app/app/_lib/plugNotifications';
+import { PlugShell, EmptyState } from './PlugChrome';
+
+const ICON: Record<PlugNotifKind, React.ComponentType<{ className?: string }>> = {
+  request: Inbox,
+  funded: Wallet,
+  accepted: PlayCircle,
+  completed: CheckCircle2,
+  payout: ArrowDownToLine,
+  withdrawal: Banknote,
+};
 
 export function NotificationsScreen({ base }: { base: string }) {
-  const [plug, setPlug] = useState<any>(null);
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  // Snapshot the "seen" cutoff once, on mount, so items stay marked unread for THIS view even
+  // after we write the new seen-time below.
+  const seenAt = useRef(getNotifsSeenAt());
 
   useEffect(() => {
     const id = getPlugId();
     if (!id) return;
-    apiFetch(withSource(`/api/plugs/${id}`, base), { headers: authHeaders() }, { skipAuthRedirect: base === '/demo' })
-      .then((d) => setPlug(d.plug))
-      .catch(() => {});
+    jsonFetch(withSource(`/api/plugs/${id}/dashboard`, base))
+      .then((d) => setData(d))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [base]);
 
+  const notifs = useMemo(() => deriveNotifications(data), [data]);
+
+  // Mark everything seen once the list has rendered — next visit these read as read.
+  useEffect(() => {
+    if (!loading && notifs.length) markNotifsSeen();
+  }, [loading, notifs.length]);
+
   return (
-    <PlugShell base={base} plug={plug}>
-      <Card className="p-2 demo-rise">
-        <EmptyState
-          icon={<Bell className="w-6 h-6" />}
-          title="Nothing new"
-          body="Job requests, payment releases, and verification updates will land here."
-        />
-      </Card>
+    <PlugShell base={base} plug={data?.plug ?? null}>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="font-display text-2xl text-midnight">Notifications</h1>
+        <span className="grid h-9 w-9 place-items-center rounded-full bg-midnight/[0.04] text-midnight">
+          <Bell className="h-[18px] w-[18px]" />
+        </span>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center gap-2 text-sm text-slate">
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading…
+        </div>
+      ) : notifs.length === 0 ? (
+        <Card className="p-2 demo-rise">
+          <EmptyState
+            icon={<Bell className="h-6 w-6" />}
+            title="Nothing new"
+            body="Job requests, escrow updates, and payouts will land here as they happen."
+          />
+        </Card>
+      ) : (
+        <ul className="space-y-2.5">
+          {notifs.map((n, i) => {
+            const unread = n.at > seenAt.current;
+            const Icon = ICON[n.kind] ?? Bell;
+            return (
+              <li key={n.id}>
+                <Card
+                  className={cn(
+                    'flex items-start gap-3 p-4 demo-rise transition-colors',
+                    i < 4 && `demo-rise-${i}`,
+                    unread && 'border-gold/40 bg-gold/[0.06]',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'grid h-10 w-10 shrink-0 place-items-center rounded-2xl',
+                      unread ? 'bg-gold/15 text-gold' : 'bg-midnight/[0.04] text-slate',
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="truncate text-sm font-bold text-midnight">{n.title}</p>
+                      {unread && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-gold" aria-label="unread" />}
+                    </div>
+                    <p className="mt-0.5 text-[13px] leading-relaxed text-slate">{n.body}</p>
+                    <p className="mt-1 text-[11px] text-slate/70">{relativeTime(n.at)}</p>
+                  </div>
+                </Card>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </PlugShell>
   );
 }
