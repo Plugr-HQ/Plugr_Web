@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Loader2, Clock, Briefcase, ArrowRight, ShieldCheck, Wallet as WalletIcon } from 'lucide-react';
+import { Loader2, Clock, Briefcase, ArrowRight, ShieldCheck, Wallet as WalletIcon, LogOut } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { Card, Money } from '@/src/components/ui';
 import { jsonFetch } from '@/src/lib/net';
@@ -44,20 +44,25 @@ export function DashboardScreen({ base }: { base: string }) {
   const load = useCallback(async () => {
     if (!plugId) return;
     try {
-      // apiFetch automatically handles token validation and redirects on 401
-      const body = await apiFetch(withSource(`/api/plugs/${plugId}/dashboard`, base), {}, { skipAuthRedirect: false });
+      // skipAuthRedirect: we own the recovery below. Letting apiFetch bounce to /login on a
+      // 401 only cleared the token, not the plug identity in localStorage — so the entry
+      // routing kept sending the user straight back here and re-401'd. That loop is what
+      // stranded people on "Session expired" with no way out.
+      const body = await apiFetch(withSource(`/api/plugs/${plugId}/dashboard`, base), {}, { skipAuthRedirect: true });
       setData(body);
       setLeft(body.lock?.seconds ?? null);
       setError(null);
     } catch (e: any) {
-      // Stale session (plug no longer exists) — sign out rather than stranding the user
-      // on a dead error card they can't leave.
-      if (/plug not found/i.test(e?.message ?? '')) {
+      const msg = e?.message ?? '';
+      // Dead/expired session, or a plug that no longer exists — sign out FULLY (clears the
+      // plug identity AND the token) so the entry routing stops looping the user back here,
+      // then send them to re-authenticate.
+      if (/session expired|unauthor|plug not found|\b401\b/i.test(msg)) {
         signOutPlug();
         router.replace(`${base}/auth/phone`);
         return;
       }
-      setError(e.message);
+      setError(msg);
     }
   }, [plugId, base, router]);
 
@@ -83,14 +88,22 @@ export function DashboardScreen({ base }: { base: string }) {
     const jobId = data?.lock?.jobId;
     if (left === 0 && jobId && !unlocked.current) {
       unlocked.current = true;
-      apiFetch(withSource(`/api/jobs/${jobId}/unlock`, base), { method: 'POST' }, { skipAuthRedirect: false }).finally(load);
+      apiFetch(withSource(`/api/jobs/${jobId}/unlock`, base), { method: 'POST' }, { skipAuthRedirect: true }).finally(load);
     }
   }, [left, data?.lock?.jobId, load, base]);
 
   if (error) {
     return (
       <PlugShell base={base} plug={null}>
-        <Card className="p-4 border-red-200"><p className="text-sm text-red-600">{error}</p></Card>
+        <Card className="p-4 border-red-200 space-y-3">
+          <p className="text-sm text-red-600">{error}</p>
+          <button
+            onClick={() => { signOutPlug(); router.replace(`${base}/auth/phone`); }}
+            className="inline-flex items-center gap-2 rounded-pill border border-midnight/15 bg-white px-4 py-2 text-[13px] font-bold text-midnight hover:bg-bone transition-colors"
+          >
+            <LogOut className="w-4 h-4" /> Log out &amp; sign in again
+          </button>
+        </Card>
       </PlugShell>
     );
   }

@@ -32,7 +32,7 @@ export default function PlugProfilePage() {
   const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/app/plugs/${plugId}` : '';
 
   return (
-    <Shell back="/app/browse" mark={false} footer={<RequestPlugButton plugId={plugId} />}>
+    <Shell back="/app/browse" mark={false} footer={<RequestPlugButton plugId={plugId} plugName={plug?.name} plugTrade={plug?.trade} />}>
       {/* Cover + identity */}
       <div className="rounded-[24px] overflow-hidden border border-midnight/[0.06] card-shadow bg-white">
         <div className="h-24 bg-gradient-to-br from-midnight to-deep-blue relative">
