@@ -79,7 +79,9 @@ export const api = {
       }
       return res.json();
     },
-    // Returns { accessToken, refreshToken, user: { id, phone, name, role, status }, isNewUser }.
+    // Returns { accessToken, refreshToken, user: { id, phone, name, role, status }, isNewUser,
+    // plugId } — plugId is the caller's PlugProfile id (what /plugs/:id expects) for a returning
+    // Plug, or null if they have no profile yet.
     // With verifyOnly: true the backend just confirms the code (no account created, no tokens)
     // and returns { verified: true } — used by Plug onboarding, where the account is created
     // at the end via POST /auth/register.
