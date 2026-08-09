@@ -1,6 +1,6 @@
 // src/components/LocationInput.tsx
 import React, { useState } from 'react';
-import { MapPin, Search } from 'lucide-react';
+import { MapPin, Search, Loader2 } from 'lucide-react';
 
 interface LocationInputProps {
   onLocationSelect: (location: { latitude: number; longitude: number; address: string }) => void;
@@ -71,38 +71,40 @@ export function LocationInput({ onLocationSelect }: LocationInputProps) {
   };
 
   return (
-    <div className="flex flex-col gap-3 my-4">
-      <label className="text-sm font-medium">Your Location</label>
-      
+    <div className="flex flex-col gap-3">
+      <span className="block text-[11px] font-bold uppercase tracking-[0.14em] text-slate">Your location</span>
+
       <div className="flex gap-2">
         <input
           type="text"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          placeholder="Enter address, street, or city..."
-          className="bg-white border-gold  p-2 rounded-md w-full"
+          onKeyDown={(e) => e.key === 'Enter' && handleManualSearch()}
+          placeholder="Enter address, street, or city…"
+          className="w-full rounded-2xl bg-white border border-midnight/10 px-4 py-3.5 text-midnight placeholder:text-slate/50 focus:outline-none focus:border-gold focus:ring-4 focus:ring-gold/10 transition-shadow"
         />
         <button
           type="button"
           onClick={handleManualSearch}
           disabled={loading}
-          className="bg-gold text-white px-4 py-4 rounded-md"
-           >
-           <Search className="w-4 h-4" />
-           </button>
+          aria-label="Search address"
+          className="shrink-0 grid place-items-center rounded-2xl bg-gold text-midnight px-4 hover:bg-gold-light active:scale-[0.98] transition-all disabled:opacity-45 disabled:pointer-events-none"
+        >
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+        </button>
       </div>
 
       <button
         type="button"
         onClick={handleGetBrowserLocation}
         disabled={loading}
-        className="bg-midnight text-white px-4 py-4 rounded-full flex items-center justify-center gap-2"
+        className="inline-flex items-center justify-center gap-2 rounded-pill bg-midnight text-white font-bold py-3.5 px-6 hover:bg-deep-blue active:scale-[0.99] transition-all disabled:opacity-45 disabled:pointer-events-none"
       >
-        <MapPin className="w-4 h-4" /> Use Current Location
+        <MapPin className="w-4 h-4" /> Use current location
       </button>
 
-      {loading && <p className="text-sm text-gray-500">Detecting location...</p>}
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {loading && <p className="text-sm text-slate">Detecting location…</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
     </div>
   );
 }
