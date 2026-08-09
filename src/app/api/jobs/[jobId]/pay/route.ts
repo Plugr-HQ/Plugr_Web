@@ -38,12 +38,33 @@ export async function POST(
   const { jobId } = await params;
   const repo = getRepo(resolveSource(request));
 
-  const job = await repo.getJob(jobId);
+  // Optional amount — the WhatsApp/hosted pay page sends the agreed escrow amount for
+  // bot-booked jobs, which are created with no price. Ignored once an amount is already set.
+  let bodyAmount: number | undefined;
+  try {
+    const body = await request.json();
+    const n = Number(body?.amount);
+    if (Number.isFinite(n) && n > 0) bodyAmount = Math.round(n);
+  } catch {
+    /* no body — in-app flow where the job already carries its amount */
+  }
+
+  let job = await repo.getJob(jobId);
   if (!job) {
     return NextResponse.json({ error: 'job not found' }, { status: 404 });
   }
   if (job.status === 'paid_escrow') {
     return NextResponse.json({ error: 'job is already paid' }, { status: 409 });
+  }
+
+  // If the job has no amount yet, persist the client-confirmed one before minting the VA, so
+  // the webhook and the eventual release move the correct sum. Never overwrite a set amount.
+  if (!(Number(job.amount) > 0)) {
+    if (!bodyAmount) {
+      return NextResponse.json({ error: 'an amount is required to start payment' }, { status: 400 });
+    }
+    await repo.setJobAmount(job.id, bodyAmount);
+    job = { ...job, amount: bodyAmount };
   }
 
   // Reuse an existing pending virtual account for this job instead of minting a new one on

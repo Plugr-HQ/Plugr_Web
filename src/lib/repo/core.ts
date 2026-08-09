@@ -296,6 +296,15 @@ export async function setJobStatus(
   await q(`update "Job" set ${sets.join(', ')} where id = $1`, vals);
 }
 
+/**
+ * Set the escrow amount for a job. Used by the WhatsApp handoff: bot-booked jobs are created
+ * with no price, so the client confirms the agreed amount on the hosted pay page and it's
+ * persisted here before the ALATPay virtual account is minted (so the webhook/release use it).
+ */
+export async function setJobAmount(jobId: string, amount: number): Promise<void> {
+  await q(`update "Job" set "escrowAmount" = $2, "updatedAt" = now() where id = $1`, [jobId, amount]);
+}
+
 // ---------------------------------------------------------------- transactions
 
 export async function txnsForJob(jobId: string): Promise<TxnRow[]> {

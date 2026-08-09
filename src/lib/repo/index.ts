@@ -105,6 +105,7 @@ export interface Repo {
     status: JobStatus,
     opts?: { completedAt?: Date; escrowReleasedAt?: Date }
   ): Promise<void>;
+  setJobAmount(jobId: string, amount: number): Promise<void>;
 
   // transactions
   txnsForJob(jobId: string): Promise<TxnRow[]>;
