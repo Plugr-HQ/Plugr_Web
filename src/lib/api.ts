@@ -1,5 +1,48 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
+const REFRESH_KEY = 'plugr_refresh_token';
+
+// Shared in-flight refresh so a burst of parallel 401s (e.g. the dashboard's several calls)
+// triggers exactly one /auth/refresh, and they all wait on the same result.
+let refreshInFlight: Promise<boolean> | null = null;
+
+/**
+ * Exchange the stored refresh token for a fresh access token (silent session renewal).
+ * Returns true and updates localStorage on success; false if there's no refresh token or the
+ * backend rejects it (genuinely expired session). Callers should only log the user out on false.
+ */
+export function refreshAccessToken(): Promise<boolean> {
+  if (typeof window === 'undefined') return Promise.resolve(false);
+  if (refreshInFlight) return refreshInFlight;
+
+  const refreshToken = localStorage.getItem(REFRESH_KEY);
+  if (!refreshToken) return Promise.resolve(false);
+
+  refreshInFlight = (async () => {
+    try {
+      const res = await fetch(`${API_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+      if (!res.ok) return false;
+      const data = await res.json().catch(() => ({} as any));
+      if (data?.accessToken) {
+        localStorage.setItem('plugr_token', data.accessToken);
+        if (data.refreshToken) localStorage.setItem(REFRESH_KEY, data.refreshToken);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+
+  return refreshInFlight;
+}
+
 export const setToken = (token: string) => {
   if (typeof window !== 'undefined') {
     localStorage.setItem('plugr_token', token);
@@ -16,6 +59,7 @@ export const getToken = () => {
 export const clearToken = () => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('plugr_token');
+    localStorage.removeItem(REFRESH_KEY);
   }
 };
 
@@ -95,6 +139,17 @@ export const api = {
         const data = await res.json().catch(() => ({} as any));
         throw new Error(data?.message || 'Verification failed.');
       }
+      return res.json();
+    },
+    // Exchange a refresh token for fresh claims. Prefer refreshAccessToken() for the silent
+    // 401-retry path; this raw method is here for completeness.
+    refresh: async (refreshToken: string) => {
+      const res = await fetch(`${API_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ refreshToken }),
+      });
+      if (!res.ok) throw new Error('Session refresh failed');
       return res.json();
     },
   },

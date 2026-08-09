@@ -213,6 +213,11 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
       });
 
       if (body.accessToken) setToken(body.accessToken);
+      // Keep the refresh token too, so the new Plug's session renews silently instead of
+      // hard-expiring when the access token lapses.
+      if (body.refreshToken && typeof window !== 'undefined') {
+        localStorage.setItem('plugr_refresh_token', body.refreshToken);
+      }
       setPlugId(body.plug.id);
       setPlugOnboarded(true);
       clearPlugDraft();

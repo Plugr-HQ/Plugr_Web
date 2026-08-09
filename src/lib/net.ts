@@ -2,18 +2,28 @@
 // Small shared client-side helpers: money formatting, an auth-aware fetch, the client identity
 // stored in localStorage, and job-status labels. Client-safe (no secrets).
 
-import { authHeaders } from '@/src/lib/api';
+import { authHeaders, refreshAccessToken } from '@/src/lib/api';
 
 export const naira = (n: number | string | null | undefined) =>
   '₦' + Number(n || 0).toLocaleString('en-NG');
 
 export async function jsonFetch<T = any>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, {
-    ...init,
-    // authHeaders() attaches the stored access token when present so guarded /app proxy routes
-    // can forward it. Harmless for public routes — they ignore it.
-    headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(init?.headers || {}) },
-  });
+  // authHeaders() attaches the stored access token when present so guarded /app proxy routes
+  // can forward it (re-read each attempt). Harmless for public routes — they ignore it.
+  const doFetch = () =>
+    fetch(url, {
+      ...init,
+      headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(init?.headers || {}) },
+    });
+
+  let res = await doFetch();
+
+  // On a 401, try a silent refresh and replay once before giving up.
+  if (res.status === 401) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) res = await doFetch();
+  }
+
   const body = await res.json().catch(() => ({} as any));
   if (!res.ok) {
     throw new Error((body && (body.error || body.detail)) || `Request failed (${res.status})`);
