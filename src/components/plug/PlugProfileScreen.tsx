@@ -147,8 +147,8 @@ export function PlugProfileScreen({ base }: { base: string }) {
   return (
     <PlugShell base={base} plug={plug}>
       {/* Cover + identity — the view clients see, owned */}
-      <div className="rounded-[24px] overflow-hidden border border-midnight/[0.06] card-shadow bg-white rise">
-        <div className="relative h-24 bg-gradient-to-br from-midnight to-deep-blue">
+      <div className="rounded-3xl overflow-hidden border border-midnight/6 card-shadow bg-white rise">
+        <div className="relative h-24 bg-linear-to-br from-midnight to-deep-blue">
           <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #E8A020 0, transparent 40%)' }} />
           <div className="absolute top-3 right-3 flex gap-2">
             <button onClick={() => setShowId(true)} className="inline-flex items-center gap-1.5 rounded-pill bg-white/15 hover:bg-white/25 backdrop-blur px-3 py-1.5 text-[12px] font-bold text-white transition-colors">
@@ -203,7 +203,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
       {/* Verification — NIN + Liveness only at launch */}
       <div className="mt-4 grid grid-cols-2 gap-2 rise rise-1">
         {['NIN', 'Liveness'].map((v) => (
-          <div key={v} className="rounded-2xl bg-white border border-midnight/[0.06] p-3 text-center">
+          <div key={v} className="rounded-2xl bg-white border border-midnight/6 p-3 text-center">
             <ShieldCheck className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
             <span className="block text-[10.5px] font-bold text-midnight leading-tight">{v} Verified</span>
           </div>
@@ -238,7 +238,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
         <Label className="mb-3">Skills</Label>
         <div className="flex flex-wrap gap-2">
           {p.skills.map((s: string) => (
-            <span key={s} className="rounded-pill bg-bone border border-midnight/[0.06] px-3 py-1.5 text-[13px] font-medium text-midnight">{s}</span>
+            <span key={s} className="rounded-pill bg-bone border border-midnight/6 px-3 py-1.5 text-[13px] font-medium text-midnight">{s}</span>
           ))}
         </div>
       </Card>
@@ -249,7 +249,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
         {p.history.map((h: any, i: number, a: any[]) => (
           <div key={h.title} className="flex gap-3">
             <div className="flex flex-col items-center">
-              <span className="grid place-items-center h-9 w-9 rounded-xl bg-midnight/[0.06] text-gold shrink-0"><Briefcase className="w-4 h-4" /></span>
+              <span className="grid place-items-center h-9 w-9 rounded-xl bg-midnight/6 text-gold shrink-0"><Briefcase className="w-4 h-4" /></span>
               {i < a.length - 1 && <span className="w-0.5 flex-1 bg-midnight/10 my-1" />}
             </div>
             <div className="pb-5">
@@ -271,7 +271,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
         <div className="space-y-2.5">
           {UPGRADES.map((u) => (
             <div key={u.label} className="flex items-center gap-3 opacity-70">
-              <span className="grid place-items-center h-6 w-6 rounded-full bg-midnight/[0.06] shrink-0"><Lock className="w-3 h-3 text-slate" /></span>
+              <span className="grid place-items-center h-6 w-6 rounded-full bg-midnight/6 shrink-0"><Lock className="w-3 h-3 text-slate" /></span>
               <span className="min-w-0">
                 <span className="block text-sm font-semibold text-midnight">{u.label}</span>
                 <span className="block text-[11px] text-slate">{u.why}</span>
