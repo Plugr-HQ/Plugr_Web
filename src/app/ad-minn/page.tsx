@@ -18,6 +18,16 @@ type PendingPlug = {
   created_at: string
 }
 
+type PlugRow = {
+  id: string
+  name: string
+  phone?: string
+  trade: string
+  status: string
+  jobsCompleted: number
+  joined: string
+}
+
 export default function AdminDashboard() {
   // Dispatch is the primary/default admin view.
   const [activeTab, setActiveTab] = useState<AdminTab>('dispatch')
@@ -33,43 +43,122 @@ export default function AdminDashboard() {
   )
 }
 
-// ── PlugsTable is still a static placeholder (a full "all plugs" admin list is a follow-up);
-// Verifications below is wired to real pending plugs.
-
 function PlugsTable() {
-  const plugs = [
-    { id: '1', name: 'Suleiman Yusuf', trade: 'Electrician', status: 'Verified', jobs: 24, joined: 'Oct 12, 2023' },
-    { id: '2', name: 'John Okoro', trade: 'Plumber', status: 'Available', jobs: 18, joined: 'Oct 15, 2023' },
-    { id: '3', name: 'Tunde Williams', trade: 'Electrician', status: 'Busy', jobs: 42, joined: 'Sep 28, 2023' },
-  ]
+  const [plugs, setPlugs] = useState<PlugRow[] | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+
+  const loadPlugs = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const qs = new URLSearchParams()
+      if (search.trim()) qs.set('search', search.trim())
+      const data = await apiFetch(`/api/admin/plugs?${qs.toString()}`, {}, { redirectTo: '/ad-minn/login' })
+      setPlugs(Array.isArray(data?.plugs) ? data.plugs : [])
+    } catch (e: any) {
+      if (e?.message === 'Session expired') return
+      setError(e?.message ?? 'Could not load artisans list.')
+      setPlugs([])
+    } finally {
+      setLoading(false)
+    }
+  }, [search])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void loadPlugs()
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [loadPlugs])
+
+  if (loading && !plugs) {
+    return (
+      <div className="flex items-center justify-center gap-2 py-16 text-sm text-slate">
+        <Loader2 className="h-5 w-5 animate-spin text-gold" /> Fetching active artisans from database…
+      </div>
+    )
+  }
 
   return (
-    <TableCard>
-      <Thead cols={[{ label: 'Artisan' }, { label: 'Trade' }, { label: 'Status' }, { label: 'Jobs' }, { label: 'Joined' }, { label: 'Actions', right: true }]} />
-      <tbody>
-        {plugs.map((plug) => (
-          <tr key={plug.id} className={rowClass}>
-            <td className={cellClass}>
-              <div className="flex items-center gap-3">
-                <Avatar name={plug.name} />
-                <span className="text-sm font-bold text-midnight">{plug.name}</span>
-              </div>
-            </td>
-            <td className={cn(cellClass, 'text-sm text-slate')}>{plug.trade}</td>
-            <td className={cellClass}>
-              <Chip tone={plug.status === 'Verified' ? 'green' : plug.status === 'Busy' ? 'amber' : 'gold'}>{plug.status}</Chip>
-            </td>
-            <td className={cn(cellClass, 'text-sm font-bold text-midnight')}>{plug.jobs}</td>
-            <td className={cn(cellClass, 'whitespace-nowrap text-sm text-slate')}>{plug.joined}</td>
-            <td className={cn(cellClass, 'text-right')}>
-              <button className="rounded-full p-1.5 text-slate transition-colors hover:bg-bone hover:text-midnight">
-                <MoreVertical className="h-5 w-5" />
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </TableCard>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-4">
+        <input
+          type="text"
+          placeholder="Search by name, phone, or trade…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full max-w-sm rounded-2xl border border-midnight/10 bg-white px-4 py-2.5 text-sm text-midnight placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10"
+        />
+        <div className="text-xs font-semibold text-slate">{plugs?.length ?? 0} Artisan(s) Found</div>
+      </div>
+
+      {error && (
+        <div className="rounded-[18px] border border-red-500/20 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+          {error}
+        </div>
+      )}
+
+      <TableCard>
+        <Thead
+          cols={[
+            { label: 'Artisan' },
+            { label: 'Trade / Category' },
+            { label: 'Status' },
+            { label: 'Completed Jobs' },
+            { label: 'Joined' },
+            { label: 'Actions', right: true },
+          ]}
+        />
+        <tbody>
+          {plugs?.length === 0 ? (
+            <tr>
+              <td colSpan={6} className="py-8 text-center text-sm text-slate">
+                No artisans found matching criteria.
+              </td>
+            </tr>
+          ) : (
+            plugs?.map((plug) => (
+              <tr key={plug.id} className={rowClass}>
+                <td className={cellClass}>
+                  <div className="flex items-center gap-3">
+                    <Avatar name={plug.name} />
+                    <div>
+                      <span className="block text-sm font-bold text-midnight">{plug.name}</span>
+                      {plug.phone && <span className="text-xs text-slate">{plug.phone}</span>}
+                    </div>
+                  </div>
+                </td>
+                <td className={cn(cellClass, 'text-sm text-slate')}>{plug.trade}</td>
+                <td className={cellClass}>
+                  <Chip
+                    tone={
+                      plug.status === 'ACTIVE' || plug.status === 'Verified'
+                        ? 'green'
+                        : plug.status === 'BUSY' || plug.status === 'Busy'
+                          ? 'amber'
+                          : 'neutral'
+                    }
+                  >
+                    {plug.status}
+                  </Chip>
+                </td>
+                <td className={cn(cellClass, 'text-sm font-bold text-midnight')}>{plug.jobsCompleted ?? 0}</td>
+                <td className={cn(cellClass, 'whitespace-nowrap text-sm text-slate')}>
+                  {new Date(plug.joined).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </td>
+                <td className={cn(cellClass, 'text-right')}>
+                  <button className="rounded-full p-1.5 text-slate transition-colors hover:bg-bone hover:text-midnight">
+                    <MoreVertical className="h-5 w-5" />
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </TableCard>
+    </div>
   )
 }
 

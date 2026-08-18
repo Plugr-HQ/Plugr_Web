@@ -1,13 +1,11 @@
 // src/app/ad-minn/_components/JobPipeline.tsx
-// Job Pipeline — jobs across ALL statuses with a status filter and a manual status-override for
-// edge cases. Reuses the GET /jobs proxy (no status => all). Styled on the /app design system.
-// The override offers every status and surfaces the JobStateMachine's real error — no client-side
-// pre-validation, so the UI can't drift from backend truth.
+// Job Pipeline — jobs across ALL statuses with a status filter, direct plug assignment,
+// and manual status-override for edge cases. Reuses the GET /jobs proxy.
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Inbox } from 'lucide-react';
+import { Inbox, Loader2 } from 'lucide-react';
 import { authHeaders, clearToken } from '@/src/lib/api';
 import { apiFetch } from '@/src/lib/api-client';
 import { cn } from '@/src/lib/utils';
@@ -44,8 +42,8 @@ type JobRow = {
   escrowAmount?: number | null;
   createdAt: string;
   client?: { name?: string | null; phone?: string | null } | null;
-  category?: { name?: string | null; code?: string | null } | null;
-  plug?: { user?: { name?: string | null } | null } | null;
+  category?: { id?: string | null; name?: string | null; code?: string | null } | null;
+  plug?: { id?: string | null; user?: { name?: string | null } | null } | null;
 };
 
 const prettyStatus = (s: string) => s.replace(/_/g, ' ');
@@ -64,6 +62,7 @@ export function JobPipeline() {
   const [hasNext, setHasNext] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'ALL' | JobStatus>('ALL');
   const [overrideJob, setOverrideJob] = useState<JobRow | null>(null);
+  const [assignJob, setAssignJob] = useState<JobRow | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const adminFetch = useCallback(
@@ -121,6 +120,16 @@ export function JobPipeline() {
     [loadJobs, page, statusFilter],
   );
 
+  const onAssigned = useCallback(
+    (plugName: string) => {
+      setAssignJob(null);
+      setToast(`Job successfully assigned to ${plugName}.`);
+      setTimeout(() => setToast(null), 4000);
+      void loadJobs(page, statusFilter);
+    },
+    [loadJobs, page, statusFilter],
+  );
+
   return (
     <div className="space-y-4">
       {toast && <Toast>{toast}</Toast>}
@@ -165,7 +174,18 @@ export function JobPipeline() {
                 <td className={cellClass}><Chip tone={STATUS_TONE[job.status] ?? 'neutral'}>{prettyStatus(job.status)}</Chip></td>
                 <td className={cn(cellClass, 'whitespace-nowrap text-sm text-slate')}>{formatDate(job.createdAt)}</td>
                 <td className={cn(cellClass, 'text-right')}>
-                  <PillButton variant="outline" className="px-4 py-2 text-xs" onClick={() => setOverrideJob(job)}>Override</PillButton>
+                  <div className="flex items-center justify-end gap-2">
+                    {(!job.plug?.user?.name || job.status === 'PENDING' || job.status === 'SEARCHING_PLUG') && (
+                      <PillButton
+                        variant="primary"
+                        className="px-3 py-1.5 text-xs"
+                        onClick={() => setAssignJob(job)}
+                      >
+                        Assign Plug
+                      </PillButton>
+                    )}
+                    <PillButton variant="outline" className="px-3 py-1.5 text-xs" onClick={() => setOverrideJob(job)}>Override</PillButton>
+                  </div>
                 </td>
               </tr>
             ))
@@ -177,8 +197,114 @@ export function JobPipeline() {
         <Pager page={page} hasNext={hasNext} onPrev={() => loadJobs(page - 1, statusFilter)} onNext={() => loadJobs(page + 1, statusFilter)} />
       )}
 
+      {assignJob && <AssignPlugModal job={assignJob} adminFetch={adminFetch} onClose={() => setAssignJob(null)} onAssigned={onAssigned} />}
       {overrideJob && <OverrideModal job={overrideJob} adminFetch={adminFetch} onClose={() => setOverrideJob(null)} onOverridden={onOverridden} />}
     </div>
+  );
+}
+
+function AssignPlugModal({
+  job,
+  adminFetch,
+  onClose,
+  onAssigned,
+}: {
+  job: JobRow;
+  adminFetch: (input: string, init?: RequestInit) => Promise<any>;
+  onClose: () => void;
+  onAssigned: (plugName: string) => void;
+}) {
+  const [plugs, setPlugs] = useState<Array<{ id: string; name: string; trade: string; phone?: string }>>([]);
+  const [selectedPlugId, setSelectedPlugId] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchPlugs() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await adminFetch('/api/admin/plugs?status=ACTIVE');
+        const list = Array.isArray(data?.plugs) ? data.plugs : [];
+        setPlugs(list);
+      } catch (e: any) {
+        if (e?.message === 'Session expired') return;
+        setError(e?.message || 'Failed to fetch available artisans.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    void fetchPlugs();
+  }, [adminFetch]);
+
+  async function confirmAssign() {
+    if (!selectedPlugId || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await adminFetch(`/api/admin/jobs/${job.id}/assign`, {
+        method: 'PATCH',
+        body: JSON.stringify({ plugId: selectedPlugId }),
+      });
+      const assignedPlug = plugs.find((p) => p.id === selectedPlugId);
+      onAssigned(assignedPlug?.name || 'Artisan');
+    } catch (e: any) {
+      if (e?.message === 'Session expired') return;
+      setError(e?.message || 'Failed to assign artisan to job.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <Modal
+      title="Assign Plug to Job"
+      sub={`Client: ${job.client?.name ?? 'Unknown'} · Category: ${job.category?.name ?? 'General'}`}
+      onClose={onClose}
+      footer={
+        <>
+          <PillButton variant="ghost" onClick={onClose}>Cancel</PillButton>
+          <PillButton variant="primary" loading={submitting} disabled={!selectedPlugId || loading} onClick={confirmAssign}>
+            {submitting ? 'Assigning…' : 'Confirm Assignment'}
+          </PillButton>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <div>
+          <FieldLabel htmlFor="select-plug">Select Active Plug</FieldLabel>
+          {loading ? (
+            <div className="flex items-center gap-2 py-3 text-xs text-slate">
+              <Loader2 className="h-4 w-4 animate-spin text-gold" /> Loading active artisans…
+            </div>
+          ) : plugs.length === 0 ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+              No active plugs found in database.
+            </div>
+          ) : (
+            <FilterSelect
+              id="select-plug"
+              className="w-full rounded-2xl"
+              value={selectedPlugId}
+              onChange={(e) => {
+                setSelectedPlugId(e.target.value);
+                setError(null);
+              }}
+            >
+              <option value="">-- Choose an Artisan --</option>
+              {plugs.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} ({p.trade}){p.phone ? ` - ${p.phone}` : ''}
+                </option>
+              ))}
+            </FilterSelect>
+          )}
+        </div>
+
+        {error && <ModalError>{error}</ModalError>}
+      </div>
+    </Modal>
   );
 }
 
