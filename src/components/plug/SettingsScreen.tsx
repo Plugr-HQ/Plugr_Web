@@ -123,6 +123,21 @@ export function SettingsScreen({ base }: { base: string }) {
 
 type BankOption = { code: string; name: string; logoUrl: string };
 
+function BankLogo({ url }: { url?: string }) {
+  const [failed, setFailed] = useState(false);
+  if (!url || failed) {
+    return <Landmark className="h-5 w-5 text-gold" />;
+  }
+  return (
+    <img
+      src={url}
+      alt=""
+      className="h-full w-full object-contain p-1.5"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 function PayoutSection() {
   const [bank, setBank] = useState<PlugBank | null>(null);
   const [editing, setEditing] = useState(false);
@@ -235,7 +250,9 @@ function PayoutSection() {
 
         {selectedBank && (
           <div className="flex items-center gap-2 px-1">
-            <img src={selectedBank.logoUrl} alt="" className="h-5 w-5 rounded-full object-contain" onError={(e) => (e.currentTarget.style.display = 'none')} />
+            <span className="grid h-5 w-5 shrink-0 place-items-center">
+              <BankLogo url={selectedBank.logoUrl} />
+            </span>
             <span className="text-xs text-slate">{selectedBank.name}</span>
           </div>
         )}
@@ -299,11 +316,7 @@ function PayoutSection() {
     <Card className="flex items-center justify-between gap-3 p-4">
       <div className="flex min-w-0 items-center gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gold/15 text-gold overflow-hidden">
-          {bank.bankLogoUrl ? (
-            <img src={bank.bankLogoUrl} alt="" className="h-full w-full object-contain p-1.5" onError={(e) => (e.currentTarget.style.display = 'none')} />
-          ) : (
-            <Landmark className="h-5 w-5" />
-          )}
+          <BankLogo url={bank.bankLogoUrl} />
         </span>
         <div className="min-w-0">
           <p className="truncate text-sm font-bold text-midnight">{bank.bankName}</p>
