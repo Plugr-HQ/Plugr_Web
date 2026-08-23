@@ -158,7 +158,7 @@ export const api = {
       const params = new URLSearchParams();
       if (city) params.append('city', city);
       if (categoryCode) params.append('categoryCode', categoryCode);
-      
+
       const res = await fetch(`${API_URL}/plugs?${params.toString()}`, {
         method: 'GET',
         headers: getHeaders(),
@@ -180,7 +180,7 @@ export const api = {
     getAll: async (status?: string) => {
       const params = new URLSearchParams();
       if (status) params.append('status', status);
-      
+
       const res = await fetch(`${API_URL}/jobs?${params.toString()}`, {
         method: 'GET',
         headers: getHeaders(true),
@@ -197,5 +197,37 @@ export const api = {
       if (!res.ok) throw new Error('Failed to update job status');
       return res.json();
     }
-  }
+  },
+  //Bank verification check against provided account Number and Bank Code
+  verification: {
+    getBanks: async (): Promise<{ code: string; name: string; logoUrl: string }[]> => {
+      const res = await fetch(`${API_URL}/verification/banks`, {
+        method: 'GET',
+        headers: getHeaders(),
+      });
+      if (!res.ok) throw new Error('Failed to fetch bank list');
+      return res.json();
+    },
+    validateAccount: async (
+      accountNumber: string,
+      bankCode: string,
+    ): Promise<{
+      accountNumber: string;
+      accountName: string;
+      bankCode: string;
+      bankName: string;
+      bankLogoUrl: string;
+    }> => {
+      const params = new URLSearchParams({ accountNumber, bankCode });
+      const res = await fetch(`${API_URL}/verification/bank-account?${params.toString()}`, {
+        method: 'GET',
+        headers: getHeaders(),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({} as any));
+        throw new Error(data?.message || 'Could not verify this account');
+      }
+      return res.json();
+    },
+  },
 };

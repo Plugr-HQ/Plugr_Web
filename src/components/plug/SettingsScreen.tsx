@@ -18,6 +18,7 @@ import { Loader2, ShieldCheck, Clock, Landmark, LogOut, Pencil, Check } from 'lu
 import { cn } from '@/src/lib/utils';
 import { Card } from '@/src/components/ui';
 import { jsonFetch } from '@/src/lib/net';
+import { api } from '@/src/lib/api';
 import {
   getPlugId, getPlugPhone, maskPlugPhone, getPlugBank, setPlugBank, signOutPlug, type PlugBank,
 } from '@/src/app/app/_lib/plugAuth';
@@ -48,7 +49,7 @@ export function SettingsScreen({ base }: { base: string }) {
     if (!id) return;
     jsonFetch(withSource(`/api/plugs/${id}/dashboard`, base))
       .then((d) => setPlug(d.plug))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, [base]);
 
@@ -119,24 +120,92 @@ export function SettingsScreen({ base }: { base: string }) {
   );
 }
 
+
+type BankOption = { code: string; name: string; logoUrl: string };
+
 function PayoutSection() {
   const [bank, setBank] = useState<PlugBank | null>(null);
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState<PlugBank>({ bankName: '', accountNumber: '', accountName: '' });
+
+  const [banks, setBanks] = useState<BankOption[]>([]);
+  const [banksLoading, setBanksLoading] = useState(false);
+  const [bankCode, setBankCode] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+
+  const [validating, setValidating] = useState(false);
+  const [validated, setValidated] = useState<{ accountName: string; bankName: string; bankLogoUrl: string } | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   useEffect(() => {
     const b = getPlugBank();
     setBank(b);
-    if (b) setForm(b);
   }, []);
 
-  function save() {
-    const clean: PlugBank = {
-      bankName: form.bankName.trim(),
-      accountNumber: form.accountNumber.replace(/\D/g, '').slice(0, 10),
-      accountName: form.accountName.trim(),
+  // Load the bank list once editing starts, not on every render of the settings screen.
+  useEffect(() => {
+    if (!editing || banks.length > 0) return;
+    setBanksLoading(true);
+    api.verification
+      .getBanks()
+      .then(setBanks)
+      .catch(() => setValidationError('Could not load bank list. Check your connection and try again.'))
+      .finally(() => setBanksLoading(false));
+  }, [editing, banks.length]);
+
+  // Auto-validate once both a bank and a full 10-digit account number are present.
+  // requestId guards against a stale response landing after the user has already changed
+  // the bank/account number again (classic race: slow first request, fast second one).
+  useEffect(() => {
+    if (!bankCode || accountNumber.length !== 10) {
+      setValidated(null);
+      setValidationError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setValidating(true);
+    setValidationError(null);
+    setValidated(null);
+
+    const timer = setTimeout(() => {
+      api.verification
+        .validateAccount(accountNumber, bankCode)
+        .then((result) => {
+          if (cancelled) return;
+          setValidated({ accountName: result.accountName, bankName: result.bankName, bankLogoUrl: result.bankLogoUrl });
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          setValidationError(err?.message || 'Could not verify this account. Double-check the number and bank.');
+        })
+        .finally(() => {
+          if (!cancelled) setValidating(false);
+        });
+    }, 400); // small debounce so pasting/typing the last digit doesn't fire twice
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
     };
-    if (!clean.bankName || clean.accountNumber.length < 10 || !clean.accountName) return;
+  }, [bankCode, accountNumber]);
+
+  function startEdit() {
+    setBankCode(bank?.bankCode ?? '');
+    setAccountNumber(bank?.accountNumber ?? '');
+    setValidated(null);
+    setValidationError(null);
+    setEditing(true);
+  }
+
+  function save() {
+    if (!validated || !bankCode || accountNumber.length !== 10) return;
+    const clean: PlugBank = {
+      bankName: validated.bankName,
+      bankCode,
+      accountNumber,
+      accountName: validated.accountName, // Monnify-confirmed — never the user's own typed value
+      bankLogoUrl: validated.bankLogoUrl,
+    };
     setPlugBank(clean);
     setBank(clean);
     setEditing(false);
@@ -146,14 +215,63 @@ function PayoutSection() {
     'w-full rounded-2xl border border-midnight/10 bg-white px-4 py-3 text-sm text-midnight placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow';
 
   if (editing) {
+    const selectedBank = banks.find((b) => b.code === bankCode);
+
     return (
       <Card className="space-y-3 p-4">
-        <input className={input} placeholder="Bank name (e.g. GTBank)" value={form.bankName} onChange={(e) => setForm({ ...form, bankName: e.target.value })} />
-        <input className={input} inputMode="numeric" placeholder="Account number (10 digits)" value={form.accountNumber} onChange={(e) => setForm({ ...form, accountNumber: e.target.value.replace(/\D/g, '').slice(0, 10) })} />
-        <input className={input} placeholder="Account name" value={form.accountName} onChange={(e) => setForm({ ...form, accountName: e.target.value })} />
+        <select
+          className={cn(input, 'appearance-none')}
+          value={bankCode}
+          onChange={(e) => setBankCode(e.target.value)}
+          disabled={banksLoading}
+        >
+          <option value="">{banksLoading ? 'Loading banks…' : 'Select your bank'}</option>
+          {banks.map((b) => (
+            <option key={b.code} value={b.code}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+
+        {selectedBank && (
+          <div className="flex items-center gap-2 px-1">
+            <img src={selectedBank.logoUrl} alt="" className="h-5 w-5 rounded-full object-contain" onError={(e) => (e.currentTarget.style.display = 'none')} />
+            <span className="text-xs text-slate">{selectedBank.name}</span>
+          </div>
+        )}
+
+        <input
+          className={input}
+          inputMode="numeric"
+          placeholder="Account number (10 digits)"
+          value={accountNumber}
+          onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+        />
+
+        {/* Confirmed account name — read-only, never typed by the user */}
+        {validating && (
+          <div className="flex items-center gap-2 px-1 text-xs text-slate">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Verifying account…
+          </div>
+        )}
+        {!validating && validated && (
+          <div className="flex items-center gap-2 rounded-2xl bg-gold/10 px-4 py-2.5 text-sm font-semibold text-midnight">
+            <Check className="h-4 w-4 text-gold" /> {validated.accountName}
+          </div>
+        )}
+        {!validating && validationError && (
+          <p className="px-1 text-xs font-semibold text-red-600">{validationError}</p>
+        )}
+
         <div className="flex gap-3 pt-1">
-          <button onClick={() => setEditing(false)} className="flex-1 rounded-pill px-4 py-2.5 text-sm font-bold text-slate hover:text-midnight">Cancel</button>
-          <button onClick={save} className="flex flex-1 items-center justify-center gap-2 rounded-pill bg-midnight py-2.5 text-sm font-bold text-white transition-colors hover:bg-deep-blue">
+          <button onClick={() => setEditing(false)} className="flex-1 rounded-pill px-4 py-2.5 text-sm font-bold text-slate hover:text-midnight">
+            Cancel
+          </button>
+          <button
+            onClick={save}
+            disabled={!validated}
+            className="flex flex-1 items-center justify-center gap-2 rounded-pill bg-midnight py-2.5 text-sm font-bold text-white transition-colors hover:bg-deep-blue disabled:opacity-40 disabled:hover:bg-midnight"
+          >
             <Check className="h-4 w-4" /> Save
           </button>
         </div>
@@ -170,7 +288,7 @@ function PayoutSection() {
           </span>
           <span className="text-sm text-slate">No payout account yet</span>
         </div>
-        <button onClick={() => setEditing(true)} className="rounded-pill bg-gold px-4 py-2 text-xs font-bold text-midnight transition-colors hover:bg-gold-light">
+        <button onClick={startEdit} className="rounded-pill bg-gold px-4 py-2 text-xs font-bold text-midnight transition-colors hover:bg-gold-light">
           Add
         </button>
       </Card>
@@ -180,8 +298,12 @@ function PayoutSection() {
   return (
     <Card className="flex items-center justify-between gap-3 p-4">
       <div className="flex min-w-0 items-center gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gold/15 text-gold">
-          <Landmark className="h-5 w-5" />
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gold/15 text-gold overflow-hidden">
+          {bank.bankLogoUrl ? (
+            <img src={bank.bankLogoUrl} alt="" className="h-full w-full object-contain p-1.5" onError={(e) => (e.currentTarget.style.display = 'none')} />
+          ) : (
+            <Landmark className="h-5 w-5" />
+          )}
         </span>
         <div className="min-w-0">
           <p className="truncate text-sm font-bold text-midnight">{bank.bankName}</p>
@@ -190,7 +312,7 @@ function PayoutSection() {
           </p>
         </div>
       </div>
-      <button onClick={() => setEditing(true)} className="flex items-center gap-1.5 rounded-pill border border-midnight/10 px-3.5 py-2 text-xs font-bold text-midnight transition-colors hover:bg-bone">
+      <button onClick={startEdit} className="flex items-center gap-1.5 rounded-pill border border-midnight/10 px-3.5 py-2 text-xs font-bold text-midnight transition-colors hover:bg-bone">
         <Pencil className="h-3.5 w-3.5" /> Edit
       </button>
     </Card>

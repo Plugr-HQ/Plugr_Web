@@ -33,7 +33,7 @@ export type PlugDraft = {
   consentAgreed?: boolean;
   consentDocVersion?: string;
   consentAt?: string; // ISO timestamp
-}; 
+};
 
 /* ------------------------------------------------------- Plug ID & Phone Session */
 
@@ -110,8 +110,13 @@ export function clearPlugDraft() {
 const BANK_KEY = 'plugr_plug_bank';
 const PIN_KEY = 'plugr_plug_pin';
 
-export type PlugBank = { bankName: string; accountNumber: string; accountName: string };
-
+export type PlugBank = {
+  bankName: string;
+  bankCode?: string; // Monnify bank code — optional so any pre-existing localStorage record (no code) still parses fine
+  accountNumber: string;
+  accountName: string; // now always Monnify-confirmed, never free-typed, going forward
+  bankLogoUrl?: string;
+};
 export function setPlugBank(bank: PlugBank) {
   if (typeof window === 'undefined') return;
   localStorage.setItem(BANK_KEY, JSON.stringify(bank));
