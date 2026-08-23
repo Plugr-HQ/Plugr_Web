@@ -1,0 +1,110 @@
+[
+    {
+        "code": "044",
+        "name": "Access Bank",
+        "category": "commercial",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731835318/access-bank_u0pg90.png"
+    },
+    {
+        "code": "011",
+        "name": "First Bank of Nigeria",
+        "category": "commercial",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731835216/First_Bank_of_Nigeria_drawyb.png"
+    },
+    {
+        "code": "058",
+        "name": "Guaranty Trust Bank (GTB)",
+        "category": "commercial",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731834954/Guaranty_Trust_Bank_odgbdu.png"
+    },
+    {
+        "code": "033",
+        "name": "United Bank for Africa (UBA)",
+        "category": "commercial",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731908162/United_Bank_For_Africa_om7axi.png"
+    },
+    {
+        "code": "057",
+        "name": "Zenith Bank",
+        "category": "commercial",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731908201/Zenith_Bank_h40m09.png"
+    },
+    {
+        "code": "070",
+        "name": "Fidelity Bank",
+        "category": "commercial",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731835222/Fidelity_Bank_lkl2mr.png"
+    },
+    {
+        "code": "214",
+        "name": "FCMB",
+        "category": "commercial",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731835213/First_City_Monument_Bank_aeufbo.png"
+    },
+    {
+        "code": "221",
+        "name": "Stanbic IBTC",
+        "category": "commercial",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731908079/Stanbic_IBTC_Bank_qjczcl.png"
+    },
+    {
+        "code": "232",
+        "name": "Sterling Bank",
+        "category": "commercial",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731908098/Sterling_Bank_ooipqt.png"
+    },
+    {
+        "code": "035",
+        "name": "Wema Bank / ALAT",
+        "category": "commercial",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731908191/Wema_Bank_cr2pvu.png"
+    },
+    {
+        "code": "999992",
+        "name": "OPay",
+        "category": "fintech",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731910673/OPay_Digital_Services_Limited__OPay_zyh5d0.png"
+    },
+    {
+        "code": "50515",
+        "name": "Moniepoint MFB",
+        "category": "fintech",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731907889/Moniepoint_MFB_hxoelg.png"
+    },
+    {
+        "code": "50211",
+        "name": "Kuda Bank",
+        "category": "fintech",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731835102/Kuda_Bank_f5nrij.png"
+    },
+    {
+        "code": "999991",
+        "name": "PalmPay",
+        "category": "fintech",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731910656/PalmPay_lzs7yt.png"
+    },
+    {
+        "code": "51318",
+        "name": "FairMoney MFB",
+        "category": "fintech",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731834992/Fairmoney_Microfinance_Bank_idowum.png"
+    },
+    {
+        "code": "565",
+        "name": "Carbon",
+        "category": "fintech",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731835272/Carbon_olhrz6.png"
+    },
+    {
+        "code": "120003",
+        "name": "MoMo PSB (MTN)",
+        "category": "psb",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731907895/MTN_Momo_PSB_rorvc4.png"
+    },
+    {
+        "code": "120004",
+        "name": "Smartcash PSB (Airtel)",
+        "category": "psb",
+        "url": "https://res.cloudinary.com/dweovytuc/image/upload/f_auto,q_auto/v1731834962/Airtel_Smartcash_PSB_oxqa5c.png"
+    }
+]
