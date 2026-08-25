@@ -28,8 +28,6 @@ export type PlugDraft = {
   nin?: string;
   liveness?: boolean;
   step?: number;
-  // Consent — set when the Plug ticks the box in OnboardingProfileScreen (optional there)
-  // or the consent gate in OnboardingVerifyScreen (required there, before NIN entry).
   consentAgreed?: boolean;
   consentDocVersion?: string;
   consentAt?: string; // ISO timestamp
@@ -64,10 +62,6 @@ export function maskPlugPhone(phone?: string | null): string {
   return `${p.slice(0, 4)}••••${p.slice(-3)}`;
 }
 
-/**
- * Returning-user detection (lightweight). The real build resolves this from the DB by phone;
- * here a completed onboarding marks the plug as returning so AUTH-03 skips to PLG-01.
- */
 export function setPlugOnboarded(done = true) {
   if (typeof window === 'undefined') return;
   if (done) localStorage.setItem(ONBOARDED_KEY, '1');
@@ -80,7 +74,6 @@ export function isPlugOnboarded(): boolean {
 }
 
 /* ------------------------------------------------------- onboarding draft */
-// Spec: "Progress saved at each step — a Plug who drops off resumes where they left off."
 
 export function getPlugDraft(): PlugDraft {
   if (typeof window === 'undefined') return {};
@@ -103,20 +96,27 @@ export function clearPlugDraft() {
   localStorage.removeItem(DRAFT_KEY);
 }
 
-/* ------------------------------------------------- bank account + PIN (PLG-03) */
+/* ------------------------------------------------- bank account (PLG-03) */
 // Single active account model — one linked account at a time, not a beneficiaries list.
-// Held client-side on purpose: a withdrawal PIN has no business sitting in the backend DB.
+//
+// The withdrawal PIN is deliberately NOT stored or checked here. It used to live in
+// localStorage with a client-side check (setPlugPin/hasPlugPin/checkPlugPin) — that let
+// anyone with script access to the page (an extension, XSS, a shared device) read the PIN
+// outright, and the "check" was purely cosmetic since nothing on the server verified it.
+// The PIN now only ever exists transiently in component state and is sent to the backend
+// on withdraw/set-pin; `PlugProfile.has_pin` (from the dashboard/snapshot response) is the
+// source of truth for whether a plug has one set, not anything read from localStorage.
 
 const BANK_KEY = 'plugr_plug_bank';
-const PIN_KEY = 'plugr_plug_pin';
 
 export type PlugBank = {
   bankName: string;
-  bankCode?: string; // Monnify bank code — optional so any pre-existing localStorage record (no code) still parses fine
+  bankCode?: string;
   accountNumber: string;
-  accountName: string; // now always Monnify-confirmed, never free-typed, going forward
+  accountName: string;
   bankLogoUrl?: string;
 };
+
 export function setPlugBank(bank: PlugBank) {
   if (typeof window === 'undefined') return;
   localStorage.setItem(BANK_KEY, JSON.stringify(bank));
@@ -136,11 +136,7 @@ export function bankLast4(bank: PlugBank | null) {
   return bank ? bank.accountNumber.slice(-4) : '';
 }
 
-
-
-
 /* ------------------------------------------------------ notifications seen */
-// Last time the plug opened the Notifications screen — anything newer reads as unread.
 
 export function getNotifsSeenAt(): number {
   if (typeof window === 'undefined') return 0;
@@ -154,14 +150,12 @@ export function markNotifsSeen() {
 
 /**
  * Full logout. Clears every piece of client-side plug session state AND the backend JWT
- * (plugr_token) — the auth-persistence fix stored the session in localStorage across tabs and
- * restarts, so a redirect alone would leave a live token behind. This wipes both so no plug-only
- * route or guarded API call can succeed afterwards.
+ * (plugr_token).
  */
 export function signOutPlug() {
   if (typeof window === 'undefined') return;
-  [PHONE_KEY, ONBOARDED_KEY, PLUG_ID_KEY, DRAFT_KEY, BANK_KEY, PIN_KEY, NOTIFS_SEEN_KEY].forEach((k) =>
+  [PHONE_KEY, ONBOARDED_KEY, PLUG_ID_KEY, DRAFT_KEY, BANK_KEY, NOTIFS_SEEN_KEY].forEach((k) =>
     localStorage.removeItem(k)
   );
-  clearToken(); // remove the plugr_token JWT so the backend session can't linger
+  clearToken();
 }

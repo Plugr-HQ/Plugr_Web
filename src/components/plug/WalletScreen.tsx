@@ -7,6 +7,8 @@
 //    countdown rather than being disabled/hidden (manages payment anxiety).
 //  · Single active account — no beneficiaries list. Changing it is gated by OTP.
 //  · PIN gates withdrawals (not OTP); PIN is set during first bank setup, not before.
+//  · PIN verification is server-side only (POST /withdraw, POST /pin) — plug.has_pin from
+//    the dashboard response drives whether BankSetup asks for a new PIN, not localStorage.
 
 'use client';
 
@@ -21,9 +23,6 @@ import {
   getPlugBank,
   setPlugBank,
   bankLast4,
-  setPlugPin,
-  hasPlugPin,
-  checkPlugPin,
   maskPlugPhone,
   getPlugPhone,
   type PlugBank,
@@ -77,7 +76,6 @@ export function WalletScreen({ base }: { base: string }) {
     return () => clearInterval(id);
   }, [load]);
 
-  // lock countdown -> UI calls /unlock at zero
   useEffect(() => {
     if (left === null || left <= 0) return;
     const t = setTimeout(() => setLeft((s) => (s === null ? null : s - 1)), 1000);
@@ -108,6 +106,7 @@ export function WalletScreen({ base }: { base: string }) {
   const available = Number(plug.wallet_balance_available);
   const locked = Number(plug.wallet_balance_locked);
   const counting = left !== null && left > 0;
+  const hasPin = Boolean(plug.has_pin);
 
   const earned = (allJobs ?? []).filter((j: any) =>
     ['released', 'withdrawn', 'paid_escrow', 'accepted', 'completed'].includes(j.status)
@@ -202,7 +201,6 @@ export function WalletScreen({ base }: { base: string }) {
 
       {tab === 'earnings' ? (
         <div className="mt-4 rise rise-4">
-          {/* Range toggle */}
           <div className="flex gap-1.5 mb-3">
             {([['week', 'This week'], ['month', 'This month'], ['total', 'All time']] as const).map(([k, label]) => (
               <button
@@ -286,6 +284,7 @@ export function WalletScreen({ base }: { base: string }) {
           counting={counting}
           left={left}
           bank={bank}
+          hasPin={hasPin}
           onBank={(b) => { setPlugBank(b); setBank(b); }}
           reload={load}
         />
@@ -297,7 +296,7 @@ export function WalletScreen({ base }: { base: string }) {
 /* --------------------------------------------------------------- bottom sheets */
 
 function Sheets({
-  sheet, close, base, plugId, available, locked, counting, left, bank, onBank, reload,
+  sheet, close, base, plugId, available, locked, counting, left, bank, hasPin, onBank, reload,
 }: {
   sheet: Exclude<Sheet, null>;
   close: () => void;
@@ -308,6 +307,7 @@ function Sheets({
   counting: boolean;
   left: number | null;
   bank: PlugBank | null;
+  hasPin: boolean;
   onBank: (b: PlugBank) => void;
   reload: () => void;
 }) {
@@ -322,8 +322,12 @@ function Sheets({
           <X className="w-4 h-4" />
         </button>
 
-        {sheet === 'bank' && <BankSetup bank={bank} onDone={(b) => { onBank(b); close(); }} />}
-        {sheet === 'changeBank' && <ChangeBank onDone={(b) => { onBank(b); close(); }} />}
+        {sheet === 'bank' && (
+          <BankSetup bank={bank} plugId={plugId} base={base} hasPin={hasPin} onDone={(b) => { onBank(b); close(); reload(); }} />
+        )}
+        {sheet === 'changeBank' && (
+          <ChangeBank plugId={plugId} base={base} hasPin={hasPin} onDone={(b) => { onBank(b); close(); reload(); }} />
+        )}
         {sheet === 'withdraw' && (
           <Withdraw
             base={base}
@@ -343,16 +347,25 @@ function Sheets({
 }
 
 /** First bank setup — this is also where the 4-digit PIN gets set (spec: not before). */
-function BankSetup({ bank, onDone }: { bank: PlugBank | null; onDone: (b: PlugBank) => void }) {
+function BankSetup({
+  bank, plugId, base, hasPin, onDone,
+}: {
+  bank: PlugBank | null;
+  plugId: string;
+  base: string;
+  hasPin: boolean;
+  onDone: (b: PlugBank) => void;
+}) {
   const [bankName, setBankName] = useState(bank?.bankName ?? '');
   const [accountNumber, setAccountNumber] = useState(bank?.accountNumber ?? '');
   const [accountName, setAccountName] = useState(bank?.accountName ?? '');
   const [pin, setPin] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const needPin = !hasPlugPin();
+  const [saving, setSaving] = useState(false);
+  const needPin = !hasPin;
 
-  function save() {
+  async function save() {
     setError(null);
     if (!bankName.trim() || accountNumber.length !== 10 || !accountName.trim()) {
       return setError('Enter your bank, a 10-digit account number, and the account name.');
@@ -360,9 +373,23 @@ function BankSetup({ bank, onDone }: { bank: PlugBank | null; onDone: (b: PlugBa
     if (needPin) {
       if (pin.length !== 4) return setError('Set a 4-digit PIN.');
       if (pin !== confirm) return setError('Those PINs don’t match.');
-      setPlugPin(pin);
     }
-    onDone({ bankName: bankName.trim(), accountNumber, accountName: accountName.trim() });
+
+    setSaving(true);
+    try {
+      if (needPin) {
+        await apiFetch(withSource(`/api/plugs/${plugId}/pin`, base), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body: JSON.stringify({ pin }),
+        }, { skipAuthRedirect: false });
+      }
+      onDone({ bankName: bankName.trim(), accountNumber, accountName: accountName.trim() });
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -428,20 +455,27 @@ function BankSetup({ bank, onDone }: { bank: PlugBank | null; onDone: (b: PlugBa
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
       <div className="mt-5">
-        <GoldButton onClick={save}>Save account</GoldButton>
+        <GoldButton onClick={save} loading={saving}>Save account</GoldButton>
       </div>
     </>
   );
 }
 
 /** Changing the linked account is OTP-gated (spec) — withdrawals use the PIN instead. */
-function ChangeBank({ onDone }: { onDone: (b: PlugBank) => void }) {
+function ChangeBank({
+  plugId, base, hasPin, onDone,
+}: {
+  plugId: string;
+  base: string;
+  hasPin: boolean;
+  onDone: (b: PlugBank) => void;
+}) {
   const [stage, setStage] = useState<'otp' | 'form'>('otp');
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const phone = typeof window !== 'undefined' ? getPlugPhone() : '';
 
-  if (stage === 'form') return <BankSetup bank={null} onDone={onDone} />;
+  if (stage === 'form') return <BankSetup bank={null} plugId={plugId} base={base} hasPin={hasPin} onDone={onDone} />;
 
   return (
     <>
@@ -501,18 +535,19 @@ function Withdraw({
     setError(null);
     const amt = Number(amount);
     if (!Number.isFinite(amt) || amt <= 0 || amt > available) return setError('Enter an amount within your available balance.');
-    if (!checkPlugPin(pin)) return setError('Wrong PIN. Try again.');
+    if (pin.length !== 4) return setError('Enter your 4-digit PIN.');
+
     setBusy(true);
     try {
       await apiFetch(withSource(`/api/plugs/${plugId}/withdraw`, base), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ amount: amt }),
+        body: JSON.stringify({ amount: amt, pin }),
       }, { skipAuthRedirect: false });
       setDone(true);
       reload();
     } catch (e: any) {
-      setError(e.message);
+      setError(/invalid pin/i.test(e?.message ?? '') ? 'Wrong PIN. Try again.' : e.message);
     } finally {
       setBusy(false);
     }
@@ -546,7 +581,6 @@ function Withdraw({
         {bank ? `${bank.bankName} · •••• ${bankLast4(bank)}` : 'No account linked'}
       </p>
 
-      {/* Locked state — entered, not hidden */}
       {counting && (
         <div className="mt-4 flex items-start gap-3 rounded-2xl border border-gold/20 bg-gold/[0.08] p-4">
           <Lock className="w-4 h-4 text-gold shrink-0 mt-0.5" />
