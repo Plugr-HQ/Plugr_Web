@@ -136,20 +136,8 @@ export function bankLast4(bank: PlugBank | null) {
   return bank ? bank.accountNumber.slice(-4) : '';
 }
 
-export function setPlugPin(pin: string) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(PIN_KEY, pin);
-}
 
-export function hasPlugPin(): boolean {
-  if (typeof window === 'undefined') return false;
-  return (localStorage.getItem(PIN_KEY) ?? '').length === 4;
-}
 
-export function checkPlugPin(pin: string): boolean {
-  if (typeof window === 'undefined') return false;
-  return localStorage.getItem(PIN_KEY) === pin;
-}
 
 /* ------------------------------------------------------ notifications seen */
 // Last time the plug opened the Notifications screen — anything newer reads as unread.
