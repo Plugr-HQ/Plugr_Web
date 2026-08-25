@@ -24,6 +24,8 @@ import {
 } from '@/src/app/app/_lib/plugAuth';
 import { withSource } from '@/src/lib/apiSource';
 import { PlugShell } from './PlugChrome';
+// NOTE: adjust this import path to wherever bank-logos.ts actually lives in your repo.
+import { BANK_LOGOS } from '@/src/lib/bank-logos';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate">{children}</p>;
@@ -123,6 +125,16 @@ export function SettingsScreen({ base }: { base: string }) {
 
 type BankOption = { code: string; name: string; logoUrl: string };
 
+// Built from the known bank-logos manifest — used whenever the live api.verification.getBanks()
+// call fails or returns empty, so the picker is never blank. api.verification.validateAccount()
+// still does the real verification either way; this list only ever drives the dropdown UI, never
+// whether an account is accepted.
+const FALLBACK_BANKS: BankOption[] = Object.values(BANK_LOGOS).map((b) => ({
+  code: b.code,
+  name: b.name,
+  logoUrl: b.logo,
+}));
+
 function BankLogo({ url }: { url?: string }) {
   const [failed, setFailed] = useState(false);
   if (!url || failed) {
@@ -150,6 +162,7 @@ function PayoutSection() {
   const [validating, setValidating] = useState(false);
   const [validated, setValidated] = useState<{ accountName: string; bankName: string; bankLogoUrl: string } | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [usingFallback, setUsingFallback] = useState(false);
 
   useEffect(() => {
     const b = getPlugBank();
@@ -157,13 +170,26 @@ function PayoutSection() {
   }, []);
 
   // Load the bank list once editing starts, not on every render of the settings screen.
+  // Falls back to the local BANK_LOGOS manifest if the live list fails or comes back empty —
+  // the picker should never be left with nothing selectable.
   useEffect(() => {
     if (!editing || banks.length > 0) return;
     setBanksLoading(true);
     api.verification
       .getBanks()
-      .then(setBanks)
-      .catch(() => setValidationError('Could not load bank list. Check your connection and try again.'))
+      .then((list) => {
+        if (list && list.length > 0) {
+          setBanks(list);
+          setUsingFallback(false);
+        } else {
+          setBanks(FALLBACK_BANKS);
+          setUsingFallback(true);
+        }
+      })
+      .catch(() => {
+        setBanks(FALLBACK_BANKS);
+        setUsingFallback(true);
+      })
       .finally(() => setBanksLoading(false));
   }, [editing, banks.length]);
 
@@ -234,6 +260,12 @@ function PayoutSection() {
 
     return (
       <Card className="space-y-3 p-4">
+        {usingFallback && (
+          <p className="px-1 text-[11px] text-slate/70">
+            Showing a standard bank list — live list unavailable right now.
+          </p>
+        )}
+
         <select
           className={cn(input, 'appearance-none')}
           value={bankCode}
