@@ -78,7 +78,7 @@ export function OtpScreen({ base }: { base: string }) {
         // A new number, or a Plug who hasn't finished onboarding (no PlugProfile yet) -> onboarding.
         // Only a fully-onboarded Plug goes to the dashboard, keyed by their PlugProfile id (the
         // id every /plugs/:id route expects — NOT the User id).
-        if (isNewUser || !plugId) {
+        if (isNewUser || !plugId || user.status === 'PENDING_ONBOARDING') {
           setPlugOnboarded(false);
           router.replace(`${base}/onboarding`);
           return;
