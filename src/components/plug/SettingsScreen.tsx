@@ -72,47 +72,53 @@ export function SettingsScreen({ base }: { base: string }) {
           <Loader2 className="h-4 w-4 animate-spin" /> Loading…
         </div>
       ) : (
-        <div className="space-y-5">
-          {/* Profile */}
-          <div className="rise">
-            <SectionLabel>Profile</SectionLabel>
-            <Card className="px-4">
-              <Field label="Name" value={plug?.name ?? '—'} />
-              <div className="h-px bg-midnight/[0.06]" />
-              <Field label="Phone" value={phone ? maskPlugPhone(phone) : '—'} />
-              <div className="h-px bg-midnight/[0.06]" />
-              <div className="flex items-center justify-between gap-3 py-3">
-                <span className="text-sm text-slate">Verification</span>
-                <span
-                  className={cn(
-                    'inline-flex items-center gap-1.5 rounded-pill px-2.5 py-1 text-[11px] font-bold',
-                    verified ? 'bg-gold/15 text-[#8a5a08]' : 'bg-slate/12 text-slate',
-                  )}
-                >
-                  {verified ? <ShieldCheck className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
-                  {verified ? 'Verified' : 'Under review'}
-                </span>
-              </div>
-            </Card>
-            <p className="mt-2 px-1 text-[11px] text-slate/70">
-              Name and verification are managed by Plugr and can’t be edited here. Update your bio and photo from the Profile tab.
-            </p>
+        <div className="flex flex-col">
+          <div className="space-y-5 pb-2">
+            {/* Profile */}
+            <div className="rise">
+              <SectionLabel>Profile</SectionLabel>
+              <Card className="px-4">
+                <Field label="Name" value={plug?.name ?? '—'} />
+                <div className="h-px bg-midnight/[0.06]" />
+                <Field label="Phone" value={phone ? maskPlugPhone(phone) : '—'} />
+                <div className="h-px bg-midnight/[0.06]" />
+                <div className="flex items-center justify-between gap-3 py-3">
+                  <span className="text-sm text-slate">Verification</span>
+                  <span
+                    className={cn(
+                      'inline-flex items-center gap-1.5 rounded-pill px-2.5 py-1 text-[11px] font-bold',
+                      verified ? 'bg-gold/15 text-[#8a5a08]' : 'bg-slate/12 text-slate',
+                    )}
+                  >
+                    {verified ? <ShieldCheck className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
+                    {verified ? 'Verified' : 'Under review'}
+                  </span>
+                </div>
+              </Card>
+              <p className="mt-2 px-1 text-[11px] text-slate/70">
+                Name and verification are managed by Plugr and can’t be edited here. Update your bio and photo from the Profile tab.
+              </p>
+            </div>
+
+            {/* Payout account */}
+            <div className="rise rise-1">
+              <SectionLabel>Payout account</SectionLabel>
+              <PayoutSection />
+              <p className="mt-2 px-1 text-[11px] text-slate/70">
+                Where your withdrawals are sent. Without this, a payout can’t reach your bank.
+              </p>
+            </div>
           </div>
 
-          {/* Payout account */}
-          <div className="rise rise-1">
-            <SectionLabel>Payout account</SectionLabel>
-            <PayoutSection />
-            <p className="mt-2 px-1 text-[11px] text-slate/70">
-              Where your withdrawals are sent. Without this, a payout can’t reach your bank.
-            </p>
-          </div>
-
-          {/* Logout */}
-          <div className="rise rise-2 pt-1">
+          {/* Logout — sticky + z-40 so the bank dropdown (z-30, can grow tall on short screens)
+             never renders over it. Pins to the bottom of this scroll area, which should land
+             right above PlugShell's mobile nav if that nav reserves its own space below (fixed
+             nav + matching bottom padding on the scroll container). If it still overlaps the
+             nav, that padding is what's missing in PlugChrome.tsx. */}
+          <div className="sticky bottom-4 z-40 mt-6 rise rise-2 bg-bone/95 backdrop-blur-sm pt-2">
             <button
               onClick={logout}
-              className="flex w-full items-center justify-center gap-2 rounded-pill border border-red-500/30 py-3.5 text-sm font-bold text-red-600 transition-colors hover:bg-red-50"
+              className="flex w-full items-center justify-center gap-2 rounded-pill border border-red-500/30 bg-white py-3.5 text-sm font-bold text-red-600 shadow-[0_4px_16px_-4px_rgba(15,23,42,0.15)] transition-colors hover:bg-red-50"
             >
               <LogOut className="h-4 w-4" /> Log out
             </button>
@@ -153,16 +159,23 @@ function PayoutSection() {
   }, []);
 
   // Load the bank list once editing starts, not on every render of the settings screen.
-  // Falls back to the local BANK_LOGOS manifest if the live list fails or comes back empty —
-  // the picker should never be left with nothing selectable.
+  // Filtered to only banks present in BANK_LOGOS (bank-logos.ts) — the live AT/Monnify bank
+  // list has ~200+ entries, most with no local logo asset, so it's cut down to the ones we
+  // actually have images for. logoUrl is swapped to our own asset too, since the live list's
+  // logoUrl (if any) isn't guaranteed to match what's on disk.
+  // Falls back to the local BANK_LOGOS manifest wholesale if the live list fails entirely.
   useEffect(() => {
     if (!editing || banks.length > 0) return;
     setBanksLoading(true);
+    const known = new Set(Object.keys(BANK_LOGOS));
     api.verification
       .getBanks()
       .then((list) => {
-        if (list && list.length > 0) {
-          setBanks(list);
+        const filtered = (list ?? [])
+          .filter((b) => known.has(b.code))
+          .map((b) => ({ ...b, logoUrl: BANK_LOGOS[b.code]?.logo ?? b.logoUrl }));
+        if (filtered.length > 0) {
+          setBanks(filtered);
           setUsingFallback(false);
         } else {
           setBanks(FALLBACK_BANKS);
