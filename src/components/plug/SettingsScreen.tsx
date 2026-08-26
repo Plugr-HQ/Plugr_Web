@@ -24,6 +24,7 @@ import {
 } from '@/src/app/app/_lib/plugAuth';
 import { withSource } from '@/src/lib/apiSource';
 import { PlugShell } from './PlugChrome';
+import { BankSelect, BankLogo, type BankOption } from './BankSelect';
 // NOTE: adjust this import path to wherever bank-logos.ts actually lives in your repo.
 import { BANK_LOGOS } from '@/src/lib/bank-logos';
 
@@ -122,9 +123,6 @@ export function SettingsScreen({ base }: { base: string }) {
   );
 }
 
-
-type BankOption = { code: string; name: string; logoUrl: string };
-
 // Built from the known bank-logos manifest — used whenever the live api.verification.getBanks()
 // call fails or returns empty, so the picker is never blank. api.verification.validateAccount()
 // still does the real verification either way; this list only ever drives the dropdown UI, never
@@ -134,21 +132,6 @@ const FALLBACK_BANKS: BankOption[] = Object.values(BANK_LOGOS).map((b) => ({
   name: b.name,
   logoUrl: b.logo,
 }));
-
-function BankLogo({ url }: { url?: string }) {
-  const [failed, setFailed] = useState(false);
-  if (!url || failed) {
-    return <Landmark className="h-5 w-5 text-gold" />;
-  }
-  return (
-    <img
-      src={url}
-      alt=""
-      className="h-full w-full object-contain p-1.5"
-      onError={() => setFailed(true)}
-    />
-  );
-}
 
 function PayoutSection() {
   const [bank, setBank] = useState<PlugBank | null>(null);
@@ -194,8 +177,6 @@ function PayoutSection() {
   }, [editing, banks.length]);
 
   // Auto-validate once both a bank and a full 10-digit account number are present.
-  // requestId guards against a stale response landing after the user has already changed
-  // the bank/account number again (classic race: slow first request, fast second one).
   useEffect(() => {
     if (!bankCode || accountNumber.length !== 10) {
       setValidated(null);
@@ -222,7 +203,7 @@ function PayoutSection() {
         .finally(() => {
           if (!cancelled) setValidating(false);
         });
-    }, 400); // small debounce so pasting/typing the last digit doesn't fire twice
+    }, 400);
 
     return () => {
       cancelled = true;
@@ -256,8 +237,6 @@ function PayoutSection() {
     'w-full rounded-2xl border border-midnight/10 bg-white px-4 py-3 text-sm text-midnight placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow';
 
   if (editing) {
-    const selectedBank = banks.find((b) => b.code === bankCode);
-
     return (
       <Card className="space-y-3 p-4">
         {usingFallback && (
@@ -266,28 +245,7 @@ function PayoutSection() {
           </p>
         )}
 
-        <select
-          className={cn(input, 'appearance-none')}
-          value={bankCode}
-          onChange={(e) => setBankCode(e.target.value)}
-          disabled={banksLoading}
-        >
-          <option value="">{banksLoading ? 'Loading banks…' : 'Select your bank'}</option>
-          {banks.map((b) => (
-            <option key={b.code} value={b.code}>
-              {b.name}
-            </option>
-          ))}
-        </select>
-
-        {selectedBank && (
-          <div className="flex items-center gap-2 px-1">
-            <span className="grid h-5 w-5 shrink-0 place-items-center">
-              <BankLogo url={selectedBank.logoUrl} />
-            </span>
-            <span className="text-xs text-slate">{selectedBank.name}</span>
-          </div>
-        )}
+        <BankSelect banks={banks} value={bankCode} onChange={setBankCode} loading={banksLoading} />
 
         <input
           className={input}
