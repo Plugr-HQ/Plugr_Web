@@ -180,7 +180,11 @@ function PayoutSection({ onDropdownOpenChange }: { onDropdownOpenChange?: (open:
       .then((list) => {
         const filtered = (list ?? [])
           .filter((b) => known.has(b.code))
-          .map((b) => ({ ...b, logoUrl: BANK_LOGOS[b.code]?.logo ?? b.logoUrl }));
+          .map((b) => ({
+            ...b,
+            name: BANK_LOGOS[b.code]?.name ?? b.name,
+            logoUrl: BANK_LOGOS[b.code]?.logo ?? b.logoUrl,
+          }));
         if (filtered.length > 0) {
           setBanks(filtered);
           setUsingFallback(false);
