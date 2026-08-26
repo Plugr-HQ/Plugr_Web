@@ -9,6 +9,11 @@
 //  · PIN gates withdrawals (not OTP); PIN is set during first bank setup, not before.
 //  · PIN verification is server-side only (POST /withdraw, POST /pin) — plug.has_pin from
 //    the dashboard response drives whether BankSetup asks for a new PIN, not localStorage.
+//
+// BankSetup uses BankSelect (same component + BANK_LOGOS-filtered list + Monnify auto-validate
+// as SettingsScreen's PayoutSection) instead of a free-text bank name field — so a bank linked
+// from here carries a real bankCode + confirmed accountName + bankLogoUrl, consistent with
+// what SettingsScreen produces.
 
 'use client';
 
@@ -28,8 +33,11 @@ import {
   type PlugBank,
 } from '@/src/app/app/_lib/plugAuth';
 import { PlugShell, JobStatusChip, EmptyState } from './PlugChrome';
+import { BankSelect, BankLogo, type BankOption } from './BankSelect';
 import { withSource } from '@/src/lib/apiSource';
-import { authHeaders } from '@/src/lib/api';
+import { api, authHeaders } from '@/src/lib/api';
+// NOTE: adjust this import path to wherever bank-logos.ts actually lives in your repo.
+import { BANK_LOGOS } from '@/src/lib/bank-logos';
 
 type Range = 'week' | 'month' | 'total';
 type Sheet = null | 'withdraw' | 'bank' | 'changeBank';
@@ -44,6 +52,16 @@ function hhmm(total: number) {
 }
 
 const naira = (n: number) => '₦' + Number(n || 0).toLocaleString('en-NG');
+
+// Built from the known bank-logos manifest — used whenever the live api.verification.getBanks()
+// call fails or returns empty, so the picker is never blank. Same constant as SettingsScreen.tsx;
+// duplicated here rather than shared to avoid a cross-file refactor for one 5-line array —
+// worth extracting to a shared module if a third screen ever needs it too.
+const FALLBACK_BANKS: BankOption[] = Object.values(BANK_LOGOS).map((b) => ({
+  code: b.code,
+  name: b.name,
+  logoUrl: b.logo,
+}));
 
 export function WalletScreen({ base }: { base: string }) {
   const [data, setData] = useState<any>(null);
@@ -155,11 +173,13 @@ export function WalletScreen({ base }: { base: string }) {
         )}
       </div>
 
-      {/* Bank account — single active account */}
+      {/* Bank account — single active account. Logo comes from PlugBank.bankLogoUrl, set
+         whenever a bank is linked/changed via BankSetup; BankLogo falls back to the Landmark
+         icon if there's no logo or the image fails to load. */}
       <Card className="mt-4 p-4 rise rise-2">
         <div className="flex items-center gap-3">
-          <span className="grid place-items-center h-10 w-10 rounded-xl bg-midnight/[0.04] text-midnight shrink-0">
-            <Landmark className="w-4 h-4" />
+          <span className="grid place-items-center h-10 w-10 rounded-xl bg-midnight/[0.04] text-midnight shrink-0 overflow-hidden">
+            <BankLogo url={bank?.bankLogoUrl} />
           </span>
           <div className="flex-1 min-w-0">
             {bank ? (
@@ -346,7 +366,11 @@ function Sheets({
   );
 }
 
-/** First bank setup — this is also where the 4-digit PIN gets set (spec: not before). */
+/** First bank setup — this is also where the 4-digit PIN gets set (spec: not before).
+ * Uses BankSelect + the same auto-validate-on-typing pattern as SettingsScreen's PayoutSection:
+ * pick a bank, type a 10-digit account number, and the account name is Monnify-confirmed —
+ * never hand-typed. Save is disabled until that confirmation succeeds.
+ */
 function BankSetup({
   bank, plugId, base, hasPin, onDone,
 }: {
@@ -356,19 +380,93 @@ function BankSetup({
   hasPin: boolean;
   onDone: (b: PlugBank) => void;
 }) {
-  const [bankName, setBankName] = useState(bank?.bankName ?? '');
+  const [banks, setBanks] = useState<BankOption[]>([]);
+  const [banksLoading, setBanksLoading] = useState(false);
+  const [usingFallback, setUsingFallback] = useState(false);
+
+  const [bankCode, setBankCode] = useState(bank?.bankCode ?? '');
   const [accountNumber, setAccountNumber] = useState(bank?.accountNumber ?? '');
-  const [accountName, setAccountName] = useState(bank?.accountName ?? '');
+
+  const [validating, setValidating] = useState(false);
+  const [validated, setValidated] = useState<{ accountName: string; bankName: string; bankLogoUrl: string } | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
+
   const [pin, setPin] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const needPin = !hasPin;
 
+  // Load the bank list once on mount — filtered to only banks we have a logo for, name/logo
+  // overridden from BANK_LOGOS same as SettingsScreen (the live provider's own name/logoUrl
+  // aren't trusted — see the "OPay 3" mislabel this fixes).
+  useEffect(() => {
+    setBanksLoading(true);
+    const known = new Set(Object.keys(BANK_LOGOS));
+    api.verification
+      .getBanks()
+      .then((list) => {
+        const filtered = (list ?? [])
+          .filter((b) => known.has(b.code))
+          .map((b) => ({
+            ...b,
+            name: BANK_LOGOS[b.code]?.name ?? b.name,
+            logoUrl: BANK_LOGOS[b.code]?.logo ?? b.logoUrl,
+          }));
+        if (filtered.length > 0) {
+          setBanks(filtered);
+          setUsingFallback(false);
+        } else {
+          setBanks(FALLBACK_BANKS);
+          setUsingFallback(true);
+        }
+      })
+      .catch(() => {
+        setBanks(FALLBACK_BANKS);
+        setUsingFallback(true);
+      })
+      .finally(() => setBanksLoading(false));
+  }, []);
+
+  // Auto-validate once both a bank and a full 10-digit account number are present.
+  useEffect(() => {
+    if (!bankCode || accountNumber.length !== 10) {
+      setValidated(null);
+      setValidationError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setValidating(true);
+    setValidationError(null);
+    setValidated(null);
+
+    const timer = setTimeout(() => {
+      api.verification
+        .validateAccount(accountNumber, bankCode)
+        .then((result) => {
+          if (cancelled) return;
+          setValidated({ accountName: result.accountName, bankName: result.bankName, bankLogoUrl: result.bankLogoUrl });
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          setValidationError(err?.message || 'Could not verify this account. Double-check the number and bank.');
+        })
+        .finally(() => {
+          if (!cancelled) setValidating(false);
+        });
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [bankCode, accountNumber]);
+
   async function save() {
     setError(null);
-    if (!bankName.trim() || accountNumber.length !== 10 || !accountName.trim()) {
-      return setError('Enter your bank, a 10-digit account number, and the account name.');
+    if (!validated || !bankCode || accountNumber.length !== 10) {
+      return setError('Pick your bank and enter a 10-digit account number to verify it.');
     }
     if (needPin) {
       if (pin.length !== 4) return setError('Set a 4-digit PIN.');
@@ -384,7 +482,13 @@ function BankSetup({
           body: JSON.stringify({ pin }),
         }, { skipAuthRedirect: false });
       }
-      onDone({ bankName: bankName.trim(), accountNumber, accountName: accountName.trim() });
+      onDone({
+        bankName: validated.bankName,
+        bankCode,
+        accountNumber,
+        accountName: validated.accountName, // Monnify-confirmed — never the user's own typed value
+        bankLogoUrl: validated.bankLogoUrl,
+      });
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -398,10 +502,17 @@ function BankSetup({
       <p className="mt-1 text-sm text-slate">One account at a time. This is where your money lands.</p>
 
       <div className="mt-5 space-y-4">
+        {usingFallback && (
+          <p className="px-1 text-[11px] text-slate/70">
+            Showing a standard bank list — live list unavailable right now.
+          </p>
+        )}
+
         <div>
           <Label className="mb-2">Bank</Label>
-          <TextInput value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="Wema Bank" autoFocus />
+          <BankSelect banks={banks} value={bankCode} onChange={setBankCode} loading={banksLoading} />
         </div>
+
         <div>
           <Label className="mb-2">Account number</Label>
           <TextInput
@@ -410,12 +521,24 @@ function BankSetup({
             inputMode="numeric"
             placeholder="0123456789"
             className="tnum"
+            autoFocus
           />
         </div>
-        <div>
-          <Label className="mb-2">Account name</Label>
-          <TextInput value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="Emeka Nwosu" />
-        </div>
+
+        {/* Confirmed account name — read-only, never typed by the user */}
+        {validating && (
+          <div className="flex items-center gap-2 px-1 text-xs text-slate">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Verifying account…
+          </div>
+        )}
+        {!validating && validated && (
+          <div className="flex items-center gap-2 rounded-2xl bg-gold/10 px-4 py-2.5 text-sm font-semibold text-midnight">
+            <Check className="h-4 w-4 text-gold" /> {validated.accountName}
+          </div>
+        )}
+        {!validating && validationError && (
+          <p className="px-1 text-xs font-semibold text-red-600">{validationError}</p>
+        )}
 
         {needPin && (
           <>
@@ -455,7 +578,7 @@ function BankSetup({
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
       <div className="mt-5">
-        <GoldButton onClick={save} loading={saving}>Save account</GoldButton>
+        <GoldButton onClick={save} loading={saving} disabled={!validated}>Save account</GoldButton>
       </div>
     </>
   );
@@ -577,9 +700,14 @@ function Withdraw({
   return (
     <>
       <h3 className="font-display text-2xl text-midnight">Withdraw to bank</h3>
-      <p className="mt-1 text-sm text-slate">
-        {bank ? `${bank.bankName} · •••• ${bankLast4(bank)}` : 'No account linked'}
-      </p>
+      <div className="mt-1 flex items-center gap-2">
+        <span className="grid place-items-center h-6 w-6 rounded-full bg-midnight/[0.04] shrink-0 overflow-hidden">
+          <BankLogo url={bank?.bankLogoUrl} />
+        </span>
+        <p className="text-sm text-slate truncate">
+          {bank ? `${bank.bankName} · •••• ${bankLast4(bank)}` : 'No account linked'}
+        </p>
+      </div>
 
       {counting && (
         <div className="mt-4 flex items-start gap-3 rounded-2xl border border-gold/20 bg-gold/[0.08] p-4">
