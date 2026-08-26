@@ -36,12 +36,16 @@ export function BankSelect({
     onChange,
     loading = false,
     placeholder = 'Select your bank',
+    onOpenChange,
 }: {
     banks: BankOption[];
     value: string;
     onChange: (code: string) => void;
     loading?: boolean;
     placeholder?: string;
+    // Fires whenever the dropdown panel opens or closes — lets a parent (e.g. the sticky
+    // Logout button in SettingsScreen) react and get out of the way while it's open.
+    onOpenChange?: (open: boolean) => void;
 }) {
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState('');
@@ -71,6 +75,19 @@ export function BankSelect({
             requestAnimationFrame(() => inputRef.current?.focus());
         }
     }, [open]);
+
+    // Report open/closed state up to the parent.
+    useEffect(() => {
+        onOpenChange?.(open);
+    }, [open, onOpenChange]);
+
+    // Safety net: if this component unmounts while still open (e.g. the user hits Cancel/Save
+    // in the parent form, which unmounts BankSelect entirely), make sure the parent hears
+    // "closed" so it doesn't get stuck thinking the dropdown is still up.
+    useEffect(() => {
+        return () => onOpenChange?.(false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     function pick(code: string) {
         onChange(code);

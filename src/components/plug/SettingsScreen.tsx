@@ -45,6 +45,9 @@ export function SettingsScreen({ base }: { base: string }) {
   const router = useRouter();
   const [plug, setPlug] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  // True while the bank-select dropdown (inside PayoutSection) is open. Drives the Logout
+  // button pushing down out of the way, then springing back once it closes.
+  const [bankDropdownOpen, setBankDropdownOpen] = useState(false);
   const phone = typeof window !== 'undefined' ? getPlugPhone() : '';
 
   useEffect(() => {
@@ -103,19 +106,23 @@ export function SettingsScreen({ base }: { base: string }) {
             {/* Payout account */}
             <div className="rise rise-1">
               <SectionLabel>Payout account</SectionLabel>
-              <PayoutSection />
+              <PayoutSection onDropdownOpenChange={setBankDropdownOpen} />
               <p className="mt-2 px-1 text-[11px] text-slate/70">
                 Where your withdrawals are sent. Without this, a payout can’t reach your bank.
               </p>
             </div>
           </div>
 
-          {/* Logout — sticky + z-40 so the bank dropdown (z-30, can grow tall on short screens)
-             never renders over it. Pins to the bottom of this scroll area, which should land
-             right above PlugShell's mobile nav if that nav reserves its own space below (fixed
-             nav + matching bottom padding on the scroll container). If it still overlaps the
-             nav, that padding is what's missing in PlugChrome.tsx. */}
-          <div className="sticky bottom-4 z-40 mt-6 rise rise-2 bg-bone/95 backdrop-blur-sm pt-2">
+          {/* Logout — pushes down out of the way while the bank dropdown is open (its list can
+             run tall on short screens), then springs back up once it closes. 340px is a rough
+             estimate of the open dropdown's height (search bar + list) — nudge it if there's
+             still a gap or slight overlap on your device. */}
+          <div
+            className={cn(
+              'sticky bottom-4 z-40 mt-6 rise rise-2 bg-bone/95 backdrop-blur-sm pt-2 transition-transform duration-300 ease-out',
+              bankDropdownOpen && 'translate-y-[340px]',
+            )}
+          >
             <button
               onClick={logout}
               className="flex w-full items-center justify-center gap-2 rounded-pill border border-red-500/30 bg-white py-3.5 text-sm font-bold text-red-600 shadow-[0_4px_16px_-4px_rgba(15,23,42,0.15)] transition-colors hover:bg-red-50"
@@ -139,7 +146,7 @@ const FALLBACK_BANKS: BankOption[] = Object.values(BANK_LOGOS).map((b) => ({
   logoUrl: b.logo,
 }));
 
-function PayoutSection() {
+function PayoutSection({ onDropdownOpenChange }: { onDropdownOpenChange?: (open: boolean) => void }) {
   const [bank, setBank] = useState<PlugBank | null>(null);
   const [editing, setEditing] = useState(false);
 
@@ -258,7 +265,13 @@ function PayoutSection() {
           </p>
         )}
 
-        <BankSelect banks={banks} value={bankCode} onChange={setBankCode} loading={banksLoading} />
+        <BankSelect
+          banks={banks}
+          value={bankCode}
+          onChange={setBankCode}
+          loading={banksLoading}
+          onOpenChange={onDropdownOpenChange}
+        />
 
         <input
           className={input}
