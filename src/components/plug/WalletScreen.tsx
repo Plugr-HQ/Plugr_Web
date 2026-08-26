@@ -37,7 +37,7 @@ import { BankSelect, BankLogo, type BankOption } from './BankSelect';
 import { withSource } from '@/src/lib/apiSource';
 import { api, authHeaders } from '@/src/lib/api';
 // NOTE: adjust this import path to wherever bank-logos.ts actually lives in your repo.
-import { BANK_LOGOS } from '@/src/lib/bank-logos';
+import { useBankList } from '@/src/hooks/useBankList';
 
 type Range = 'week' | 'month' | 'total';
 type Sheet = null | 'withdraw' | 'bank' | 'changeBank';
@@ -57,11 +57,7 @@ const naira = (n: number) => '₦' + Number(n || 0).toLocaleString('en-NG');
 // call fails or returns empty, so the picker is never blank. Same constant as SettingsScreen.tsx;
 // duplicated here rather than shared to avoid a cross-file refactor for one 5-line array —
 // worth extracting to a shared module if a third screen ever needs it too.
-const FALLBACK_BANKS: BankOption[] = Object.values(BANK_LOGOS).map((b) => ({
-  code: b.code,
-  name: b.name,
-  logoUrl: b.logo,
-}));
+
 
 export function WalletScreen({ base }: { base: string }) {
   const [data, setData] = useState<any>(null);
@@ -371,6 +367,8 @@ function Sheets({
  * pick a bank, type a 10-digit account number, and the account name is Monnify-confirmed —
  * never hand-typed. Save is disabled until that confirmation succeeds.
  */
+// Delete the module-level FALLBACK_BANKS constant entirely — moved into useBankList.ts.
+
 function BankSetup({
   bank, plugId, base, hasPin, onDone,
 }: {
@@ -380,9 +378,10 @@ function BankSetup({
   hasPin: boolean;
   onDone: (b: PlugBank) => void;
 }) {
-  const [banks, setBanks] = useState<BankOption[]>([]);
-  const [banksLoading, setBanksLoading] = useState(false);
-  const [usingFallback, setUsingFallback] = useState(false);
+  // Shared, session-cached list — see useBankList.ts. `true` because BankSetup only ever
+  // renders inside a sheet that's already conditionally mounted, so there's no separate
+  // "editing" gate here the way PayoutSection has.
+  const { banks, usingFallback, loading: banksLoading } = useBankList(true);
 
   const [bankCode, setBankCode] = useState(bank?.bankCode ?? '');
   const [accountNumber, setAccountNumber] = useState(bank?.accountNumber ?? '');
@@ -396,37 +395,6 @@ function BankSetup({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const needPin = !hasPin;
-
-  // Load the bank list once on mount — filtered to only banks we have a logo for, name/logo
-  // overridden from BANK_LOGOS same as SettingsScreen (the live provider's own name/logoUrl
-  // aren't trusted — see the "OPay 3" mislabel this fixes).
-  useEffect(() => {
-    setBanksLoading(true);
-    const known = new Set(Object.keys(BANK_LOGOS));
-    api.verification
-      .getBanks()
-      .then((list) => {
-        const filtered = (list ?? [])
-          .filter((b) => known.has(b.code))
-          .map((b) => ({
-            ...b,
-            name: BANK_LOGOS[b.code]?.name ?? b.name,
-            logoUrl: BANK_LOGOS[b.code]?.logo ?? b.logoUrl,
-          }));
-        if (filtered.length > 0) {
-          setBanks(filtered);
-          setUsingFallback(false);
-        } else {
-          setBanks(FALLBACK_BANKS);
-          setUsingFallback(true);
-        }
-      })
-      .catch(() => {
-        setBanks(FALLBACK_BANKS);
-        setUsingFallback(true);
-      })
-      .finally(() => setBanksLoading(false));
-  }, []);
 
   // Auto-validate once both a bank and a full 10-digit account number are present.
   useEffect(() => {
@@ -462,6 +430,7 @@ function BankSetup({
       clearTimeout(timer);
     };
   }, [bankCode, accountNumber]);
+
 
   async function save() {
     setError(null);

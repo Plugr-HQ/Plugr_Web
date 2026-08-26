@@ -26,7 +26,7 @@ import { withSource } from '@/src/lib/apiSource';
 import { PlugShell } from './PlugChrome';
 import { BankSelect, BankLogo, type BankOption } from './BankSelect';
 // NOTE: adjust this import path to wherever bank-logos.ts actually lives in your repo.
-import { BANK_LOGOS } from '@/src/lib/bank-logos';
+import { useBankList } from '@/src/hooks/useBankList';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate">{children}</p>;
@@ -106,7 +106,7 @@ export function SettingsScreen({ base }: { base: string }) {
             {/* Payout account */}
             <div className="rise rise-1">
               <SectionLabel>Payout account</SectionLabel>
-              <PayoutSection onDropdownOpenChange={setBankDropdownOpen} />
+              <PayoutSection />
               <p className="mt-2 px-1 text-[11px] text-slate/70">
                 Where your withdrawals are sent. Without this, a payout can’t reach your bank.
               </p>
@@ -140,65 +140,29 @@ export function SettingsScreen({ base }: { base: string }) {
 // call fails or returns empty, so the picker is never blank. api.verification.validateAccount()
 // still does the real verification either way; this list only ever drives the dropdown UI, never
 // whether an account is accepted.
-const FALLBACK_BANKS: BankOption[] = Object.values(BANK_LOGOS).map((b) => ({
-  code: b.code,
-  name: b.name,
-  logoUrl: b.logo,
-}));
 
-function PayoutSection({ onDropdownOpenChange }: { onDropdownOpenChange?: (open: boolean) => void }) {
+// Delete this entirely — moved into useBankList.ts:
+// const FALLBACK_BANKS: BankOption[] = Object.values(BANK_LOGOS).map(...)
+
+function PayoutSection() {
   const [bank, setBank] = useState<PlugBank | null>(null);
   const [editing, setEditing] = useState(false);
 
-  const [banks, setBanks] = useState<BankOption[]>([]);
-  const [banksLoading, setBanksLoading] = useState(false);
   const [bankCode, setBankCode] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
 
   const [validating, setValidating] = useState(false);
   const [validated, setValidated] = useState<{ accountName: string; bankName: string; bankLogoUrl: string } | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [usingFallback, setUsingFallback] = useState(false);
+
+  // Shared, session-cached list — see useBankList.ts. Only fetches while `editing` is true,
+  // and only once across every screen that uses it (this one + WalletScreen's BankSetup).
+  const { banks, usingFallback, loading: banksLoading } = useBankList(editing);
 
   useEffect(() => {
     const b = getPlugBank();
     setBank(b);
   }, []);
-
-  // Load the bank list once editing starts, not on every render of the settings screen.
-  // Filtered to only banks present in BANK_LOGOS (bank-logos.ts) — the live AT/Monnify bank
-  // list has ~200+ entries, most with no local logo asset, so it's cut down to the ones we
-  // actually have images for. logoUrl is swapped to our own asset too, since the live list's
-  // logoUrl (if any) isn't guaranteed to match what's on disk.
-  // Falls back to the local BANK_LOGOS manifest wholesale if the live list fails entirely.
-  useEffect(() => {
-    if (!editing || banks.length > 0) return;
-    setBanksLoading(true);
-    const known = new Set(Object.keys(BANK_LOGOS));
-    api.verification
-      .getBanks()
-      .then((list) => {
-        const filtered = (list ?? [])
-          .filter((b) => known.has(b.code))
-          .map((b) => ({
-            ...b,
-            name: BANK_LOGOS[b.code]?.name ?? b.name,
-            logoUrl: BANK_LOGOS[b.code]?.logo ?? b.logoUrl,
-          }));
-        if (filtered.length > 0) {
-          setBanks(filtered);
-          setUsingFallback(false);
-        } else {
-          setBanks(FALLBACK_BANKS);
-          setUsingFallback(true);
-        }
-      })
-      .catch(() => {
-        setBanks(FALLBACK_BANKS);
-        setUsingFallback(true);
-      })
-      .finally(() => setBanksLoading(false));
-  }, [editing, banks.length]);
 
   // Auto-validate once both a bank and a full 10-digit account number are present.
   useEffect(() => {
@@ -234,6 +198,7 @@ function PayoutSection({ onDropdownOpenChange }: { onDropdownOpenChange?: (open:
       clearTimeout(timer);
     };
   }, [bankCode, accountNumber]);
+
 
   function startEdit() {
     setBankCode(bank?.bankCode ?? '');
@@ -274,7 +239,6 @@ function PayoutSection({ onDropdownOpenChange }: { onDropdownOpenChange?: (open:
           value={bankCode}
           onChange={setBankCode}
           loading={banksLoading}
-          onOpenChange={onDropdownOpenChange}
         />
 
         <input
