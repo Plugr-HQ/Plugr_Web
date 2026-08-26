@@ -13,6 +13,7 @@ const ONBOARDED_KEY = 'plugr_plug_onboarded';
 const PLUG_ID_KEY = 'plugr_plug_id';
 const DRAFT_KEY = 'plugr_plug_draft';
 const NOTIFS_SEEN_KEY = 'plugr_plug_notifs_seen';
+const OTP_CHANNEL_KEY = 'plugr_otp_channel';
 
 export type PlugTrade = 'electrician' | 'plumber' | 'furniture';
 
@@ -53,6 +54,20 @@ export function setPlugPhone(phone: string) {
 export function getPlugPhone(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem(PHONE_KEY);
+}
+
+export function setPlugOtpChannel(channel: 'whatsapp' | 'sms') {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(OTP_CHANNEL_KEY, channel);
+  }
+}
+
+export function getPlugOtpChannel(): 'whatsapp' | 'sms' {
+  if (typeof window !== 'undefined') {
+    const v = localStorage.getItem(OTP_CHANNEL_KEY);
+    if (v === 'sms' || v === 'whatsapp') return v;
+  }
+  return 'whatsapp'; // default
 }
 
 export function maskPlugPhone(phone?: string | null): string {

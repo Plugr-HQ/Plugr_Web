@@ -16,7 +16,7 @@ import { ArrowRight, Loader2 } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
 import { Label, GoldButton } from '@/src/components/ui';
 import { cn } from '@/src/lib/utils';
-import { setPlugPhone } from '@/src/app/app/_lib/plugAuth';
+import { setPlugPhone, setPlugOtpChannel } from '@/src/app/app/_lib/plugAuth';
 import { api } from '@/src/lib/api';
 
 /** Display format: 0XX XXXX XXXX (spec). Stored as raw national digits. */
@@ -29,6 +29,7 @@ export function PhoneScreen({ base }: { base: string }) {
   const router = useRouter();
   const [digits, setDigits] = useState('');
   const [busy, setBusy] = useState(false);
+  const [channel, setChannel] = useState<'whatsapp' | 'sms'>('whatsapp');
   const [error, setError] = useState<string | null>(null);
 
   const complete = digits.length === 10;
@@ -46,8 +47,9 @@ export function PhoneScreen({ base }: { base: string }) {
     setError(null);
     try {
       const phone = `+234${digits}`;
-      await api.auth.requestOtp(phone, 'PLUG');
+      await api.auth.requestOtp(phone, 'PLUG', channel);
       setPlugPhone(digits);
+      setPlugOtpChannel(channel);
       router.push(`${base}/auth/otp`);
     } catch (e: any) {
       setError(e?.message ?? 'Could not send the code. Try again.');
@@ -111,6 +113,24 @@ export function PhoneScreen({ base }: { base: string }) {
           Nigerian numbers only for now. We never share your number with clients.
         </p>
       )}
+
+      <Label className="mt-6 mb-2">Send code via</Label>
+      <div className="flex gap-2 rounded-2xl bg-bone/60 border border-midnight/10 p-1">
+        {(['whatsapp', 'sms'] as const).map((c) => (
+          <button
+            key={c}
+            type="button"
+            disabled={busy}
+            onClick={() => setChannel(c)}
+            className={cn(
+              'flex-1 rounded-xl py-2.5 font-body text-sm font-bold transition-colors',
+              channel === c ? 'bg-white text-midnight shadow-sm' : 'text-slate/70'
+            )}
+          >
+            {c === 'whatsapp' ? 'WhatsApp' : 'SMS'}
+          </button>
+        ))}
+      </div>
     </Shell>
   );
 }

@@ -111,11 +111,15 @@ export const api = {
     // keeps their DB role regardless of what's passed here. Callers on a role-specific entry
     // point (e.g. the Plug phone screen) should pass their role so a first-time signup lands
     // in the right bucket instead of silently defaulting to CLIENT on the backend.
-    requestOtp: async (phone: string, role?: 'CLIENT' | 'PLUG') => {
+    requestOtp: async (phone: string, role?: 'CLIENT' | 'PLUG', channel?: 'whatsapp' | 'sms') => {
       const res = await fetch(`${API_URL}/auth/otp/request`, {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ phone, ...(role ? { role } : {}) }),
+        body: JSON.stringify({
+          phone,
+          ...(role ? { role } : {}),
+          ...(channel ? { channel } : {}),
+        }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({} as any));

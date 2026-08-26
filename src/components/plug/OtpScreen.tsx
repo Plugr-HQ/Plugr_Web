@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
 import { cn } from '@/src/lib/utils';
-import { getPlugPhone, maskPlugPhone, setPlugId, setPlugOnboarded } from '@/src/app/app/_lib/plugAuth';
+import { getPlugPhone, getPlugOtpChannel, maskPlugPhone, setPlugId, setPlugOnboarded } from '@/src/app/app/_lib/plugAuth';
 import { api, setToken } from '@/src/lib/api';
 
 const LENGTH = 6;
@@ -139,7 +139,7 @@ export function OtpScreen({ base }: { base: string }) {
     setResending(true);
     setError(null);
     try {
-      await api.auth.requestOtp(`+234${getPlugPhone()}`, 'PLUG');
+      await api.auth.requestOtp(`+234${getPlugPhone()}`, 'PLUG', getPlugOtpChannel());
       setDigits(Array(LENGTH).fill(''));
       setResendIn(RESEND_SECONDS);
       inputs.current[0]?.focus();
