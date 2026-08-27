@@ -97,13 +97,20 @@ export const api = {
       if (!res.ok) throw new Error('Registration failed');
       return res.json();
     },
-    login: async (phone: string) => {
+    // `channel` picks how the login code is delivered (default WhatsApp when omitted).
+    login: async (phone: string, channel?: 'whatsapp' | 'sms') => {
       const res = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ phone, ...(channel ? { channel } : {}) }),
       });
-      if (!res.ok) throw new Error('Login failed');
+      if (!res.ok) {
+        // Surface the backend's own message. It previously threw a flat 'Login failed', which
+        // meant the caller could never distinguish an unregistered number — the login screen
+        // matches on that text to offer the sign-up path instead of a dead-end error.
+        const data = await res.json().catch(() => ({} as any));
+        throw new Error(data?.message || 'Could not sign you in. Try again.');
+      }
       return res.json();
     },
     // OTP login — same phone+code flow the backend uses for everyone. Role is optional and

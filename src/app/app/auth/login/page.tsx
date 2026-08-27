@@ -32,6 +32,9 @@ export default function AppLoginPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notRegistered, setNotRegistered] = useState(false);
+  // Delivery channel for the login code. WhatsApp is the default; the picker below lets a
+  // returning user switch to SMS BEFORE the code is sent, and the resend reuses the choice.
+  const [channel, setChannel] = useState<'whatsapp' | 'sms'>('whatsapp');
 
   // OTP Verification state
   const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(''));
@@ -64,7 +67,7 @@ export default function AppLoginPage() {
     setNotRegistered(false);
     try {
       const phone = `+234${digits}`;
-      const res = await api.auth.login(phone);
+      const res = await api.auth.login(phone, channel);
       if (res.requiresOtp) {
         setPlugPhone(digits);
         setOtpDigits(Array(6).fill(''));
@@ -178,7 +181,7 @@ export default function AppLoginPage() {
     setError(null);
     try {
       const phone = `+234${digits}`;
-      await api.auth.requestOtp(phone);
+      await api.auth.requestOtp(phone, undefined, channel);
       setOtpDigits(Array(6).fill(''));
       setResendIn(30);
       setTimeout(() => otpInputs.current[0]?.focus(), 50);
@@ -196,7 +199,7 @@ export default function AppLoginPage() {
       subtitle={
         step === 'phone'
           ? "Enter the number your account is registered with."
-          : `Sent to ${maskPlugPhone(`+234${digits}`)}`
+          : `Sent to ${maskPlugPhone(`+234${digits}`)} via ${channel === 'sms' ? 'SMS' : 'WhatsApp'}`
       }
       back={step === 'phone' ? "/app" : undefined}
       onBack={
@@ -273,6 +276,25 @@ export default function AppLoginPage() {
               This is a temporary phone-only login. OTP verification is next.
             </p>
           )}
+
+          <Label className="mt-6 mb-2">Send code via</Label>
+          <div className="flex gap-2 rounded-2xl bg-bone/60 border border-midnight/10 p-1">
+            {(['whatsapp', 'sms'] as const).map((c) => (
+              <button
+                key={c}
+                type="button"
+                disabled={busy}
+                onClick={() => setChannel(c)}
+                aria-pressed={channel === c}
+                className={cn(
+                  'flex-1 rounded-xl py-2.5 font-body text-sm font-bold transition-colors',
+                  channel === c ? 'bg-white text-midnight shadow-sm' : 'text-slate/70'
+                )}
+              >
+                {c === 'whatsapp' ? 'WhatsApp' : 'SMS'}
+              </button>
+            ))}
+          </div>
         </>
       ) : (
         <>
