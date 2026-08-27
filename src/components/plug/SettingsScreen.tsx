@@ -19,6 +19,7 @@ import { cn } from '@/src/lib/utils';
 import { Card } from '@/src/components/ui';
 import { jsonFetch } from '@/src/lib/net';
 import { api } from '@/src/lib/api';
+import { apiFetch } from '@/src/lib/api-client';
 import {
   getPlugId, getPlugPhone, maskPlugPhone, getPlugBank, setPlugBank, signOutPlug, type PlugBank,
 } from '@/src/app/app/_lib/plugAuth';
@@ -85,6 +86,14 @@ export function SettingsScreen({ base }: { base: string }) {
                 <div className="h-px bg-midnight/[0.06]" />
                 <Field label="Phone" value={phone ? maskPlugPhone(phone) : '—'} />
                 <div className="h-px bg-midnight/[0.06]" />
+                {/* Optional email — the one identity field a Plug CAN edit here (name/phone/
+                    verification are Plugr-managed). Collected optionally at the end of signup. */}
+                <EmailRow
+                  plugId={plug?.id ?? null}
+                  initial={plug?.email ?? null}
+                  onSaved={(email) => setPlug((p: any) => (p ? { ...p, email } : p))}
+                />
+                <div className="h-px bg-midnight/[0.06]" />
                 <div className="flex items-center justify-between gap-3 py-3">
                   <span className="text-sm text-slate">Verification</span>
                   <span
@@ -143,6 +152,110 @@ export function SettingsScreen({ base }: { base: string }) {
 
 // Delete this entirely — moved into useBankList.ts:
 // const FALLBACK_BANKS: BankOption[] = Object.values(BANK_LOGOS).map(...)
+/**
+ * Optional contact email — the "edit it later" half of the field collected at the end of signup.
+ * Saves through PATCH /api/plugs/:id/profile (guarded PLUG + ownership on the backend, which
+ * writes it to the User row). Clearing the box and saving removes the address, so a Plug who
+ * added one can always take it back off.
+ */
+function EmailRow({
+  plugId, initial, onSaved,
+}: { plugId: string | null; initial: string | null; onSaved: (email: string | null) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(initial ?? '');
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => { setValue(initial ?? ''); }, [initial]);
+
+  async function save() {
+    if (!plugId || saving) return;
+    const email = value.trim().toLowerCase();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setErr('That doesn’t look like a valid email.');
+      return;
+    }
+    setSaving(true);
+    setErr(null);
+    try {
+      await apiFetch(`/api/plugs/${plugId}/profile`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      onSaved(email || null);
+      setEditing(false);
+    } catch (e: any) {
+      // Surfaces the backend's real message (e.g. the email is already on another account).
+      setErr(e?.message ?? 'Could not save your email.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!editing) {
+    return (
+      <div className="flex items-center justify-between gap-3 py-3">
+        <span className="text-sm text-slate">Email</span>
+        <div className="flex min-w-0 items-center gap-2">
+          <span className={cn('min-w-0 truncate text-sm font-semibold', initial ? 'text-midnight' : 'text-slate/60')}>
+            {initial || 'Not added'}
+          </span>
+          <button
+            onClick={() => setEditing(true)}
+            className="shrink-0 rounded-pill border border-midnight/10 px-3 py-1.5 text-[11px] font-bold text-midnight transition-colors hover:bg-bone"
+          >
+            {initial ? 'Edit' : 'Add'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-3">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-sm text-slate">Email</span>
+        <span className="text-[10.5px] font-bold uppercase tracking-[0.1em] text-slate/70">Optional</span>
+      </div>
+      <input
+        value={value}
+        onChange={(e) => { setValue(e.target.value); if (err) setErr(null); }}
+        type="email"
+        inputMode="email"
+        autoComplete="email"
+        placeholder="you@example.com"
+        aria-label="Email address"
+        className={cn(
+          'w-full rounded-2xl border bg-white px-4 py-3 text-sm text-midnight placeholder:text-slate/50 focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow',
+          err ? 'border-red-400' : 'border-midnight/10 focus:border-gold',
+        )}
+      />
+      {err ? (
+        <p className="mt-2 text-[12px] text-red-600">{err}</p>
+      ) : (
+        <p className="mt-2 text-[11px] text-slate/70">Leave blank and save to remove it.</p>
+      )}
+      <div className="flex gap-3 pt-3">
+        <button
+          onClick={() => { setEditing(false); setValue(initial ?? ''); setErr(null); }}
+          disabled={saving}
+          className="flex-1 rounded-pill px-4 py-2.5 text-sm font-bold text-slate hover:text-midnight disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={save}
+          disabled={saving}
+          className="flex flex-1 items-center justify-center gap-2 rounded-pill bg-midnight py-2.5 text-sm font-bold text-white transition-colors hover:bg-deep-blue disabled:opacity-60"
+        >
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+          {saving ? 'Saving…' : 'Save'}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function PayoutSection() {
   const [bank, setBank] = useState<PlugBank | null>(null);

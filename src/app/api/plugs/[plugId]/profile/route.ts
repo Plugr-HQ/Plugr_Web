@@ -47,7 +47,7 @@ export async function PATCH(
 ) {
   const { plugId } = await params;
 
-  let body: { bio?: string; photoUrl?: string | null; workPosts?: unknown };
+  let body: { bio?: string; photoUrl?: string | null; workPosts?: unknown; email?: string };
   try {
     body = await request.json();
   } catch {
@@ -59,6 +59,15 @@ export async function PATCH(
   if (typeof body.bio === 'string') payload.bio = body.bio;
   if (typeof body.photoUrl === 'string' || body.photoUrl === null) payload.photoUrl = body.photoUrl;
   if (Array.isArray(body.workPosts)) payload.workPosts = body.workPosts;
+  // Optional contact email (Settings). '' is meaningful — it clears the address — so an empty
+  // string is forwarded deliberately rather than dropped as "nothing to update".
+  if (typeof body.email === 'string') {
+    const email = body.email.trim().toLowerCase();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: 'enter a valid email address, or clear the field' }, { status: 400 });
+    }
+    payload.email = email;
+  }
 
   if (Object.keys(payload).length === 0) {
     return NextResponse.json({ error: 'nothing to update' }, { status: 400 });

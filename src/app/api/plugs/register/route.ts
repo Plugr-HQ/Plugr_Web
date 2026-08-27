@@ -20,6 +20,7 @@ export async function POST(request: Request) {
     photoUrl?: string | null;
     nin?: string;
     phone?: string;
+    email?: string | null;
     source?: string;
     latitude?: number | null;
     longitude?: number | null;
@@ -37,6 +38,9 @@ export async function POST(request: Request) {
   const trade = (body.trade ?? '').trim().toLowerCase();
   const nin = (body.nin ?? '').replace(/\D/g, '');
   const phone = (body.phone ?? '').trim();
+  // Optional — collected at the very end of onboarding and skippable, so blank is a valid answer
+  // and must be sent as undefined (never ''), which would collide on the backend's unique index.
+  const email = (body.email ?? '').trim().toLowerCase() || undefined;
 
   if (!firstName || !lastName) {
     return NextResponse.json({ error: 'first and last name are required' }, { status: 400 });
@@ -50,6 +54,10 @@ export async function POST(request: Request) {
   if (!phone) {
     return NextResponse.json({ error: 'phone is required to register a Plug' }, { status: 400 });
   }
+  // Only validate the shape when one was actually given — skipping stays valid.
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return NextResponse.json({ error: 'enter a valid email address, or skip it' }, { status: 400 });
+  }
 
   // Proxy to the NestJS backend, forwarding location data.
   try {
@@ -60,6 +68,7 @@ export async function POST(request: Request) {
         phone,
         name: `${firstName} ${lastName}`,
         role: 'PLUG',
+        ...(email ? { email } : {}),
         trade,
         photoUrl: body.photoUrl ?? null,
         latitude: body.latitude ?? null,

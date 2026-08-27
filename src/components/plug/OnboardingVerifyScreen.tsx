@@ -59,7 +59,9 @@ type StepState = 'idle' | 'verifying' | 'verified' | 'failed';
 
 export function OnboardingVerifyScreen({ base }: { base: string }) {
   const router = useRouter();
-  const [step, setStep] = useState<0 | 1>(0);
+  // 0 NIN · 1 liveness · 2 optional email (the last thing asked, after verification — deliberately
+  // NOT bundled into the phone/OTP step, and skippable).
+  const [step, setStep] = useState<0 | 1 | 2>(0);
 
   // Consent gate — resolved on mount from the draft. Starts `null` (not "unagreed") so we
   // don't flash the gate open for the common case where consent was already given.
@@ -78,6 +80,10 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
   const [camError, setCamError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  // Optional email (step 2)
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -184,10 +190,22 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
     savePlugDraft({ liveness: true });
     setLiveState('verified');
     stopCamera();
-    finish();
+    // Verification is done — ask for the optional email last, then register.
+    setTimeout(() => setStep(2), 700);
   }
 
-  async function finish() {
+  /** Continue from the email step. Blank is a valid answer (the field is optional). */
+  function submitEmail() {
+    const value = email.trim();
+    if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      setEmailError('That doesn’t look like a valid email. Fix it, or skip this step.');
+      return;
+    }
+    setEmailError(null);
+    finish(value || undefined);
+  }
+
+  async function finish(emailValue?: string) {
     setSubmitting(true);
     setError(null);
     try {
@@ -201,6 +219,8 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
           photoUrl: d.photo,
           nin: d.nin ?? nin,
           phone: getPlugPhone() ?? d.phone,
+          // Optional — omitted entirely when the Plug skipped the step.
+          ...(emailValue ? { email: emailValue } : {}),
           address: d.address ,
           latitude: d.latitude ,
           longitude: d.longitude ,
@@ -306,11 +326,13 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
   return (
     <Shell
       eyebrow="Become a Plug"
-      title={step === 0 ? 'Confirm your identity' : 'Prove it’s you'}
+      title={step === 0 ? 'Confirm your identity' : step === 1 ? 'Prove it’s you' : 'Want job updates by email?'}
       subtitle={
         step === 0
           ? 'Your NIN is checked against the national register. It’s never shown on your profile.'
-          : 'A quick face scan confirms you match your ID. Nothing is shared with clients.'
+          : step === 1
+            ? 'A quick face scan confirms you match your ID. Nothing is shared with clients.'
+            : 'Optional — WhatsApp stays your main channel either way. You can add or change this later in Settings.'
       }
       back={`${base}/onboarding`}
       onBack={step === 1 && liveState !== 'verified' ? () => setStep(0) : undefined}
@@ -323,20 +345,34 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
           >
             {ninState === 'verifying' ? 'Verifying…' : 'Verify NIN'}
           </GoldButton>
-        ) : (
+        ) : step === 1 ? (
           <GoldButton
             onClick={submitLiveness}
             disabled={!!camError || liveLocked || liveState === 'verified'}
             loading={liveState === 'verifying' || submitting}
           >
-            {submitting ? 'Finishing up…' : liveState === 'verifying' ? 'Checking…' : 'Start face scan'}
+            {liveState === 'verifying' ? 'Checking…' : 'Start face scan'}
           </GoldButton>
+        ) : (
+          <div className="space-y-3">
+            <GoldButton onClick={submitEmail} disabled={submitting} loading={submitting}>
+              {submitting ? 'Finishing up…' : email.trim() ? 'Save & finish' : 'Finish'}
+            </GoldButton>
+            {/* Skipping must be as easy as answering — an equally prominent, plainly labelled out. */}
+            <button
+              onClick={() => finish(undefined)}
+              disabled={submitting}
+              className="w-full py-3 text-sm font-bold text-slate hover:text-midnight transition-colors disabled:opacity-50"
+            >
+              Skip for now
+            </button>
+          </div>
         )
       }
     >
-      {/* progress — 2 verification steps */}
+      {/* progress — NIN · liveness · optional email */}
       <div className="flex gap-1.5 mb-8">
-        {[0, 1].map((i) => (
+        {[0, 1, 2].map((i) => (
           <span key={i} className={cn('h-1.5 flex-1 rounded-pill', i <= step ? 'bg-gold' : 'bg-midnight/10')} />
         ))}
       </div>
@@ -460,6 +496,46 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
           <p className="mt-6 text-center text-xs text-slate/70">
             No liveness SDK is wired yet — the scan self-approves for now.
           </p>
+        </div>
+      )}
+
+      {/* --- Step 3: optional email --- */}
+      {step === 2 && (
+        <div className="rise">
+          <Card className="mb-6 flex items-start gap-3 p-4">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-500/12">
+              <Check className="h-5 w-5 text-emerald-600" strokeWidth={3} />
+            </span>
+            <p className="text-[13px] leading-relaxed text-slate">
+              <span className="font-bold text-midnight">You’re verified.</span> Last thing — an email lets us send
+              receipts and payout records you can keep. It’s not required, and clients never see it.
+            </p>
+          </Card>
+
+          <div className="mb-2 flex items-center justify-between">
+            <Label>Email address</Label>
+            <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate/70">Optional</span>
+          </div>
+          <TextInput
+            value={email}
+            onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(null); }}
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            autoFocus
+            placeholder="you@example.com"
+            aria-label="Email address (optional)"
+            className={cn(emailError && 'border-red-400')}
+          />
+          {emailError ? (
+            <p className="mt-2.5 text-sm text-red-600">{emailError}</p>
+          ) : (
+            <p className="mt-2.5 text-xs text-slate/80">
+              Leave it blank and tap “Skip for now” — you can add it any time from Settings.
+            </p>
+          )}
+
+          {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
         </div>
       )}
     </Shell>
