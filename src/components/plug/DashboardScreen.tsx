@@ -32,9 +32,48 @@ function hhmm(total: number) {
   return `${s}s`;
 }
 
+// --- M1 active job -----------------------------------------------------------------------
+// The legacy dashboard payload can't represent an M1 assignment: it maps every job through a
+// six-value escrow vocabulary where a PLUG_ASSIGNED job with no escrow collapses to 'requested',
+// and its activeJob only accepts paid_escrow/accepted/completed — so a real admin assignment was
+// never surfaced here. We read the untouched M1 rows from /api/plug/jobs instead (same bearer-
+// forwarding proxy as the rest of /api/plug/jobs/*) and prefer them for the Active job slot.
+
+/** M1 JobStatus values that mean "in flight" — the Plug still has something to do. Mirrors the
+ *  job-card's vocabulary; terminal states (COMPLETED/RELEASED/CANCELLED/EXPIRED) are excluded,
+ *  as is SEARCHING_PLUG (no longer assigned to this Plug). */
+const M1_ACTIVE_STATUSES = new Set([
+  'PLUG_ASSIGNED', 'IN_DISCUSSION', 'VISIT_PENDING', 'VISIT_DONE', 'QUOTED', 'QUOTE_ACCEPTED',
+  'ESCROW_HELD', 'EN_ROUTE', 'ARRIVED', 'IN_PROGRESS', 'AWAITING_CONFIRM', 'DISPUTED',
+]);
+
+/** Short labels for the chip. The shared JobStatusChip only knows the legacy lowercase set and
+ *  would render a raw enum name, so M1 rows get their own labels here (same wording as the card). */
+const M1_STATUS_LABEL: Record<string, string> = {
+  PLUG_ASSIGNED: 'New assignment', IN_DISCUSSION: 'In discussion', VISIT_PENDING: 'Visit requested',
+  VISIT_DONE: 'Visit done', QUOTED: 'Quote sent', QUOTE_ACCEPTED: 'Quote accepted',
+  ESCROW_HELD: 'In escrow', EN_ROUTE: 'En route', ARRIVED: 'Arrived', IN_PROGRESS: 'In progress',
+  AWAITING_CONFIRM: 'Awaiting confirm', DISPUTED: 'Disputed',
+};
+
+function M1StatusChip({ status }: { status: string }) {
+  const urgent = status === 'PLUG_ASSIGNED';
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center rounded-pill px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.08em]',
+        urgent ? 'bg-gold/15 text-[#8a5a08]' : 'bg-emerald-500/12 text-emerald-700',
+      )}
+    >
+      {M1_STATUS_LABEL[status] ?? status}
+    </span>
+  );
+}
+
 export function DashboardScreen({ base }: { base: string }) {
   const router = useRouter();
   const [data, setData] = useState<any>(null);
+  const [m1Job, setM1Job] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [left, setLeft] = useState<number | null>(null);
   const unlocked = useRef(false);
@@ -52,6 +91,21 @@ export function DashboardScreen({ base }: { base: string }) {
       setData(body);
       setLeft(body.lock?.seconds ?? null);
       setError(null);
+
+      // Real M1 jobs (PLUG_ASSIGNED and onwards) — the legacy payload above can't express them.
+      // Non-fatal on its own: a failure here must not blank a dashboard that otherwise loaded, so
+      // it only clears the M1 slot and leaves the legacy activeJob fallback in place.
+      try {
+        const jobs = await apiFetch('/api/plug/jobs', {}, { skipAuthRedirect: true });
+        const list: any[] = Array.isArray(jobs) ? jobs : (jobs?.jobs ?? []);
+        // Most recently updated in-flight job wins (the backend already scopes to this Plug).
+        const active = list
+          .filter((j) => M1_ACTIVE_STATUSES.has(j?.status))
+          .sort((a, b) => new Date(b.updatedAt ?? b.createdAt ?? 0).getTime() - new Date(a.updatedAt ?? a.createdAt ?? 0).getTime())[0] ?? null;
+        setM1Job(active);
+      } catch {
+        setM1Job(null);
+      }
     } catch (e: any) {
       const msg = e?.message ?? '';
       // Dead/expired session, or a plug that no longer exists — sign out FULLY (clears the
@@ -213,8 +267,32 @@ export function DashboardScreen({ base }: { base: string }) {
         </div>
       </Card>
 
-      {/* Active job */}
-      {!pending && activeJob && (
+      {/* Active job — an M1 assignment takes precedence and routes to the M1 job-card
+          (/app/plug-job/[jobId]); the legacy card below is only for pre-M1 escrow-flow jobs and
+          still points at the legacy page, which is the only thing that understands them. */}
+      {!pending && m1Job && (
+        <Link href={`${base}/plug-job/${m1Job.id}`} className="mt-6 block rise rise-4">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-2.5">Active job</p>
+          <Card className="p-4 hover:border-gold/40 transition-colors">
+            <div className="flex items-center gap-3">
+              <span className="grid place-items-center h-11 w-11 rounded-2xl bg-midnight text-white font-display shrink-0">
+                {initials(m1Job.client?.name)}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-midnight truncate">{m1Job.title || m1Job.description || 'Job'}</p>
+                <p className="text-xs text-slate">{m1Job.client?.name ?? 'Client'}</p>
+              </div>
+              <div className="flex flex-col items-end gap-1.5 shrink-0">
+                {m1Job.jobAmount != null && <Money amount={Number(m1Job.jobAmount)} size="sm" />}
+                <M1StatusChip status={m1Job.status} />
+              </div>
+            </div>
+          </Card>
+        </Link>
+      )}
+
+      {/* Legacy escrow-flow active job (pre-M1 rows only) */}
+      {!pending && !m1Job && activeJob && (
         <Link href={`${base}/plug/${activeJob.id}`} className="mt-6 block rise rise-4">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-2.5">Active job</p>
           <Card className="p-4 hover:border-gold/40 transition-colors">
