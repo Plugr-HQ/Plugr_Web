@@ -142,7 +142,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
   const p = buildProfile(plug);
   const reviews = jobs > 0 ? p.reviews : [];
   const memberSince = new Date(plug.created_at).toLocaleDateString('en-NG', { month: 'short', year: 'numeric' });
-  const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/app/plugs/${plug.id}` : '';
+  const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/p/${plug.id}` : '';
 
   return (
     <PlugShell base={base} plug={plug}>

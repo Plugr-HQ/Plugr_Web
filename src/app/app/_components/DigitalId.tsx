@@ -12,16 +12,16 @@ import { useRef, useState } from 'react';
 import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
 import { X, Share2, Copy, Check, BadgeCheck, Star, Download } from 'lucide-react';
 import { PlugrWordmark } from '@/src/components/Brand';
+import { plugHandle } from '@/src/lib/plugHandle';
 
 const MIDNIGHT = '#0F1F3D';
 const GOLD = '#E8A020';
 const BONE = '#F5F1EC';
 const STEEL = '#7A9CC8';
 
-function plugNumber(id: string) {
-  const hex = id.replace(/-/g, '').slice(0, 8).toUpperCase();
-  return `PLG-${hex.slice(0, 4)}-${hex.slice(4, 8)}`;
-}
+// Handle generation lives in src/lib/plugHandle.ts so the card, the QR and the public
+// profile page can never print different identifiers for the same Plug.
+const plugNumber = plugHandle;
 
 /** Rounded-rect path (no roundRect dependency — Safari support). */
 function rrect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {

@@ -29,7 +29,7 @@ export default function PlugProfilePage() {
   if (!plug) return <Shell title="Profile" back="/app/browse"><div className="flex items-center gap-2 text-slate text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div></Shell>;
 
   const p = buildProfile(plug);
-  const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/app/plugs/${plugId}` : '';
+  const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/p/${plugId}` : '';
 
   return (
     <Shell back="/app/browse" mark={false} footer={<RequestPlugButton plugId={plugId} plugName={plug?.name} plugTrade={plug?.trade} />}>

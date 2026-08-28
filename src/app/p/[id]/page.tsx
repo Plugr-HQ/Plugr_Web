@@ -1,261 +1,177 @@
-'use client'
+// src/app/p/[id]/page.tsx
+// The public, shareable Plug profile — the page behind a Plug's QR / share link.
+//
+// A SERVER component on purpose: this URL's whole job is to be pasted into WhatsApp, so it has to
+// render a real link preview (generateMetadata below). The previous version was a client component
+// that read `localStorage.getItem('plugProfile')` and ignored the [id] entirely — meaning a shared
+// link showed the VIEWER's own onboarding draft, or a hardcoded fake person, never the Plug who
+// shared it. Data now comes from the real M1 backend's public profile endpoint.
+//
+// Deliberately absent: ratings, review counts and jobs-completed. Every Plug at launch has zero
+// history, and a "0 jobs / no reviews" panel reads worse than no panel at all. The previous version
+// showed a hardcoded 4.9 with two invented reviews and a fabricated "Skills Assessed" credential;
+// none of that was real.
 
-import { useEffect, useState } from 'react'
-import { Star, MessageSquare, CheckCircle2, ShieldCheck } from 'lucide-react'
-import Link from 'next/link'
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { BadgeCheck, MapPin } from 'lucide-react';
+import { PlugrWordmark } from '@/src/components/Brand';
+import { RequestPlugButton } from '@/src/app/app/_components/RequestPlugButton';
+import { plugHandle } from '@/src/lib/plugHandle';
 
-interface Review {
-  id: string
-  stars: number
-  comment: string
-  author: string
-  location: string
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+type PublicPlug = {
+  id: string;
+  name: string;
+  trade: string | null;
+  trade_label: string | null;
+  service_area: string | null;
+  photo_url: string | null;
+  verified: boolean;
+  bio: string | null;
+};
+
+/**
+ * Fetch straight from the backend's public, unauthenticated endpoint rather than through our own
+ * /api proxy — a server component calling back into its own route handler is a needless hop.
+ */
+async function getPlug(id: string): Promise<PublicPlug | null> {
+  try {
+    const res = await fetch(`${API_URL}/plugs/${encodeURIComponent(id)}/profile`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return (data?.plug ?? null) as PublicPlug | null;
+  } catch {
+    return null;
+  }
 }
 
-interface PlugProfile {
-  id: string
-  firstName: string
-  lastName: string
-  trade: string
-  city: string
-  phone: string
-  photoUrl: string
-  nin: string
-  ninVerified: boolean
-  livenessVerified: boolean
+function tradeOf(plug: PublicPlug): string {
+  if (plug.trade_label) return plug.trade_label;
+  if (!plug.trade) return 'Verified artisan';
+  return plug.trade.charAt(0).toUpperCase() + plug.trade.slice(1);
 }
 
-export default function PlugProfileDetails() {
-  const [plugProfile, setPlugProfile] = useState<PlugProfile | null>(null)
+/** Real link preview when the URL is pasted into WhatsApp — the point of a shareable profile. */
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const plug = await getPlug(id);
+  if (!plug) return { title: 'Plug not found · Plugr' };
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem('plugProfile')
-      if (raw) setPlugProfile(JSON.parse(raw))
-    } catch {
-      // ignore parse errors
-    }
-  }, [])
+  const trade = tradeOf(plug);
+  const title = `${plug.name} — ${trade} on Plugr`;
+  const description = plug.verified
+    ? `${plug.name} is identity-verified via NIN on Plugr${plug.service_area ? `, serving ${plug.service_area}` : ''}. Book them on WhatsApp.`
+    : `${plug.name} on Plugr${plug.service_area ? `, serving ${plug.service_area}` : ''}. Book them on WhatsApp.`;
 
-  const displayName = plugProfile
-    ? `${plugProfile.firstName} ${plugProfile.lastName}`
-    : 'Oluwaseun Adewale'
-
-  const displayTrade = plugProfile
-    ? plugProfile.trade.charAt(0).toUpperCase() + plugProfile.trade.slice(1)
-    : 'Master Electrician'
-
-  const displayCity = plugProfile?.city || 'Lagos'
-  const displayPhone = plugProfile?.phone || ''
-
-  const avatarSrc = plugProfile?.photoUrl || ''
-
-  const displayAbout = plugProfile
-    ? `${plugProfile.firstName} is a verified ${plugProfile.trade} based in ${plugProfile.city}, Nigeria. Plugr-verified with confirmed identity, liveness check, and NIN validation. Available for residential and commercial jobs.`
-    : 'Over 8 years of experience in residential and commercial electrical systems across Yaba and mainland Lagos. Specializing in fault finding, smart home integrations, and safe solar panel installations.'
-
-  const skills = [
-    "Fault Finding",
-    "House Wiring",
-    "Solar Installation",
-    "Inverter Repairs"
-  ]
-
-  const reviews: Review[] = [
-    {
-      id: "1",
-      stars: 5,
-      comment: "Seun fixed our inverter issue in record time. Very professional and tidy.",
-      author: "Chidinma O.",
-      location: "Yaba"
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'profile',
+      images: plug.photo_url ? [{ url: plug.photo_url }] : undefined,
     },
-    {
-      id: "2",
-      stars: 4,
-      comment: "Great work on the house wiring, though he arrived a bit later than scheduled.",
-      author: "Kunle A.",
-      location: "Maryland"
-    }
-  ]
-  const verifications = [
-    "Phone OTP",
-    "Liveness Confirmed",
-    "NIN verified",
-    "Skills Assessed"
-  ]
+    twitter: { card: 'summary', title, description },
+  };
+}
+
+export default async function PublicPlugProfile({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const plug = await getPlug(id);
+  if (!plug) notFound();
+
+  const trade = tradeOf(plug);
+  const handle = plugHandle(plug.id);
+  const initial = (plug.name?.trim()?.[0] ?? 'P').toUpperCase();
 
   return (
-    <div className="bg-bone min-h-screen font-sans antialiased text-midnight pb-32">
-      <div className="max-w-xl mx-auto px-6 py-8 space-y-6">
+    <div className="min-h-screen bg-bone text-midnight antialiased">
+      {/* Branding — this page is often the first thing a client ever sees of Plugr. */}
+      <header className="flex items-center justify-center border-b border-midnight/[0.06] bg-white/60 py-4">
+        <PlugrWordmark className="h-6 text-midnight" />
+      </header>
 
-        {/* --- CENTERING WRAPPER FOR PROFILE HEADER --- */}
-        <div className="flex flex-col items-center text-center pt-4 pb-2">
-
-          {/* Profile Avatar Wrapper */}
-          <div className="relative w-32 h-32 mb-5">
-            {/* Main User Image */}
-            <div className="w-full h-full rounded-full overflow-hidden border-2 border-transparent bg-gradient-to-b from-orange-400 to-amber-600 relative shadow-inner">
-              {avatarSrc ? (
+      <main className="mx-auto w-full max-w-xl px-6 pb-28 pt-8">
+        <section className="flex flex-col items-center text-center">
+          {/* Photo, prominent */}
+          <div className="relative mb-5 h-32 w-32">
+            <div className="h-full w-full overflow-hidden rounded-full bg-midnight shadow-sm ring-4 ring-white">
+              {plug.photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={avatarSrc}
-                  alt={displayName}
-                  className="w-full h-full object-cover object-top"
-                />
+                <img src={plug.photo_url} alt={plug.name} className="h-full w-full object-cover object-top" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-white text-4xl font-black">
-                  {displayName.charAt(0)}
+                <div className="flex h-full w-full items-center justify-center font-display text-4xl text-gold">
+                  {initial}
                 </div>
               )}
             </div>
-
-            {/* Absolute Overlapping Verification Seal Badge */}
-            <div className="absolute bottom-1 right-1 bg-gold text-midnight w-7 h-7 rounded-full flex items-center justify-center shadow-md ring-4 ring-bone">
-              <ShieldCheck className="w-4 h-4 fill-midnight text-gold stroke-[2.5]" />
-            </div>
-          </div>
-
-          {/* Profile Details Name & Title */}
-          <h2 className="text-xl font-black tracking-tight text-midnight mb-1">
-            {displayName}
-          </h2>
-          <p className="text-slate/70 font-medium text-base mb-1">
-            {displayTrade}
-          </p>
-          {/* City */}
-          <p className="flex items-center justify-center gap-1 text-xs text-slate/50 font-medium mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            {displayCity}, Nigeria
-          </p>
-
-          {/* Meta Status Badges Line */}
-          <div className="flex items-center justify-center gap-3">
-            {/* Status Pill Indicator */}
-            <div className="inline-flex items-center gap-1.5 bg-[#E2F5EC] text-[#0D7A4A] px-4 py-1.5 rounded-full text-xs font-bold tracking-wide">
-              <span className="w-2 h-2 rounded-full bg-[#0D7A4A] animate-pulse" />
-              Available Now
-            </div>
-
-            {/* Stars & Reviews Metadata */}
-            <div className="flex items-center gap-1.5 text-sm">
-              <Star className="w-4 h-4 fill-gold text-gold" />
-              <span className="font-black text-midnight">4.9</span>
-              <span className="text-slate/50 font-medium">(42 reviews)</span>
-            </div>
-          </div>
-
-        </div>
-        {/* --- END PROFILE HEADER --- */}
-
-        {/* CARD 1: About Section */}
-        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100/50">
-          <h4 className="text-xs font-black tracking-widest text-gold uppercase mb-3">
-            About
-          </h4>
-          <p className="text-sm md:text-base font-normal text-midnight leading-relaxed">
-            {displayAbout}
-          </p>
-        </div>
-
-        {/* CARD 2: Verified Identity Checklist */}
-        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100/50">
-          <h4 className="text-xs font-black tracking-widest text-gold uppercase mb-5">
-            Verified Identity
-          </h4>
-
-          <ul className="space-y-4">
-            {verifications.map((item, index) => (
-              <li key={index} className="flex items-center gap-3">
-                <CheckCircle2 className="w-5 h-5 text-gold fill-gold stroke-white" />
-                <span className="text-sm md:text-base font-medium text-midnight">
-                  {item}
-                </span>
-              </li>
-            ))}
-            {/* Phone number row */}
-            {displayPhone && (
-              <li className="flex items-center gap-3 pt-2 border-t border-slate-100">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8A020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                <span className="text-sm font-medium text-midnight font-mono tracking-wide">{displayPhone}</span>
-              </li>
+            {/* The seal only appears for a Plug who is actually verified — never decoration. */}
+            {plug.verified && (
+              <span className="absolute bottom-1 right-1 grid h-8 w-8 place-items-center rounded-full bg-gold ring-4 ring-bone">
+                <BadgeCheck className="h-5 w-5 text-midnight" strokeWidth={2.5} />
+              </span>
             )}
-          </ul>
-        </div>
-
-        {/* CARD CONTAINER: Skills & Ratings */}
-        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 space-y-8">
-
-          {/* SECTION: Skills & Services */}
-          <div>
-            <h4 className="text-xs font-black tracking-widest text-gold uppercase mb-4">
-              Skills & Services
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {skills.map((skill, index) => (
-                <span
-                  key={index}
-                  className="px-4 py-2 bg-bone text-midnight font-medium text-sm rounded-full border border-slate-100"
-                >
-                  {skill}
-                </span>
-              ))}
-            </div>
           </div>
 
-          {/* SECTION: Ratings & Reviews */}
-          <div>
-            <h4 className="text-xs font-black tracking-widest text-gold uppercase mb-4">
-              Ratings
-            </h4>
-            <div className="space-y-6">
-              {reviews.map((review, idx) => (
-                <div key={review.id} className="space-y-2">
-                  <div className="flex items-center gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${i < review.stars
-                          ? "fill-gold text-gold"
-                          : "text-slate/20"
-                          }`}
-                      />
-                    ))}
-                  </div>
+          <h1 className="font-display text-2xl tracking-tight text-midnight">{plug.name}</h1>
+          <p className="mt-1 text-base font-medium text-slate">{trade}</p>
 
-                  <p className="text-midnight text-sm md:text-base font-medium leading-relaxed">
-                    "{review.comment}"
-                  </p>
+          {plug.service_area && (
+            <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-slate/80">
+              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              {plug.service_area}
+            </p>
+          )}
 
-                  <p className="text-slate text-xs font-medium">
-                    — {review.author}, {review.location}
-                  </p>
+          {/* The specific claim, not a generic tick — it says what was actually checked. */}
+          {plug.verified && (
+            <span className="mt-4 inline-flex items-center gap-2 rounded-pill bg-[#E2F5EC] px-4 py-2 text-[13px] font-bold text-[#0D7A4A]">
+              <BadgeCheck className="h-4 w-4" strokeWidth={2.5} />
+              Identity Verified via NIN
+            </span>
+          )}
 
-                  {idx < reviews.length - 1 && (
-                    <hr className="border-slate-100 pt-2 mt-4" />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+          <p className="mt-4 font-mono text-[11px] tracking-[0.12em] text-slate/50">{handle}</p>
+        </section>
 
-        </div>
+        {plug.bio && (
+          <section className="mt-8 rounded-3xl border border-midnight/[0.06] bg-white p-6">
+            <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-gold">About</h2>
+            <p className="text-sm leading-relaxed text-midnight">{plug.bio}</p>
+          </section>
+        )}
 
-        {/* BOTTOM ACTION STACK */}
-        <div className="flex flex-col items-center justify-center gap-4 pt-4">
-          <button className="w-full bg-gold hover:bg-gold/95 active:scale-[0.99] text-midnight font-bold py-4 px-6 rounded-full shadow-md flex items-center justify-center gap-2 transition-all">
-            <MessageSquare className="w-5 h-5 fill-midnight text-midnight" />
-            <span>Request This Plug</span>
-          </button>
+        {/* Booking hands off to the WhatsApp bot, the same way every other "request a Plug"
+            surface does — the message is pre-filled with who was found, so the conversation
+            starts with context instead of a cold hello. */}
+        <section className="mt-8">
+          <RequestPlugButton
+            plugId={plug.id}
+            plugName={plug.name}
+            plugTrade={trade}
+            label="Book me on Plugr"
+          />
+          <p className="mt-3 text-center text-xs text-slate/70">
+            Opens WhatsApp to book {plug.name.split(' ')[0]} through Plugr.
+          </p>
+        </section>
 
-          <p className="text-sm text-slate font-medium">
+        <footer className="mt-12 text-center">
+          <p className="text-sm font-medium text-slate">
             Are you an artisan?{' '}
-            <Link href="/become-a-plug" className="text-gold font-bold hover:underline">
+            <Link href="/become-a-plug" className="font-bold text-gold hover:underline">
               Become a Plug
             </Link>
           </p>
-        </div>
-
-      </div>
+          <p className="mt-3 text-[11px] text-slate/60">
+            Every Plug is identity-checked before they can take work on Plugr.
+          </p>
+        </footer>
+      </main>
     </div>
-  )
+  );
 }
