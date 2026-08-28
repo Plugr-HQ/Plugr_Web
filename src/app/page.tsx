@@ -147,13 +147,13 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 md:gap-10 items-center">
           <motion.div variants={heroContainer} initial={reduce ? undefined : 'hidden'} animate={reduce ? undefined : 'show'}>
             <motion.div variants={heroItem}>
-              <Eyebrow>Verified artisans · Ikeja, Lagos</Eyebrow>
+              <Eyebrow>Verified artisans · Yaba, Lagos</Eyebrow>
             </motion.div>
             <motion.h1 variants={heroItem} className="mt-5 font-display text-[3rem] md:text-[4.25rem] leading-[0.98] text-midnight">
               Hire artisans you can actually <span className="text-gold">trust.</span>
             </motion.h1>
             <motion.p variants={heroItem} className="mt-6 text-[17px] leading-relaxed text-slate max-w-md">
-              Plugr connects you with verified electricians and plumbers across Ikeja — secure escrow payments,
+              Plugr connects you with verified electricians and plumbers across Yaba — secure escrow payments,
               professional identity verification, and a WhatsApp-native job flow.
             </motion.p>
             <motion.div variants={heroItem} className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -451,7 +451,7 @@ export default function LandingPage() {
         <section className="py-24 px-5 bg-white border-t border-midnight/6 text-center">
         <Reveal>
           <h2 className="font-display text-[3rem] md:text-[4rem] leading-[0.98] text-midnight">Ready to find your Plug?</h2>
-          <p className="mt-3 text-slate font-semibold">Ikeja, Lagos.</p>
+          <p className="mt-3 text-slate font-semibold">Yaba, Lagos.</p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/app/browse" className={btnGold}>
               Book a Plug <ArrowRight className="w-4 h-4" />

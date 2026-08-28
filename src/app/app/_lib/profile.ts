@@ -9,32 +9,32 @@ const TRADE: Record<
   { headline: string; skills: string[]; story: (name: string, jobs: number) => string; history: { title: string; org: string; period: string; note: string }[] }
 > = {
   electrician: {
-    headline: 'Licensed Electrician · Ikeja',
+    headline: 'Licensed Electrician · Yaba',
     skills: ['Wiring & rewiring', 'Fault diagnosis', 'DB board repair', 'Lighting & fittings', 'Inverter setup'],
     story: (n, j) =>
-      `${n.split(' ')[0]} has spent over a decade making Lagos homes and shops safe. What started as an apprenticeship under a master electrician in Computer Village grew into a trusted one-person practice — ${j.toLocaleString()} jobs and counting. Known for turning up on time, quoting before touching a wall, and never leaving a job half-done.`,
+      `${n.split(' ')[0]} has spent over a decade making Lagos homes and shops safe. What started as an apprenticeship under a master electrician in Tejuosho Market grew into a trusted one-person practice — ${j.toLocaleString()} jobs and counting. Known for turning up on time, quoting before touching a wall, and never leaving a job half-done.`,
     history: [
-      { title: 'Independent Electrician', org: 'Self-employed · Ikeja', period: '2018 — Present', note: 'Residential & small-business electrical work.' },
-      { title: 'Apprentice → Journeyman', org: 'Computer Village', period: '2013 — 2018', note: 'Learned the trade the hard way, on the bench.' },
+      { title: 'Independent Electrician', org: 'Self-employed · Yaba', period: '2018 — Present', note: 'Residential & small-business electrical work.' },
+      { title: 'Apprentice → Journeyman', org: 'Tejuosho Market', period: '2013 — 2018', note: 'Learned the trade the hard way, on the bench.' },
     ],
   },
   plumber: {
-    headline: 'Certified Plumber · Ikeja',
+    headline: 'Certified Plumber · Yaba',
     skills: ['Leak detection', 'Pipe repair & fitting', 'Water heaters', 'Drainage', 'Bathroom installs'],
     story: (n, j) =>
       `${n.split(' ')[0]} fixes what others patch. From burst pipes at 2am to full bathroom re-plumbs, ${j.toLocaleString()} clients have called and stayed. Clean work, honest quotes, and a habit of explaining the problem so you actually understand it.`,
     history: [
-      { title: 'Independent Plumber', org: 'Self-employed · Ikeja', period: '2016 — Present', note: 'Homes, estates, and small businesses.' },
+      { title: 'Independent Plumber', org: 'Self-employed · Yaba', period: '2016 — Present', note: 'Homes, estates, and small businesses.' },
       { title: 'Site Plumber', org: 'Lagos construction sites', period: '2011 — 2016', note: 'New-build plumbing and drainage.' },
     ],
   },
   furniture: {
-    headline: 'Furniture Maker & Carpenter · Ikeja',
+    headline: 'Furniture Maker & Carpenter · Yaba',
     skills: ['Custom furniture', 'Wardrobes & cabinets', 'Repairs & refinishing', 'Upholstery', 'Fittings'],
     story: (n, j) =>
       `${n.split(' ')[0]} builds furniture that outlives trends. Bespoke wardrobes, dining sets, shop fittings — measured, made, and finished by hand. ${j.toLocaleString()} pieces later, the workshop still runs on one rule: measure twice, cut once.`,
     history: [
-      { title: 'Furniture Maker', org: 'Own workshop · Ikeja', period: '2015 — Present', note: 'Bespoke pieces and fittings.' },
+      { title: 'Furniture Maker', org: 'Own workshop · Yaba', period: '2015 — Present', note: 'Bespoke pieces and fittings.' },
       { title: 'Carpentry Apprentice', org: 'Lagos furniture market', period: '2010 — 2015', note: 'Joinery and finishing.' },
     ],
   },

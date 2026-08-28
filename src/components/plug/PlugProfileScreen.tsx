@@ -190,7 +190,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
           </div>
           <p className="text-sm text-slate">{p.headline}</p>
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate">
-            <span className="inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Ikeja, Lagos</span>
+            <span className="inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Yaba, Lagos</span>
             {jobs > 0 && (
               <span className="inline-flex items-center gap-1 text-midnight font-semibold">
                 <Star className="w-3.5 h-3.5 fill-gold text-gold" /> {rating.toFixed(1)}

@@ -49,7 +49,7 @@ export default function PlugProfilePage() {
           <h1 className="mt-3 font-display text-2xl text-midnight">{plug.name}</h1>
           <p className="text-sm text-slate">{p.headline}</p>
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate">
-            <span className="inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Ikeja, Lagos</span>
+            <span className="inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Yaba, Lagos</span>
             <span className="inline-flex items-center gap-1 text-midnight font-semibold"><Star className="w-3.5 h-3.5 fill-gold text-gold" /> {p.stats.rating.toFixed(1)}</span>
           </div>
         </div>

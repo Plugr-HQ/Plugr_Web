@@ -63,7 +63,7 @@ export default function WaitlistPage() {
           </p>
 
           <p className="wl-hero-accent">
-            Launching in Ikeja &middot; Electricians &amp; Plumbers first &middot; 2026
+            Launching in Yaba &middot; Electricians &amp; Plumbers first &middot; 2026
           </p>
 
           <button type="button" className="wl-cta" onClick={scrollToForm}>
@@ -189,7 +189,7 @@ export default function WaitlistPage() {
               <p className="wl-label">Early Access</p>
               <h2 className="wl-section-h2">Get early access.</h2>
               <p className="wl-section-sub">
-                Be among the first when we launch in Ikeja. No spam. Real updates only.
+                Be among the first when we launch in Yaba. No spam. Real updates only.
               </p>
 
               <form className="wl-form" onSubmit={handleSubmit} noValidate>
@@ -240,7 +240,7 @@ export default function WaitlistPage() {
             <div className="wl-success">
               <h2 className="wl-success-h2">You&rsquo;re on the list.</h2>
               <p className="wl-success-body">
-                We&rsquo;ll reach out when early access opens in Ikeja. In the meantime, follow
+                We&rsquo;ll reach out when early access opens in Yaba. In the meantime, follow
                 along as we build.
               </p>
               <a
@@ -295,7 +295,7 @@ export default function WaitlistPage() {
         </div>
 
         <p className="wl-footer-line">
-          Plugr Technologies &middot; Under Alhazen &middot; Ikeja, Lagos &middot; getplugr.com
+          Plugr Technologies &middot; Under Alhazen &middot; Yaba, Lagos &middot; getplugr.com
         </p>
         <p className="wl-footer-fine">
           Nigeria&rsquo;s first verified artisan identity platform &middot; &copy; 2026

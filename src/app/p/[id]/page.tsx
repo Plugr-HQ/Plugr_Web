@@ -52,7 +52,7 @@ export default function PlugProfileDetails() {
 
   const displayAbout = plugProfile
     ? `${plugProfile.firstName} is a verified ${plugProfile.trade} based in ${plugProfile.city}, Nigeria. Plugr-verified with confirmed identity, liveness check, and NIN validation. Available for residential and commercial jobs.`
-    : 'Over 8 years of experience in residential and commercial electrical systems across Ikeja and mainland Lagos. Specializing in fault finding, smart home integrations, and safe solar panel installations.'
+    : 'Over 8 years of experience in residential and commercial electrical systems across Yaba and mainland Lagos. Specializing in fault finding, smart home integrations, and safe solar panel installations.'
 
   const skills = [
     "Fault Finding",
@@ -67,7 +67,7 @@ export default function PlugProfileDetails() {
       stars: 5,
       comment: "Seun fixed our inverter issue in record time. Very professional and tidy.",
       author: "Chidinma O.",
-      location: "Ikeja"
+      location: "Yaba"
     },
     {
       id: "2",

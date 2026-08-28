@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server'
 
 // Mock database
 let plugs = [
-  { id: '1', name: "Suleiman Yusuf", trade: "Electrician", rating: 4.8, status: "Verified", badge: "Verified", location: "Ikeja GRA" },
-  { id: '2', name: "John Okoro", trade: "Plumber", rating: 4.9, status: "Available", badge: "Pro", location: "Opebi" },
-  { id: '3', name: "Tunde Williams", trade: "Electrician", rating: 4.7, status: "Busy", badge: "Verified", location: "Allen Avenue" },
+  { id: '1', name: "Suleiman Yusuf", trade: "Electrician", rating: 4.8, status: "Verified", badge: "Verified", location: "Yaba" },
+  { id: '2', name: "John Okoro", trade: "Plumber", rating: 4.9, status: "Available", badge: "Pro", location: "Sabo" },
+  { id: '3', name: "Tunde Williams", trade: "Electrician", rating: 4.7, status: "Busy", badge: "Verified", location: "Alagomeji" },
 ]
 
 export async function GET() {

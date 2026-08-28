@@ -8,7 +8,7 @@
 
 Finding a reliable artisan — a plumber, electrician, tailor, mechanic — is usually word-of-mouth and guesswork. Plugr fixes that by giving every service provider a verified identity (NIN-backed), a track record of completed jobs, and an escrow-protected payment flow, so clients can book with confidence and Plugs get paid fairly and on time.
 
-Plugr is launching in Ikeja, Lagos, and is built by [Alhazen].
+Plugr is launching in Yaba, Lagos, and is built by [Alhazen].
 
 ## How it works
 

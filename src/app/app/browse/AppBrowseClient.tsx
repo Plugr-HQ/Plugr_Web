@@ -31,7 +31,7 @@ export default function AppBrowseClient({ plugs, configError }: { plugs: HackPlu
   );
 
   return (
-    <Shell eyebrow="Client · Browse" title="Find a Plug" subtitle="Verified artisans near Ikeja." back="/app">
+    <Shell eyebrow="Client · Browse" title="Find a Plug" subtitle="Verified artisans near Yaba." back="/app">
       <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1">
         {TABS.map((t) => (
           <button

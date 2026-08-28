@@ -77,7 +77,7 @@ export default function ActiveJobTracker() {
           <MapPin className="w-5 h-5 text-slate shrink-0" />
           <div>
             <h4 className="text-xs font-bold text-midnight uppercase tracking-tight">Meeting Point</h4>
-            <p className="text-sm text-slate">12, Allen Avenue, Ikeja, Lagos</p>
+            <p className="text-sm text-slate">12, Herbert Macaulay Way, Yaba, Lagos</p>
           </div>
         </div>
       </div>
