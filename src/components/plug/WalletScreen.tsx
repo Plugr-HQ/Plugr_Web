@@ -565,7 +565,55 @@ function ChangeBank({
   const [stage, setStage] = useState<'otp' | 'form'>('otp');
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const [sending, setSending] = useState(true);
+  const [sendError, setSendError] = useState<string | null>(null);
   const phone = typeof window !== 'undefined' ? getPlugPhone() : '';
+  const requested = useRef(false);
+
+  // H-4: this gate used to accept ANY six digits and never call the backend — meaning the screen
+  // that changes where a Plug's money is paid out was protected by nothing at all. It now sends a
+  // real code and verifies it server-side.
+  const sendCode = useCallback(async () => {
+    if (!phone) {
+      setSendError('We could not find your phone number. Log out and back in, then try again.');
+      setSending(false);
+      return;
+    }
+    setSending(true);
+    setSendError(null);
+    try {
+      await api.auth.requestOtp(phone, 'PLUG');
+    } catch (e: any) {
+      setSendError(e?.message ?? 'Could not send the code. Try again.');
+    } finally {
+      setSending(false);
+    }
+  }, [phone]);
+
+  useEffect(() => {
+    // Guard against StrictMode's double-invoke so a Plug is not charged two SMS for one screen.
+    if (requested.current) return;
+    requested.current = true;
+    sendCode();
+  }, [sendCode]);
+
+  async function verify() {
+    if (code.length !== 6 || verifying) return;
+    setVerifying(true);
+    setError(null);
+    try {
+      // verifyOnly: confirm the code without minting a fresh session — this is a step-up check
+      // inside an existing session, not a login.
+      await api.auth.verifyOtp(phone, code, true);
+      setStage('form');
+    } catch (e: any) {
+      setError(e?.message ?? 'That code is not right.');
+      setCode('');
+    } finally {
+      setVerifying(false);
+    }
+  }
 
   if (stage === 'form') return <BankSetup bank={null} plugId={plugId} base={base} hasPin={hasPin} onDone={onDone} />;
 
@@ -589,14 +637,25 @@ function ChangeBank({
       </div>
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-      <p className="mt-3 text-xs text-slate/70">No SMS provider wired yet — any 6 digits pass.</p>
+      {sendError ? (
+        <p className="mt-3 text-sm text-red-600">
+          {sendError}{' '}
+          <button onClick={sendCode} className="font-bold underline underline-offset-4">Try again</button>
+        </p>
+      ) : (
+        <p className="mt-3 text-xs text-slate/70">
+          {sending ? 'Sending your code…' : (
+            <>
+              Didn&rsquo;t get it?{' '}
+              <button onClick={sendCode} className="font-bold text-midnight underline underline-offset-4">Resend</button>
+            </>
+          )}
+        </p>
+      )}
 
       <div className="mt-5">
-        <GoldButton
-          onClick={() => (code.length === 6 ? setStage('form') : setError('Enter the 6-digit code.'))}
-          disabled={code.length !== 6}
-        >
-          Verify
+        <GoldButton onClick={verify} disabled={code.length !== 6 || verifying || sending} loading={verifying}>
+          {verifying ? 'Verifying…' : 'Verify'}
         </GoldButton>
       </div>
     </>
