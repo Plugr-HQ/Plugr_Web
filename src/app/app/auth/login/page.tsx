@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
 import { Label, GoldButton } from '@/src/components/ui';
 import { cn } from '@/src/lib/utils';
@@ -35,6 +35,12 @@ export default function AppLoginPage() {
   // Delivery channel for the login code. WhatsApp is the default; the picker below lets a
   // returning user switch to SMS BEFORE the code is sent, and the resend reuses the choice.
   const [channel, setChannel] = useState<'whatsapp' | 'sms'>('whatsapp');
+  // Plugs who signed up on the single-page form have a password and can sign straight in.
+  // Everyone else (every account created before that, and all clients) still uses a code, so
+  // both paths stay on this one screen and the OTP route is always one tap away.
+  const [mode, setMode] = useState<'password' | 'otp'>('password');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // OTP Verification state
   const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(''));
@@ -87,6 +93,36 @@ export default function AppLoginPage() {
         setError(msg);
       }
     } finally {
+      setBusy(false);
+    }
+  }
+
+  /** Password sign-in. Same landing logic as the OTP path — one place decides where each role goes. */
+  async function loginWithPassword() {
+    if (!complete || !password || busy) return;
+    setBusy(true);
+    setError(null);
+    setNotRegistered(false);
+    try {
+      const phone = `+234${digits}`;
+      const { accessToken, refreshToken, user, plugId } = await api.auth.loginWithPassword(phone, password);
+
+      setToken(accessToken);
+      if (typeof window !== 'undefined' && refreshToken) {
+        localStorage.setItem('plugr_refresh_token', refreshToken);
+      }
+      if (typeof window !== 'undefined' && user?.status) {
+        localStorage.setItem('plugr_user_status', user.status);
+      }
+
+      setPlugPhone(digits);
+      if (user.role === 'PLUG' && plugId) {
+        setPlugId(plugId);
+        setPlugOnboarded(true);
+      }
+      router.replace(destinationFor(user.role));
+    } catch (e: any) {
+      setError(e?.message ?? 'Incorrect phone number or password.');
       setBusy(false);
     }
   }
@@ -212,8 +248,12 @@ export default function AppLoginPage() {
       }
       footer={
         step === 'phone' ? (
-          <GoldButton onClick={login} disabled={!complete} loading={busy}>
-            {busy ? 'Signing in…' : 'Log In'}
+          <GoldButton
+            onClick={mode === 'password' ? loginWithPassword : login}
+            disabled={!complete || (mode === 'password' && password.length === 0)}
+            loading={busy}
+          >
+            {busy ? (mode === 'password' ? 'Signing in…' : 'Sending code…') : 'Log In'}
             {!busy && <ArrowRight className="w-4 h-4" />}
           </GoldButton>
         ) : null
@@ -263,7 +303,7 @@ export default function AppLoginPage() {
                 No account found for that number.
               </p>
               <button
-                onClick={() => router.push('/app/auth/phone')}
+                onClick={() => router.push('/app/signup')}
                 className="mt-1 text-sm font-bold text-midnight underline underline-offset-4 hover:text-gold transition-colors"
               >
                 Sign up as a Plug instead
@@ -273,28 +313,86 @@ export default function AppLoginPage() {
             <p className="mt-2.5 text-sm text-red-600">{error}</p>
           ) : (
             <p className="mt-2.5 text-xs text-slate/80">
-              This is a temporary phone-only login. OTP verification is next.
+              {mode === 'password'
+                ? 'Signed up with a password? Enter it below.'
+                : "We'll send you a 6-digit code."}
             </p>
           )}
 
-          <Label className="mt-6 mb-2">Send code via</Label>
-          <div className="flex gap-2 rounded-2xl bg-bone/60 border border-midnight/10 p-1">
-            {(['whatsapp', 'sms'] as const).map((c) => (
+          {mode === 'password' ? (
+            <>
+              <Label className="mt-6 mb-2">Password</Label>
+              <div className="flex items-stretch rounded-2xl bg-white border border-midnight/10 transition-colors overflow-hidden focus-within:border-gold">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError(null);
+                  }}
+                  readOnly={busy}
+                  autoComplete="current-password"
+                  placeholder="Your password"
+                  aria-label="Password"
+                  onKeyDown={(e) => e.key === 'Enter' && loginWithPassword()}
+                  className="flex-1 min-w-0 bg-transparent px-4 py-3.5 font-body text-base text-midnight placeholder:text-slate/40 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="grid place-items-center px-4 text-slate transition-colors hover:text-midnight"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {/* Every account created before single-page signup has NO password — this is how
+                  those Plugs (and all clients) get in, so it must stay visible, not hidden. */}
               <button
-                key={c}
                 type="button"
-                disabled={busy}
-                onClick={() => setChannel(c)}
-                aria-pressed={channel === c}
-                className={cn(
-                  'flex-1 rounded-xl py-2.5 font-body text-sm font-bold transition-colors',
-                  channel === c ? 'bg-white text-midnight shadow-sm' : 'text-slate/70'
-                )}
+                onClick={() => {
+                  setMode('otp');
+                  setError(null);
+                }}
+                className="mt-4 text-sm font-semibold text-gold hover:underline"
               >
-                {c === 'whatsapp' ? 'WhatsApp' : 'SMS'}
+                Log in with a WhatsApp code instead
               </button>
-            ))}
-          </div>
+            </>
+          ) : (
+            <>
+              <Label className="mt-6 mb-2">Send code via</Label>
+              <div className="flex gap-2 rounded-2xl bg-bone/60 border border-midnight/10 p-1">
+                {(['whatsapp', 'sms'] as const).map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    disabled={busy}
+                    onClick={() => setChannel(c)}
+                    aria-pressed={channel === c}
+                    className={cn(
+                      'flex-1 rounded-xl py-2.5 font-body text-sm font-bold transition-colors',
+                      channel === c ? 'bg-white text-midnight shadow-sm' : 'text-slate/70'
+                    )}
+                  >
+                    {c === 'whatsapp' ? 'WhatsApp' : 'SMS'}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('password');
+                  setError(null);
+                }}
+                className="mt-4 text-sm font-semibold text-gold hover:underline"
+              >
+                Use my password instead
+              </button>
+            </>
+          )}
         </>
       ) : (
         <>

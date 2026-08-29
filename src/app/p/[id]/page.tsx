@@ -154,9 +154,14 @@ export default async function PublicPlugProfile({ params }: { params: Promise<{ 
             plugName={plug.name}
             plugTrade={trade}
             label="Book me on Plugr"
+            /* This page is a link someone was SENT — often the first thing they ever see of
+               Plugr. A first-time client fills the intake form and comes back HERE to look at
+               the profile properly, rather than being fired into WhatsApp before they've read
+               it. Tapping again is then a known client and goes straight through. */
+            afterIntake="profile"
           />
           <p className="mt-3 text-center text-xs text-slate/70">
-            Opens WhatsApp to book {plug.name.split(' ')[0]} through Plugr.
+            You&rsquo;ll finish booking {plug.name.split(' ')[0]} on WhatsApp.
           </p>
         </section>
 

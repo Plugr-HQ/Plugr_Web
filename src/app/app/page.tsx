@@ -4,7 +4,7 @@
 //
 // Two paths, disconnected after this point:
 //   Book a Plug   -> client flow (browse -> book -> pay -> confirm -> receipt)
-//   Become a Plug -> plug flow (phone -> OTP -> onboarding -> dashboard)
+//   Become a Plug -> plug flow (single-page signup -> dashboard, verify identity after)
 
 'use client';
 
@@ -53,7 +53,7 @@ export default function AppRoleSelect() {
               className="rise rise-2"
             />
             <Tile
-              href="/app/auth/phone"
+              href="/app/signup"
               icon={<Wrench className="w-6 h-6" />}
               title="Become a Plug"
               body="Get verified, build your profile, and get paid for great work."

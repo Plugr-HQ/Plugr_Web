@@ -152,6 +152,22 @@ export const api = {
       }
       return res.json();
     },
+    // Password sign-in for Plugs who set one during single-page signup. Returns the same claims
+    // shape as verifyOtp ({ accessToken, refreshToken, user, plugId }) but with no code round
+    // trip. The backend answers a single generic message for every failure — don't try to infer
+    // whether the number exists from it.
+    loginWithPassword: async (phone: string, password: string) => {
+      const res = await fetch(`${API_URL}/auth/login/password`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ phone, password }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({} as any));
+        throw new Error(data?.message || 'Incorrect phone number or password.');
+      }
+      return res.json();
+    },
     // Exchange a refresh token for fresh claims. Prefer refreshAccessToken() for the silent
     // 401-retry path; this raw method is here for completeness.
     refresh: async (refreshToken: string) => {

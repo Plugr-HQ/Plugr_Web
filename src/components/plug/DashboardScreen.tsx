@@ -18,7 +18,8 @@ import { cn } from '@/src/lib/utils';
 import { Card, Money } from '@/src/components/ui';
 import { jsonFetch } from '@/src/lib/net';
 import { apiFetch } from '@/src/lib/api-client';
-import { getPlugId, signOutPlug } from '@/src/app/app/_lib/plugAuth';
+import { getPlugId, signOutPlug, getPlugDraft } from '@/src/app/app/_lib/plugAuth';
+import { CompleteProfileDialog, profilePromptDismissed } from './CompleteProfileDialog';
 import { PlugShell, BadgeChip, JobStatusChip, EmptyState, plugTier } from './PlugChrome';
 import { withSource } from '@/src/lib/apiSource';
 import { authHeaders } from '@/src/lib/api';
@@ -76,6 +77,13 @@ export function DashboardScreen({ base }: { base: string }) {
   const [m1Job, setM1Job] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [left, setLeft] = useState<number | null>(null);
+  // Seeded from sessionStorage on mount (not in the initializer) so server and first client
+  // render agree — reading storage during render is a hydration mismatch.
+  const [promptDismissed, setPromptDismissed] = useState(true);
+
+  useEffect(() => {
+    setPromptDismissed(profilePromptDismissed());
+  }, []);
   const unlocked = useRef(false);
 
   const plugId = typeof window !== 'undefined' ? getPlugId() : '';
@@ -113,16 +121,16 @@ export function DashboardScreen({ base }: { base: string }) {
       // then send them to re-authenticate.
       if (/session expired|unauthor|plug not found|\b401\b/i.test(msg)) {
         signOutPlug();
-        router.replace(`${base}/auth/phone`);
+        router.replace(`${base}/auth/login`);
         return;
       }
       setError(msg);
     }
   }, [plugId, base, router]);
 
-  // no session -> back to phone auth
+  // no session -> sign in (NOT signup: these are existing Plugs whose session lapsed)
   useEffect(() => {
-    if (!plugId) router.replace(`${base}/auth/phone`);
+    if (!plugId) router.replace(`${base}/auth/login`);
   }, [plugId, base, router]);
 
   useEffect(() => {
@@ -152,7 +160,7 @@ export function DashboardScreen({ base }: { base: string }) {
         <Card className="p-4 border-red-200 space-y-3">
           <p className="text-sm text-red-600">{error}</p>
           <button
-            onClick={() => { signOutPlug(); router.replace(`${base}/auth/phone`); }}
+            onClick={() => { signOutPlug(); router.replace(`${base}/auth/login`); }}
             className="inline-flex items-center gap-2 rounded-pill border border-midnight/15 bg-white px-4 py-2 text-[13px] font-bold text-midnight hover:bg-bone transition-colors"
           >
             <LogOut className="w-4 h-4" /> Log out &amp; sign in again
@@ -172,7 +180,22 @@ export function DashboardScreen({ base }: { base: string }) {
 
   const { plug, earnings, activeJob, recentJobs, lock } = data;
   const tier = plugTier(plug);
-  const pending = !plug.verified; // Pending Review
+  const pending = !plug.verified; // not yet cleared to receive jobs
+
+  // Two very different situations both look like `verified: false`, and telling a Plug their
+  // documents are "under review" when they never submitted any is the kind of wrong that makes
+  // people stop trusting the app. Signup (Part A) no longer collects NIN, so:
+  //
+  //   submitted  -> ops are reviewing. Nothing for them to do but wait.
+  //   !submitted -> WE are waiting on THEM. Prompt, and point at the verify screen.
+  //
+  // The signal is the local onboarding draft, which is where the verify screen records the NIN
+  // it submitted. LIMITATION, stated plainly: it's per-device. A Plug who verifies on one phone
+  // and signs in on another sees the "finish this" prompt again until ops approve them. Nothing
+  // breaks — the prompt is only a nudge, and the server-side gate is unaffected either way — but
+  // the durable fix is a `verificationSubmittedAt` column on PlugProfile returned by /dashboard.
+  const identitySubmitted = Boolean(getPlugDraft().nin);
+  const needsIdentity = pending && !identitySubmitted;
   const available = Number(plug.wallet_balance_available);
   const locked = Number(plug.wallet_balance_locked);
   const counting = left !== null && left > 0;
@@ -202,19 +225,46 @@ export function DashboardScreen({ base }: { base: string }) {
         </div>
       </Link>
 
-      {/* Pending Review — features locked */}
+      {/* The "complete your profile" prompt a Plug lands on straight after signup. A nudge only —
+          eligibility is enforced server-side (Plugr_Backend plug-eligibility.ts). */}
+      {needsIdentity && !promptDismissed && (
+        <CompleteProfileDialog base={base} onClose={() => setPromptDismissed(true)} />
+      )}
+
+      {/* Not yet cleared for jobs — two distinct reasons, two honest messages. */}
       {pending && (
         <Card className="mt-4 p-5 rise rise-1">
           <div className="flex items-start gap-3">
-            <span className="grid place-items-center h-9 w-9 rounded-full bg-slate/15 shrink-0">
-              <ShieldCheck className="w-5 h-5 text-slate" />
+            <span className={cn(
+              'grid place-items-center h-9 w-9 rounded-full shrink-0',
+              needsIdentity ? 'bg-gold/20' : 'bg-slate/15'
+            )}>
+              <ShieldCheck className={cn('w-5 h-5', needsIdentity ? 'text-gold' : 'text-slate')} />
             </span>
             <div>
-              <p className="font-bold text-midnight">Under Review</p>
-              <p className="mt-1 text-[13px] leading-relaxed text-slate">
-                Your NIN and face scan are in. Our ops team is confirming your details — you’ll start receiving jobs the
-                moment you’re approved.
+              <p className="font-bold text-midnight">
+                {needsIdentity ? 'Finish setting up your profile' : 'Under Review'}
               </p>
+              <p className="mt-1 text-[13px] leading-relaxed text-slate">
+                {needsIdentity ? (
+                  <>
+                    Verify your identity and you&rsquo;ll start receiving jobs. It takes about two minutes.
+                  </>
+                ) : (
+                  <>
+                    Your NIN and face scan are in. Our ops team is confirming your details — you&rsquo;ll start
+                    receiving jobs the moment you&rsquo;re approved.
+                  </>
+                )}
+              </p>
+              {needsIdentity && (
+                <Link
+                  href={`${base}/onboarding/verify`}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-pill bg-gold px-4 py-2 text-[13px] font-bold text-midnight transition-all hover:bg-gold-light active:scale-[0.98]"
+                >
+                  Verify my identity <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              )}
             </div>
           </div>
         </Card>

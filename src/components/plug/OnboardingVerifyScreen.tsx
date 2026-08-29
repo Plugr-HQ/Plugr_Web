@@ -35,6 +35,7 @@ import {getPlugDraft,
   savePlugDraft,
   clearPlugDraft,
   setPlugId,
+  getPlugId,
   setPlugOnboarded,
   getPlugPhone,
 } from '@/src/app/app/_lib/plugAuth';
@@ -210,6 +211,33 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
     setError(null);
     try {
       const d = getPlugDraft();
+
+      // TWO WAYS TO REACH THIS SCREEN, and they must not do the same thing:
+      //
+      //  1. Single-page signup (Part A) — the account ALREADY EXISTS. The Plug created it, landed
+      //     in the app, and came here from the "complete your profile" prompt. Calling register
+      //     again would hit the backend's duplicate check and fail with "already registered",
+      //     which is exactly what a Plug finishing their profile must never see.
+      //  2. The legacy six-step wizard — no account yet; this screen is what creates it.
+      //
+      // A stored plug id is the signal: it only exists once an account has been created.
+      const alreadyRegistered = Boolean(getPlugId());
+
+      if (alreadyRegistered) {
+        // Record the NIN locally so the dashboard switches from "finish setting up" to
+        // "Under Review". Approval itself is an ops action (PATCH /plugs/:id/verification is
+        // ADMIN-only, correctly) — a Plug can never mark themselves verified.
+        //
+        // LIMITATION, stated rather than hidden: "submitted" lives only on this device until a
+        // `verificationSubmittedAt` column exists on PlugProfile. A Plug who submits here and
+        // then signs in elsewhere sees the prompt again. It is a nudge either way, and the
+        // server-side eligibility gate is completely unaffected.
+        savePlugDraft({ nin: d.nin ?? nin, liveness: true });
+        setPlugOnboarded(true);
+        router.replace(`${base}/plug`);
+        return;
+      }
+
       const body = await jsonFetch(withSource('/api/plugs/register', base), {
         method: 'POST',
         body: JSON.stringify({
