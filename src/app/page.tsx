@@ -9,7 +9,6 @@ import Link from 'next/link';
 import { motion, useReducedMotion, type Variants } from 'motion/react';
 import {
   ShieldCheck,
-  Star,
   UserCheck,
   Lock,
   Clock,
@@ -42,29 +41,23 @@ const NAV_LINKS = [
 ];
 
 const STEPS = [
-  { n: '01', title: 'Find a verified Plug', body: 'Browse by trade, see badge and rating.' },
-  { n: '02', title: 'Book and pay safely', body: 'Job confirmed, payment secured in escrow.' },
-  { n: '03', title: "Job done, you're protected", body: 'Release payment when satisfied — 24hr dispute window.' },
+  { n: '01', title: 'Book a proven one', body: 'Browse by trade, see their verified identity.' },
+  { n: '02', title: 'Pay with certainty', body: 'Job confirmed, money held in escrow.' },
+  { n: '03', title: "Your money doesn't move until it's done right", body: 'Release when you’re satisfied, 24hr dispute window.' },
 ];
 
 const REASONS = [
   { title: 'Your money is protected', body: "Payments are held in escrow until you're happy." },
-  { title: 'Vetted experts only', body: 'Strict NIN, BVN, and liveness verification for every artisan.' },
+  { title: 'Vetted experts only', body: 'Every artisan verifies their NIN before they can take a single job.' },
   { title: 'Something goes wrong?', body: '24hr dispute window and dedicated ops support.' },
   { title: 'Guaranteed quality', body: 'Every job comes with a 30-day fault guarantee.' },
   { title: 'Transparent pricing', body: 'Full quote before work starts. Zero surprises.' },
 ];
 
-const PLUGS = [
-  { name: 'Tunde Adebayo', trade: 'Electrician', rating: 4.9, status: 'Available', photo: 'https://images.unsplash.com/photo-1562173650-f61426fbe683?w=240&h=240&fit=crop&crop=faces&q=75&auto=format' },
-  { name: 'Emeka Nwosu', trade: 'Plumber', rating: 5.0, status: 'Available', photo: 'https://images.unsplash.com/photo-1657356217673-4f7000f768b4?w=240&h=240&fit=crop&crop=faces&q=75&auto=format' },
-  { name: 'Chidinma Okeke', trade: 'Electrician', rating: 4.7, status: 'Busy', photo: 'https://images.unsplash.com/photo-1613876215075-276fd62c89a4?w=240&h=240&fit=crop&crop=faces&q=75&auto=format' },
-];
-
 const FAQS = [
   { q: 'How do I pay?', a: 'You pay into escrow via bank transfer to a one-time account. Funds are held securely and only released to the Plug once you confirm the job is done.' },
-  { q: "What if I'm not satisfied?", a: 'You have a 24-hour dispute window after completion. Raise a dispute and our ops team steps in before any funds are released.' },
-  { q: 'How are Plugs verified?', a: 'Every Plug passes NIN and BVN checks plus a liveness scan before they can receive jobs — so you always know who you’re hiring.' },
+  { q: "What if I'm not satisfied?", a: 'You don’t release payment until you’re happy — it stays safely in escrow. If something’s wrong, you have a 24-hour window to raise a dispute, and our team reviews it directly. Beyond that, every job carries a 30-day guarantee: if a genuine fault shows up later, we make it right.' },
+  { q: 'How are Plugs verified?', a: 'Every Plug verifies their National Identification Number (NIN) before they’re eligible to take on jobs — so their real identity is confirmed and on record before they ever knock on your door. We’re adding further checks, like facial verification, over the coming weeks as we grow.' },
 ];
 
 // Gold = primary. Midnight (solid) = the alternate when two sit side by side.
@@ -150,11 +143,10 @@ export default function LandingPage() {
               <Eyebrow>Verified artisans · Yaba, Lagos</Eyebrow>
             </motion.div>
             <motion.h1 variants={heroItem} className="mt-5 font-display text-[3rem] md:text-[4.25rem] leading-[0.98] text-midnight">
-              Hire artisans you can actually <span className="text-gold">trust.</span>
+              Know your <span className="text-gold">Plug.</span>
             </motion.h1>
             <motion.p variants={heroItem} className="mt-6 text-[17px] leading-relaxed text-slate max-w-md">
-              Plugr connects you with verified electricians and plumbers across Yaba — secure escrow payments,
-              professional identity verification, and a WhatsApp-native job flow.
+              Verified electricians and plumbers in Yaba — you know who&rsquo;s coming before they knock.
             </motion.p>
             <motion.div variants={heroItem} className="mt-8 flex flex-col sm:flex-row gap-3">
               <Link href="/app/browse" className={btnGold}>
@@ -164,11 +156,10 @@ export default function LandingPage() {
                 Become a Plug
               </Link>
             </motion.div>
-            <motion.div variants={heroItem} className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-4">
+            <motion.div variants={heroItem} className="mt-10 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-4">
               {[
                 { icon: <UserCheck className="w-4 h-4" />, label: 'NIN Verified' },
                 { icon: <Lock className="w-4 h-4" />, label: 'Escrow Protected' },
-                { icon: <Star className="w-4 h-4" />, label: 'Rated & Reviewed' },
                 { icon: <FaWhatsapp className="w-4 h-4" />, label: 'WhatsApp Native' },
               ].map((b) => (
                 <div key={b.label} className="flex items-center gap-2 text-midnight">
@@ -218,6 +209,40 @@ export default function LandingPage() {
           </motion.div>
         </div>
       </header>
+
+      {/* ------------------------------------------------------- The case (post-hero) */}
+      {/* Sits between the hero and everything else on purpose: the argument for why Plugr
+          should exist has to land before any feature list, or the features read as a
+          list of nice-to-haves rather than the answer to a problem the reader recognises. */}
+      <section className="px-5 pt-6 pb-20">
+        <Reveal className="max-w-4xl mx-auto">
+          <p className="font-display text-[1.9rem] md:text-[2.75rem] leading-[1.12] text-midnight">
+            Lagos stopped gambling on everything else. Uber over hailing blind. Bolt Food over
+            hoping it shows up. But finding someone to fix your wiring?{' '}
+            <span className="text-slate">Still six phone calls and a stranger at your door.</span>{' '}
+            <span className="text-gold">Plugr ends that.</span>
+          </p>
+        </Reveal>
+      </section>
+
+      {/* ------------------------------------------------------------------ Identity */}
+      {/* The thesis. Deliberately ABOVE "How it works" — the mechanics only matter once the
+          reader accepts the premise that who shows up is the thing being fixed. */}
+      <section className="px-5 pb-20">
+        <Reveal className="max-w-5xl mx-auto">
+          <div className="rounded-4xl bg-midnight text-white p-10 md:p-16">
+            <Eyebrow>Identity</Eyebrow>
+            <p className="mt-6 font-display text-[1.9rem] md:text-[2.9rem] leading-[1.1] text-white">
+              Every Plug has a name that precedes them.{' '}
+              <span className="text-gold">NIN verified. A record.</span>{' '}
+              A reputation that follows them, not a stranger&rsquo;s word.
+            </p>
+            <p className="mt-6 font-display text-[1.5rem] md:text-[2rem] leading-[1.15] text-steel-blue">
+              Before they arrive, you already know who they are.
+            </p>
+          </div>
+        </Reveal>
+      </section>
 
       {/* ------------------------------------------------------------ How it works */}
       <section id="how" className="py-20 px-5 bg-white border-y border-midnight/6">
@@ -313,48 +338,38 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* -------------------------------------------------------------- Meet the plugs */}
+      {/* -------------------------------------------------------------------- For Plugs */}
+      {/* Elevated above "For clients": the supply side is the harder sell and the more
+          distinctive story, so it no longer sits last before the FAQ. */}
       <section className="py-20 px-5">
-        <div className="max-w-6xl mx-auto">
-          <Reveal>
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <Eyebrow>Meet the Plugs</Eyebrow>
-                <h2 className="mt-4 font-display text-[2.5rem] md:text-[3rem] leading-[1.02] text-midnight">Real people. Verified.</h2>
-              </div>
-              <Link href="/app/browse" className="hidden sm:inline-flex items-center gap-1.5 text-sm font-bold text-midnight hover:text-gold transition-colors shrink-0">
-                Browse all <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </Reveal>
-          <div className="mt-10 grid sm:grid-cols-3 gap-4">
-            {PLUGS.map((p, i) => (
-              <Reveal key={p.name} delay={i * 0.09}>
-                <div className="rounded-2xl bg-white border border-midnight/6 card-shadow p-5 hover:-translate-y-1 transition-transform">
-                  <div className="flex items-start justify-between">
-                    <div className="relative">
-                      <img src={p.photo} alt={p.name} className="h-16 w-16 rounded-2xl object-cover" loading="lazy" />
-                      <span className="absolute -bottom-1.5 -right-1.5 grid place-items-center h-6 w-6 rounded-full bg-white">
-                        <BadgeCheck className="w-5 h-5 text-gold" />
-                      </span>
-                    </div>
-                    <span className={'rounded-pill px-2.5 py-1 text-[10.5px] font-bold ' + (p.status === 'Available' ? 'bg-emerald-500/12 text-emerald-700' : 'bg-slate/12 text-slate')}>
-                      {p.status}
-                    </span>
-                  </div>
-                  <h3 className="mt-4 font-bold text-midnight">{p.name}</h3>
-                  <p className="text-sm text-slate">{p.trade}</p>
-                  <div className="mt-1.5 flex items-center gap-1 text-sm text-midnight font-semibold">
-                    <Star className="w-3.5 h-3.5 fill-gold text-gold" /> {p.rating.toFixed(1)}
-                  </div>
-                  <Link href="/app/browse" className="mt-5 flex items-center justify-center gap-1.5 rounded-pill bg-gold text-midnight text-sm font-bold py-2.5 hover:bg-gold-light active:scale-[0.98] transition-all">
-                    Request this Plug
-                  </Link>
+        <Reveal className="max-w-4xl mx-auto">
+          <div className="rounded-4xl bg-midnight text-white p-10 md:p-14 text-center">
+            <Eyebrow>For Plugs</Eyebrow>
+            <h2 className="mt-5 font-display text-[2.6rem] md:text-[3.5rem] leading-[0.98] text-gold">
+              You&rsquo;re not just an artisan. You&rsquo;re a Plug.
+            </h2>
+            <p className="mt-6 mx-auto max-w-2xl text-steel-blue text-lg leading-relaxed">
+              You&rsquo;ve been doing this for years. The problem was never your skill — it&rsquo;s that every
+              new client treated you like a stranger. Plugr gives you a record. A name that precedes you.
+            </p>
+            <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-5">
+              {[
+                { icon: <BadgeCheck className="w-5 h-5" />, label: 'Set your price' },
+                { icon: <UserCheck className="w-5 h-5" />, label: 'Build identity' },
+                { icon: <Clock className="w-5 h-5" />, label: 'Consistent work' },
+                { icon: <ShieldCheck className="w-5 h-5" />, label: 'Get paid safely' },
+              ].map((b) => (
+                <div key={b.label} className="flex flex-col items-center gap-2.5">
+                  <span className="grid place-items-center h-11 w-11 rounded-xl bg-white/10 text-gold">{b.icon}</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.14em] text-white/90">{b.label}</span>
                 </div>
-              </Reveal>
-            ))}
+              ))}
+            </div>
+            <Link href="/app/onboarding" className={btnGold + ' mt-10 w-full sm:w-auto'}>
+              Become a Plug <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ----------------------------------------------------------------- For clients */}
@@ -395,33 +410,6 @@ export default function LandingPage() {
             </div>
           </Reveal>
         </div>
-      </section>
-
-      {/* -------------------------------------------------------------- For professionals */}
-      <section className="py-20 px-5">
-        <Reveal className="max-w-4xl mx-auto">
-          <div className="rounded-4xl bg-midnight text-white p-10 md:p-14 text-center">
-            <Eyebrow>For professionals</Eyebrow>
-            <h2 className="mt-5 font-display text-[3rem] md:text-[3.5rem] leading-[0.98] text-gold">Join the Plugs.</h2>
-            <p className="mt-4 text-steel-blue text-lg">Build a reputation clients can trust.</p>
-            <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-5">
-              {[
-                { icon: <BadgeCheck className="w-5 h-5" />, label: 'Set your price' },
-                { icon: <UserCheck className="w-5 h-5" />, label: 'Build identity' },
-                { icon: <Clock className="w-5 h-5" />, label: 'Consistent work' },
-                { icon: <ShieldCheck className="w-5 h-5" />, label: 'Get paid safely' },
-              ].map((b) => (
-                <div key={b.label} className="flex flex-col items-center gap-2.5">
-                  <span className="grid place-items-center h-11 w-11 rounded-xl bg-white/10 text-gold">{b.icon}</span>
-                  <span className="text-[10px] font-black uppercase tracking-[0.14em] text-white/90">{b.label}</span>
-                </div>
-              ))}
-            </div>
-            <Link href="/app/onboarding" className={btnGold + ' mt-10 w-full sm:w-auto'}>
-              Become a Plug <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </Reveal>
       </section>
 
       {/* -------------------------------------------------------------------- FAQ */}

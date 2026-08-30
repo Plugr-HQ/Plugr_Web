@@ -21,7 +21,7 @@ export function SiteFooter() {
         <div>
           <PlugrWordmark className="h-6 text-white" />
           <p className="mt-4 text-sm text-steel-blue max-w-xs leading-relaxed">
-            Pledging allegiance to your success. The trusted network for verified artisans in Lagos.
+            A name that precedes them. The verified artisan network in Lagos.
           </p>
           <div className="mt-5 space-y-2 text-sm text-steel-blue">
             <a href="mailto:hello@getplugr.com" className="flex items-center gap-2 hover:text-gold transition-colors">
