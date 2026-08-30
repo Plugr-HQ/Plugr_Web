@@ -148,7 +148,11 @@ export function DigitalId({
       ctx.stroke();
       ctx.fillStyle = STEEL;
       ctx.font = '500 19px "Satoshi", system-ui, sans-serif';
-      ctx.fillText('Verified on Plugr · getplugr.com', 56, 962);
+      // Recruiting line, not a badge. This card gets shared into WhatsApp groups full of other
+      // tradespeople, so the footer is the one place on it that talks to them rather than to a
+      // client. Measured at 535px against the 568px available between the 56px margins — it fits
+      // at 19px with room to spare, so no size change was needed.
+      ctx.fillText('Tradesperson? Get your own verified Plugr ID — getplugr.com', 56, 962);
 
       const blob: Blob | null = await new Promise((res) => c.toBlob(res, 'image/png'));
       if (!blob) throw new Error('render failed');
