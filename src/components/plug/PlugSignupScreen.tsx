@@ -87,7 +87,7 @@ export function PlugSignupScreen({ base }: { base: string }) {
     longitude !== null &&
     // An email that's been typed must be either valid-and-left-alone or verified; a half-typed
     // address shouldn't silently save. Blank is always fine — the field is optional.
-    (email.trim() === '' || emailValid);
+    emailValid && emailState === 'verified';
 
   function onPhoneChange(v: string) {
     setError(null);

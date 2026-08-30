@@ -44,7 +44,10 @@ export async function POST(request: Request) {
   const trade = (body.trade ?? '').trim().toLowerCase();
   // Optional — blank must travel as undefined, never '', which would collide on the backend's
   // unique email index across every Plug who skipped it.
-  const email = (body.email ?? '').trim().toLowerCase() || undefined;
+  const email = (body.email ?? '').trim().toLowerCase();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return NextResponse.json({ error: 'a valid email address is required' }, { status: 400 });
+  }
 
   if (!firstName || !lastName) {
     return NextResponse.json({ error: 'first and last name are required' }, { status: 400 });
