@@ -15,33 +15,27 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getPlugDraft, getPlugId, getPlugPhone, isPlugOnboarded } from './plugAuth';
+import { getPlugId, isPlugOnboarded } from './plugAuth';
 
 /** A Plug who finished onboarding and has a real row in the database. */
 export function isReturningPlug(): boolean {
     return isPlugOnboarded() && Boolean(getPlugId());
 }
 
-/** Started onboarding but didn't finish — has a phone or a partially filled draft. */
-export function hasPartialOnboarding(): boolean {
-    if (isReturningPlug()) return false;
-    const draft = getPlugDraft();
-    return Boolean(getPlugPhone() || draft.step || draft.firstName || draft.trade);
-}
-
 /**
  * Resolve where an entry point should send someone.
  *
- * `strict` distinguishes the two kinds of entry:
- *   - Role select (/app) passes strict=false: only a fully onboarded Plug is redirected,
- *     because someone mid-onboarding must still be able to choose "Book a Plug" instead.
- *     Forcing them into onboarding would trap them out of the client side entirely.
- *   - The Plug entry points (/app/onboarding, /app/auth/phone) pass strict=true: they've
- *     already declared they're a Plug, so a partial draft resumes rather than restarts.
+ * Only ONE case redirects now: a fully onboarded Plug goes to their dashboard instead of
+ * being shown a signup form again.
+ *
+ * `strict` is retained for the call sites but no longer changes the outcome. It used to send
+ * a partially-onboarded Plug back into /app/onboarding to resume the six-step wizard at its
+ * saved step. That wizard is retired (see /app/onboarding/page.tsx) and signup is now a single
+ * page with a single submit — there is no half-finished state to resume, and routing anyone to
+ * the retired route would just bounce them through its redirect.
  */
 export function resolvePlugEntry(base: string, strict: boolean): string | null {
     if (isReturningPlug()) return `${base}/plug`;
-    if (strict && hasPartialOnboarding()) return `${base}/onboarding`;
     return null;
 }
 

@@ -74,9 +74,17 @@ export default function AppBrowseClient({ plugs, configError }: { plugs: HackPlu
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-midnight truncate">{plug.name}</h3>
                 <p className="text-sm text-slate capitalize">{plug.trade}</p>
+                {/* A Plug with no completed jobs has no rating to show. "0.0" beside a gold star
+                    reads as a score they earned and lost; "New to Plugr" is what is actually true. */}
                 <div className="flex items-center gap-3 mt-1.5 text-xs">
-                  <span className="inline-flex items-center gap-1 text-midnight font-semibold"><Star className="w-3.5 h-3.5 fill-gold text-gold" />{Number(plug.rating).toFixed(1)}</span>
-                  <span className="text-slate">{plug.jobs_completed} jobs done</span>
+                  {Number(plug.jobs_completed ?? 0) > 0 && Number(plug.rating ?? 0) > 0 ? (
+                    <>
+                      <span className="inline-flex items-center gap-1 text-midnight font-semibold"><Star className="w-3.5 h-3.5 fill-gold text-gold" />{Number(plug.rating).toFixed(1)}</span>
+                      <span className="text-slate">{plug.jobs_completed} jobs done</span>
+                    </>
+                  ) : (
+                    <span className="text-slate">New to Plugr</span>
+                  )}
                 </div>
               </div>
               <span className="text-[11px] font-bold text-gold shrink-0 inline-flex items-center gap-0.5 group-hover:gap-1 transition-all">Profile <ArrowUpRight className="w-3.5 h-3.5" /></span>

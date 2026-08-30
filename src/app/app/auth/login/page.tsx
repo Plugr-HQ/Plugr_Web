@@ -148,9 +148,22 @@ export default function AppLoginPage() {
         }
 
         if (user.role === 'PLUG') {
-          if (isNewUser || !plugId || user.status === 'PENDING_ONBOARDING') {
+          // No PlugProfile means the account is genuinely incomplete — a User row with nothing
+          // attached. That state used to be produced routinely by the retired phone+OTP signup,
+          // which created the User first and the profile six steps later; /app/signup now writes
+          // both in one submit, so it should only be reachable for accounts predating this.
+          // /app/signup completes them in place rather than creating a duplicate: the backend's
+          // register handles an existing PLUG with no profile by filling it in (and it is the
+          // only path that can now set their password, which those accounts also lack).
+          //
+          // PENDING_ONBOARDING is deliberately NOT part of this test any more. It describes a
+          // user-status flag, not a missing profile, and a Plug who has a profile but is simply
+          // unverified belongs on their dashboard — which raises the "complete your profile"
+          // prompt pointing at NIN verification. Sending them to a signup form would ask them to
+          // re-register an account they already have.
+          if (!plugId) {
             setPlugOnboarded(false);
-            router.replace('/app/onboarding');
+            router.replace('/app/signup');
             return;
           }
           setPlugId(plugId);

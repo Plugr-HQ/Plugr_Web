@@ -31,6 +31,8 @@ type PublicPlug = {
   photo_url: string | null;
   verified: boolean;
   bio: string | null;
+  skills: string[] | null;
+  experience: { id: string; title: string; org: string; period: string; note: string }[] | null;
 };
 
 /**
@@ -142,6 +144,47 @@ export default async function PublicPlugProfile({ params }: { params: Promise<{ 
           <section className="mt-8 rounded-3xl border border-midnight/[0.06] bg-white p-6">
             <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-gold">About</h2>
             <p className="text-sm leading-relaxed text-midnight">{plug.bio}</p>
+          </section>
+        )}
+
+        {/* Skills and experience are what the Plug wrote about themselves. Each section renders
+            only when there is something real in it — an empty "Skills" heading on a shared
+            profile reads worse than no heading, and this page is often a client's first
+            impression of Plugr. */}
+        {plug.skills && plug.skills.length > 0 && (
+          <section className="mt-4 rounded-3xl border border-midnight/[0.06] bg-white p-6">
+            <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-gold">Skills</h2>
+            <div className="flex flex-wrap gap-2">
+              {plug.skills.map((skill) => (
+                <span
+                  key={skill}
+                  className="rounded-pill border border-midnight/[0.06] bg-bone px-3 py-1.5 text-[13px] font-medium text-midnight"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {plug.experience && plug.experience.length > 0 && (
+          <section className="mt-4 rounded-3xl border border-midnight/[0.06] bg-white p-6">
+            <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-gold">Experience</h2>
+            {plug.experience.map((h, i, a) => (
+              <div key={h.id ?? `${h.title}-${i}`} className="flex gap-3">
+                <div className="flex flex-col items-center">
+                  <span className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full bg-gold" />
+                  {i < a.length - 1 && <span className="my-1 w-0.5 flex-1 bg-midnight/10" />}
+                </div>
+                <div className="pb-5">
+                  <p className="text-sm font-bold text-midnight">{h.title}</p>
+                  {(h.org || h.period) && (
+                    <p className="text-xs text-slate">{[h.org, h.period].filter(Boolean).join(' · ')}</p>
+                  )}
+                  {h.note && <p className="mt-1 text-xs text-slate">{h.note}</p>}
+                </div>
+              </div>
+            ))}
           </section>
         )}
 

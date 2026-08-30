@@ -282,7 +282,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
   // Consent not yet resolved from the draft — avoid flashing either state.
   if (consentAgreed === null) {
     return (
-      <Shell eyebrow="Become a Plug" title="One moment" subtitle="" back={`${base}/onboarding`} footer={null}>
+      <Shell eyebrow="Become a Plug" title="One moment" subtitle="" back={`${base}/plug`} footer={null}>
         <div className="flex justify-center py-16">
           <Loader2 className="w-6 h-6 animate-spin text-gold" />
         </div>
@@ -297,7 +297,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
         eyebrow="Become a Plug"
         title="Before we verify you"
         subtitle="We need your consent to check your NIN and process your data."
-        back={`${base}/onboarding`}
+        back={`${base}/plug`}
         footer={
           <GoldButton onClick={agreeToConsent} disabled={!gateChecked}>
             I agree — continue
@@ -362,7 +362,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
             ? 'A quick face scan confirms you match your ID. Nothing is shared with clients.'
             : 'Optional — WhatsApp stays your main channel either way. You can add or change this later in Settings.'
       }
-      back={`${base}/onboarding`}
+      back={`${base}/plug`}
       onBack={step === 1 && liveState !== 'verified' ? () => setStep(0) : undefined}
       footer={
         step === 0 ? (

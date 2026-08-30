@@ -6,11 +6,11 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Star, BadgeCheck, MapPin, Clock, Briefcase, Zap, ShieldCheck, Loader2, Quote, Share2 } from 'lucide-react';
+import { Star, BadgeCheck, MapPin, Briefcase, ShieldCheck, Loader2, Share2 } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
-import { Card, Divider } from '@/src/components/ui';
+import { Card } from '@/src/components/ui';
 import { jsonFetch } from '@/src/lib/net';
-import { buildProfile } from '../../_lib/profile';
+import { tradeLabel, verificationLabel, ratingDisplay } from '../../_lib/plugDisplay';
 import { RequestPlugButton } from '../../_components/RequestPlugButton';
 import { DigitalId } from '../../_components/DigitalId';
 
@@ -28,7 +28,9 @@ export default function PlugProfilePage() {
   if (error) return <Shell title="Profile" back="/app/browse"><Card className="p-4 border-red-200"><p className="text-sm text-red-600">{error}</p></Card></Shell>;
   if (!plug) return <Shell title="Profile" back="/app/browse"><div className="flex items-center gap-2 text-slate text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div></Shell>;
 
-  const p = buildProfile(plug);
+  const trade = tradeLabel(plug);
+  const verifiedLabel = verificationLabel(plug);
+  const rating = ratingDisplay(plug);
   const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/p/${plugId}` : '';
 
   return (
@@ -43,44 +45,66 @@ export default function PlugProfilePage() {
         </div>
         <div className="px-5 pb-5 -mt-10">
           <div className="relative inline-block">
-            <div className="grid place-items-center h-20 w-20 rounded-3xl bg-gold text-midnight font-display text-3xl border-4 border-white">{plug.name?.[0]}</div>
-            <span className="absolute -bottom-1 -right-1 grid place-items-center h-7 w-7 rounded-full bg-white"><BadgeCheck className="w-6 h-6 text-gold" /></span>
+            {plug.photo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={plug.photo_url} alt={plug.name} className="h-20 w-20 rounded-3xl object-cover border-4 border-white" />
+            ) : (
+              <div className="grid place-items-center h-20 w-20 rounded-3xl bg-gold text-midnight font-display text-3xl border-4 border-white">{plug.name?.[0]}</div>
+            )}
+            {/* The seal was previously unconditional, so every Plug wore a verification tick
+                whether or not anything had been verified. It follows the real flag now. */}
+            {plug.verified && (
+              <span className="absolute -bottom-1 -right-1 grid place-items-center h-7 w-7 rounded-full bg-white"><BadgeCheck className="w-6 h-6 text-gold" /></span>
+            )}
           </div>
           <h1 className="mt-3 font-display text-2xl text-midnight">{plug.name}</h1>
-          <p className="text-sm text-slate">{p.headline}</p>
+          {/* Plain trade, not "Licensed <trade>" — no licence is checked anywhere in this product. */}
+          <p className="text-sm text-slate">{trade}</p>
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate">
-            <span className="inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Yaba, Lagos</span>
-            <span className="inline-flex items-center gap-1 text-midnight font-semibold"><Star className="w-3.5 h-3.5 fill-gold text-gold" /> {p.stats.rating.toFixed(1)}</span>
+            {/* Service area comes from the Plug's own record. It used to be the literal string
+                "Yaba, Lagos" for everyone, which is a claim about where THIS person works. */}
+            {plug.service_area && (
+              <span className="inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {plug.service_area}</span>
+            )}
+            {rating.kind === 'rating' ? (
+              <span className="inline-flex items-center gap-1 text-midnight font-semibold"><Star className="w-3.5 h-3.5 fill-gold text-gold" /> {rating.value}</span>
+            ) : (
+              <span className="text-slate">{rating.value}</span>
+            )}
           </div>
         </div>
       </div>
 
-      {/* BVN removed: it is not part of launch verification, so claiming it here — on the page a
-          client reads while deciding to book — was false. Grid drops to 2-up to match. */}
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        {['NIN Verified', 'Liveness'].map((v) => (
-          <div key={v} className="rounded-2xl bg-white border border-midnight/[0.06] p-3 text-center">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
-            <span className="text-[10.5px] font-bold text-midnight leading-tight block">{v}</span>
+      {/* Renders ONLY for a Plug who is actually verified. It used to render for everyone: BVN
+          and liveness (neither of which exists at launch) and then NIN, unconditionally — so an
+          unverified stranger's profile told the client all three checks had passed. */}
+      {verifiedLabel && (
+        <div className="mt-4">
+          <div className="inline-flex items-center gap-2 rounded-pill bg-[#E2F5EC] px-4 py-2 text-[13px] font-bold text-[#0D7A4A]">
+            <ShieldCheck className="w-4 h-4" strokeWidth={2.5} />
+            {verifiedLabel}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
-      <div className="mt-3 grid grid-cols-3 gap-2">
-        <Stat icon={<Briefcase className="w-4 h-4" />} value={p.stats.jobs.toLocaleString()} label="Jobs done" />
-        <Stat icon={<Clock className="w-4 h-4" />} value={`${p.stats.responseMins}m`} label="Avg response" />
-        <Stat icon={<Zap className="w-4 h-4" />} value={`${p.stats.onTimePct}%`} label="On time" />
+      {/* "Avg response 12m" and "98% on time" were hardcoded constants — identical for every
+          Plug, computed from nothing. There is no response-time or punctuality data in this
+          product, so they are gone rather than zeroed. Jobs done is real and stays. */}
+      <div className="mt-3 grid grid-cols-1 gap-2">
+        <Stat icon={<Briefcase className="w-4 h-4" />} value={Number(plug.jobs_completed ?? 0).toLocaleString()} label="Jobs done" />
       </div>
 
       <Card className="mt-4 p-5">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-2">About</p>
-        <p className="text-sm text-midnight leading-relaxed">{p.story}</p>
+        <p className={plug.bio ? 'text-sm text-midnight leading-relaxed' : 'text-sm text-slate leading-relaxed'}>
+          {plug.bio || 'This Plug hasn’t written an intro yet.'}
+        </p>
       </Card>
 
       <Card className="mt-4 p-5">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-3">Skills</p>
         <div className="flex flex-wrap gap-2">
-          {p.skills.map((s) => (
+          {(plug.skills ?? []).map((s: string) => (
             <span key={s} className="rounded-pill bg-bone border border-midnight/[0.06] px-3 py-1.5 text-[13px] font-medium text-midnight">{s}</span>
           ))}
         </div>
@@ -88,7 +112,7 @@ export default function PlugProfilePage() {
 
       <Card className="mt-4 p-5">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-4">Experience</p>
-        {p.history.map((h, i, a) => (
+        {(plug.experience ?? []).map((h: any, i: number, a: any[]) => (
           <div key={h.title} className="flex gap-3">
             <div className="flex flex-col items-center">
               <span className="grid place-items-center h-9 w-9 rounded-xl bg-midnight/[0.06] text-gold shrink-0"><Briefcase className="w-4 h-4" /></span>
@@ -103,24 +127,12 @@ export default function PlugProfilePage() {
         ))}
       </Card>
 
-      <Card className="mt-4 p-5">
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-4">Reviews</p>
-        <div className="space-y-4">
-          {p.reviews.map((r) => (
-            <div key={r.by}>
-              <Quote className="w-4 h-4 text-gold/60 mb-1" />
-              <p className="text-sm text-midnight leading-relaxed">{r.text}</p>
-              <p className="mt-1 text-xs text-slate font-semibold">— {r.by}</p>
-              {r !== p.reviews[p.reviews.length - 1] && <Divider className="mt-4" />}
-            </div>
-          ))}
-        </div>
-      </Card>
+
 
       {showId && (
         <DigitalId
           plug={{ id: plug.id, name: plug.name, trade: plug.trade, rating: Number(plug.rating) }}
-          headline={p.headline}
+          headline={trade}
           profileUrl={profileUrl}
           onClose={() => setShowId(false)}
         />

@@ -51,7 +51,9 @@ export function DigitalId({
   const id = plugNumber(plug.id);
 
   async function share() {
-    const data = { title: `${plug.name} · Plugr`, text: `${plug.name} — verified ${plug.trade} on Plugr`, url: profileUrl };
+    // "verified" is NOT asserted here — this share sheet is used by every Plug, including
+    // unverified ones, and the shared text is the first thing a client reads.
+    const data = { title: `${plug.name} · Plugr`, text: `${plug.name} — ${plug.trade} on Plugr`, url: profileUrl };
     try {
       if (navigator.share) await navigator.share(data);
       else await copyLink();
@@ -205,7 +207,7 @@ export function DigitalId({
           </div>
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-1">Scan to view</p>
-            <p className="text-sm text-midnight leading-snug">Opens {plug.name.split(' ')[0]}’s verified Plugr profile.</p>
+            <p className="text-sm text-midnight leading-snug">Opens {plug.name.split(' ')[0]}’s Plugr profile.</p>
           </div>
         </div>
 
