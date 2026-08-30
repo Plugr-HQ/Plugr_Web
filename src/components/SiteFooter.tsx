@@ -52,7 +52,7 @@ export function SiteFooter() {
           <ul className="space-y-2.5 text-sm text-steel-blue">
             <li><a href="/#how" className="hover:text-gold transition-colors">How it works</a></li>
             <li><Link href="/app/browse" className="hover:text-gold transition-colors">Book a Plug</Link></li>
-            <li><Link href="/app/onboarding" className="hover:text-gold transition-colors">Become a Plug</Link></li>
+            <li><Link href="/app/signup" className="hover:text-gold transition-colors">Become a Plug</Link></li>
             <li><Link href="/app/browse" className="hover:text-gold transition-colors">Use Plugr</Link></li>
           </ul>
         </div>

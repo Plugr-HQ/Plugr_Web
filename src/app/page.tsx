@@ -152,7 +152,7 @@ export default function LandingPage() {
               <Link href="/app/browse" className={btnGold}>
                 Book a Plug <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link href="/app/onboarding" className={btnAlt}>
+              <Link href="/app/signup" className={btnAlt}>
                 Become a Plug
               </Link>
             </motion.div>
@@ -294,8 +294,8 @@ export default function LandingPage() {
                 <div>
                   <h3 className="mt-4 font-display text-2xl leading-tight">Skilled workers deserve a professional identity.</h3>
                   <p className="mt-3 text-sm text-steel-blue leading-relaxed">
-                    Plugr turns artisans from anonymous contacts into trusted professionals — visible identity, ratings, and
-                    verified work history.
+                    Plugr turns artisans from anonymous contacts into trusted professionals — visible identity
+                    and verified work history.
                   </p>
                 </div>
               </div>
@@ -365,7 +365,7 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
-            <Link href="/app/onboarding" className={btnGold + ' mt-10 w-full sm:w-auto'}>
+            <Link href="/app/signup" className={btnGold + ' mt-10 w-full sm:w-auto'}>
               Become a Plug <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -444,7 +444,7 @@ export default function LandingPage() {
             <Link href="/app/browse" className={btnGold}>
               Book a Plug <ArrowRight className="w-4 h-4" />
             </Link>
-            <Link href="/app/onboarding" className={btnAlt}>
+            <Link href="/app/signup" className={btnAlt}>
               Become a Plug
             </Link>
           </div>

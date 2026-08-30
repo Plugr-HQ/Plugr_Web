@@ -55,8 +55,10 @@ export default function PlugProfilePage() {
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        {['NIN Verified', 'BVN Verified', 'Liveness'].map((v) => (
+      {/* BVN removed: it is not part of launch verification, so claiming it here — on the page a
+          client reads while deciding to book — was false. Grid drops to 2-up to match. */}
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        {['NIN Verified', 'Liveness'].map((v) => (
           <div key={v} className="rounded-2xl bg-white border border-midnight/[0.06] p-3 text-center">
             <ShieldCheck className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
             <span className="text-[10.5px] font-bold text-midnight leading-tight block">{v}</span>

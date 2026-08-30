@@ -168,7 +168,7 @@ export default async function PublicPlugProfile({ params }: { params: Promise<{ 
         <footer className="mt-12 text-center">
           <p className="text-sm font-medium text-slate">
             Are you an artisan?{' '}
-            <Link href="/become-a-plug" className="font-bold text-gold hover:underline">
+            <Link href="/app/signup" className="font-bold text-gold hover:underline">
               Become a Plug
             </Link>
           </p>
