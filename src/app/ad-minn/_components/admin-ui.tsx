@@ -75,12 +75,37 @@ export function Chip({ tone = 'neutral', children, className }: { tone?: Tone; c
 
 /* ------------------------------------------------------------------ Avatar */
 
-export function Avatar({ name, tone = 'bone' }: { name?: string | null; tone?: 'bone' | 'midnight' | 'gold' }) {
+/**
+ * Admin avatar. Takes an optional photo — this is used in the verification queue, where ops are
+ * deciding whether a Plug is who they claim to be, and showing them a letter instead of the
+ * photograph that was submitted made that judgement impossible to actually make.
+ */
+export function Avatar({
+  name,
+  photoUrl,
+  tone = 'bone',
+}: {
+  name?: string | null;
+  photoUrl?: string | null;
+  tone?: 'bone' | 'midnight' | 'gold';
+}) {
   const styles = {
     bone: 'bg-midnight/[0.05] text-midnight',
     midnight: 'bg-midnight text-white',
     gold: 'bg-gold text-midnight',
   };
+
+  if (photoUrl) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return (
+      <img
+        src={photoUrl}
+        alt={name ? `${name}'s submitted photo` : 'Submitted photo'}
+        className="h-9 w-9 shrink-0 rounded-xl object-cover"
+      />
+    );
+  }
+
   return (
     <span className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-xl font-display text-sm', styles[tone])}>
       {(name?.trim()?.[0] ?? '?').toUpperCase()}

@@ -24,6 +24,7 @@ import { apiFetch } from '@/src/lib/api-client';
 import { getPlugId } from '@/src/app/app/_lib/plugAuth';
 import { tradeLabel } from '@/src/app/app/_lib/plugDisplay';
 import { PlugShell, BadgeChip, EmptyState, plugTier } from './PlugChrome';
+import { PlugProfileSkeleton } from '@/src/components/Skeleton';
 import { DigitalId } from '@/src/app/app/_components/DigitalId';
 import { withSource } from '@/src/lib/apiSource';
 import { authHeaders } from '@/src/lib/api';
@@ -172,7 +173,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
         {error ? (
           <Card className="p-4 border-red-200"><p className="text-sm text-red-600">{error}</p></Card>
         ) : (
-          <div className="flex items-center gap-2 text-slate text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div>
+          <PlugProfileSkeleton />
         )}
       </PlugShell>
     );

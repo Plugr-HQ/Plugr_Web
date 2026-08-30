@@ -9,6 +9,7 @@ import { Star, BadgeCheck, ArrowRight } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
 import { Card, Label, TextInput, TextArea, PrimaryButton, Money } from '@/src/components/ui';
 import { jsonFetch, getClientIdentity } from '@/src/lib/net';
+import { PlugAvatar } from '@/src/components/PlugAvatar';
 
 export default function AppBookPage() {
   const { plugId } = useParams<{ plugId: string }>();
@@ -77,7 +78,7 @@ export default function AppBookPage() {
       {plug && (
         <Card className="p-4 mb-6 flex items-center gap-4">
           <div className="relative shrink-0">
-            <div className="grid place-items-center h-12 w-12 rounded-2xl bg-midnight text-white font-display text-lg">{plug.name?.[0]}</div>
+            <PlugAvatar name={plug.name} photoUrl={plug.photo_url} className="h-12 w-12 text-lg" />
             {plug.verified && <span className="absolute -bottom-1 -right-1 grid place-items-center h-5 w-5 rounded-full bg-white"><BadgeCheck className="w-4 h-4 text-gold" /></span>}
           </div>
           <div>

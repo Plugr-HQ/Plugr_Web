@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Loader2, Clock, Briefcase, ArrowRight, ShieldCheck, Wallet as WalletIcon, LogOut } from 'lucide-react';
+import { Clock, Briefcase, ArrowRight, ShieldCheck, Wallet as WalletIcon, LogOut } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { Card, Money } from '@/src/components/ui';
 import { jsonFetch } from '@/src/lib/net';
@@ -21,6 +21,7 @@ import { apiFetch } from '@/src/lib/api-client';
 import { getPlugId, signOutPlug, getPlugDraft } from '@/src/app/app/_lib/plugAuth';
 import { CompleteProfileDialog, profilePromptDismissed } from './CompleteProfileDialog';
 import { PlugShell, BadgeChip, JobStatusChip, EmptyState, plugTier } from './PlugChrome';
+import { DashboardSkeleton } from '@/src/components/Skeleton';
 import { withSource } from '@/src/lib/apiSource';
 import { authHeaders } from '@/src/lib/api';
 
@@ -173,7 +174,7 @@ export function DashboardScreen({ base }: { base: string }) {
   if (!data) {
     return (
       <PlugShell base={base} plug={null}>
-        <div className="flex items-center gap-2 text-slate text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div>
+        <DashboardSkeleton />
       </PlugShell>
     );
   }

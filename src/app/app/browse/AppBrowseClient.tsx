@@ -11,6 +11,7 @@ import { cn } from '@/src/lib/utils';
 import { Shell } from '@/src/components/Shell';
 import { Card } from '@/src/components/ui';
 import { RequestPlugButton } from '../_components/RequestPlugButton';
+import { PlugAvatar } from '@/src/components/PlugAvatar';
 
 export type HackPlug = {
   id: string;
@@ -19,6 +20,9 @@ export type HackPlug = {
   rating: number;
   jobs_completed: number;
   verified: boolean;
+  // The backend has always returned this on GET /plugs; the type simply omitted it, so the card
+  // had nothing to render even when the Plug had a photo on file.
+  photo_url: string | null;
 };
 
 const TABS = ['all', 'electrician', 'plumber', 'furniture'] as const;
@@ -64,7 +68,7 @@ export default function AppBrowseClient({ plugs, configError }: { plugs: HackPlu
           <Card key={plug.id} className={cn('p-4', `rise rise-${Math.min(i + 1, 4)}`)}>
             <Link href={`/app/plugs/${plug.id}`} className="flex items-center gap-4 group">
               <div className="relative shrink-0">
-                <div className="grid place-items-center h-14 w-14 rounded-2xl bg-midnight text-white font-display text-xl">{plug.name?.[0] ?? '?'}</div>
+                <PlugAvatar name={plug.name} photoUrl={plug.photo_url} className="h-14 w-14 text-xl" />
                 {plug.verified && (
                   <span className="absolute -bottom-1 -right-1 grid place-items-center h-6 w-6 rounded-full bg-bone">
                     <BadgeCheck className="w-5 h-5 text-gold fill-gold/20" />

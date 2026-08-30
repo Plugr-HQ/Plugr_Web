@@ -6,13 +6,14 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Star, BadgeCheck, MapPin, Briefcase, ShieldCheck, Loader2, Share2 } from 'lucide-react';
+import { Star, BadgeCheck, MapPin, Briefcase, ShieldCheck, Share2 } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
 import { Card } from '@/src/components/ui';
 import { jsonFetch } from '@/src/lib/net';
 import { tradeLabel, verificationLabel, ratingDisplay } from '../../_lib/plugDisplay';
 import { RequestPlugButton } from '../../_components/RequestPlugButton';
 import { DigitalId } from '../../_components/DigitalId';
+import { PlugProfileSkeleton } from '@/src/components/Skeleton';
 
 export default function PlugProfilePage() {
   const { plugId } = useParams<{ plugId: string }>();
@@ -26,7 +27,7 @@ export default function PlugProfilePage() {
   }, [plugId]);
 
   if (error) return <Shell title="Profile" back="/app/browse"><Card className="p-4 border-red-200"><p className="text-sm text-red-600">{error}</p></Card></Shell>;
-  if (!plug) return <Shell title="Profile" back="/app/browse"><div className="flex items-center gap-2 text-slate text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div></Shell>;
+  if (!plug) return <Shell back="/app/browse" mark={false}><PlugProfileSkeleton /></Shell>;
 
   const trade = tradeLabel(plug);
   const verifiedLabel = verificationLabel(plug);

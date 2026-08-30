@@ -26,6 +26,10 @@ type PlugRow = {
   status: string
   jobsCompleted: number
   joined: string
+  // snake_case: /api/admin/plugs returns the same public row shape as the rest of the app, NOT
+  // admin.service's camelCase projection. Verified against the live response — reading the
+  // service source alone gave the wrong field name and the roster silently kept its initials.
+  photo_url?: string | null
 }
 
 export default function AdminDashboard() {
@@ -123,7 +127,7 @@ function PlugsTable() {
               <tr key={plug.id} className={rowClass}>
                 <td className={cellClass}>
                   <div className="flex items-center gap-3">
-                    <Avatar name={plug.name} />
+                    <Avatar name={plug.name} photoUrl={plug.photo_url} />
                     <div>
                       <span className="block text-sm font-bold text-midnight">{plug.name}</span>
                       {plug.phone && <span className="text-xs text-slate">{plug.phone}</span>}
@@ -239,7 +243,7 @@ function PendingVerifications() {
             <div key={plug.id} className={cn('rounded-[22px] border border-midnight/6 bg-white p-6 card-shadow rise', i === 1 && 'rise-1')}>
               <div className="mb-6 flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <Avatar name={plug.name} tone="midnight" />
+                  <Avatar name={plug.name} photoUrl={plug.photo_url} tone="midnight" />
                   <div>
                     <h4 className="font-bold text-midnight">{plug.name || 'Unnamed plug'}</h4>
                     <p className="text-xs text-slate">Joined {new Date(plug.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}</p>

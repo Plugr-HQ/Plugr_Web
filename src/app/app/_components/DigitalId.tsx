@@ -13,6 +13,7 @@ import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
 import { X, Share2, Copy, Check, BadgeCheck, Star, Download } from 'lucide-react';
 import { PlugrWordmark } from '@/src/components/Brand';
 import { plugHandle } from '@/src/lib/plugHandle';
+import { PlugAvatar } from '@/src/components/PlugAvatar';
 
 const MIDNIGHT = '#0F1F3D';
 const GOLD = '#E8A020';
@@ -40,7 +41,7 @@ export function DigitalId({
   profileUrl,
   onClose,
 }: {
-  plug: { id: string; name: string; trade: string; rating: number };
+  plug: { id: string; name: string; trade: string; rating: number; photo_url?: string | null };
   headline: string;
   profileUrl: string;
   onClose: () => void;
@@ -178,7 +179,7 @@ export function DigitalId({
         <div className="px-5 -mt-5">
           <div className="flex items-end gap-3">
             <div className="relative">
-              <div className="grid place-items-center h-16 w-16 rounded-2xl bg-gold text-midnight font-display text-2xl border-4 border-white">{plug.name?.[0]}</div>
+              <PlugAvatar name={plug.name} photoUrl={plug.photo_url} tone="gold" className="h-16 w-16 border-4 border-white text-2xl" />
               <span className="absolute -bottom-1 -right-1 grid place-items-center h-6 w-6 rounded-full bg-white"><BadgeCheck className="w-5 h-5 text-gold" /></span>
             </div>
             <div className="pb-1 min-w-0">

@@ -19,6 +19,7 @@ import { Loader2, Check, MapPin, Wrench, X } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
 import { Card, Money, Divider, PrimaryButton, GoldButton } from '@/src/components/ui';
 import { apiFetch } from '@/src/lib/api-client';
+import { JobDetailSkeleton } from '@/src/components/Skeleton';
 
 const QUOTE_MIN = 500;
 const QUOTE_REVIEW_CEILING = 200_000;
@@ -155,7 +156,7 @@ export default function PlugJobCard() {
   return (
     <Shell eyebrow="Plug · Job" title="Job request" back="/app/plug">
       {loading && !job && !error && (
-        <div className="flex items-center gap-2 text-sm text-slate"><Loader2 className="h-4 w-4 animate-spin" /> Loading…</div>
+        <JobDetailSkeleton />
       )}
 
       {error && !job && (
