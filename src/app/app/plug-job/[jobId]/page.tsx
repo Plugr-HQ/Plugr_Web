@@ -15,11 +15,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Loader2, Check, MapPin, Wrench, X } from 'lucide-react';
+import { Loader2, Check, MapPin, Navigation, Wrench, X } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
 import { Card, Money, Divider, PrimaryButton, GoldButton } from '@/src/components/ui';
 import { apiFetch } from '@/src/lib/api-client';
 import { JobDetailSkeleton } from '@/src/components/Skeleton';
+import { directionsUrl } from '@/src/lib/mapsLink';
 
 const QUOTE_MIN = 500;
 const QUOTE_REVIEW_CEILING = 200_000;
@@ -153,6 +154,25 @@ export default function PlugJobCard() {
   const meta = STATUS_META[status];
   const canQuote = status === 'IN_DISCUSSION' || status === 'VISIT_DONE' || status === 'QUOTED';
 
+  // Every state between "the Plug accepted" and "the work is finished". Directions are useful at
+  // more than one of these — heading out for a diagnosis visit, and again for the job itself — so
+  // this is a range rather than a single status. PLUG_ASSIGNED is excluded on purpose: the job is
+  // still only an offer at that point and the client's address is not yet the Plug's to have.
+  const NAVIGABLE_STATUSES = [
+    'IN_DISCUSSION',
+    'VISIT_PENDING',
+    'VISIT_DONE',
+    'QUOTED',
+    'QUOTE_ACCEPTED',
+    'ESCROW_HELD',
+    'EN_ROUTE',
+    'ARRIVED',
+    'IN_PROGRESS',
+    'AWAITING_CONFIRM',
+  ];
+  const canNavigate = NAVIGABLE_STATUSES.includes(status);
+  const directionsHref = directionsUrl(job?.address);
+
   return (
     <Shell eyebrow="Plug · Job" title="Job request" back="/app/plug">
       {loading && !job && !error && (
@@ -220,6 +240,46 @@ export default function PlugJobCard() {
             </dl>
 
             {meta?.hint && <p className="mt-5 rounded-2xl bg-bone/70 px-4 py-3 text-[13px] leading-relaxed text-slate">{meta.hint}</p>}
+
+            {/* Directions.
+                Shown from acceptance onward and NOT tied to one status — a Plug reasonably wants
+                the route when they accept, when they set off for a visit, and again on the way to
+                the job itself. Hidden before acceptance (the client's location is not the Plug's
+                business until they have taken the job) and once the work is finished.
+
+                Disabled, with the reason, when the address is not something a maps app could find.
+                It never guesses: see the note in mapsLink.ts about why this uses the typed address
+                and not the job's coordinates. */}
+            {canNavigate && (
+              <div className="mt-5 border-t border-midnight/[0.07] pt-5">
+                {directionsHref ? (
+                  <a
+                    href={directionsHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-full items-center justify-center gap-2 rounded-pill border border-midnight/15 bg-white px-6 py-3.5 text-sm font-bold text-midnight transition-colors duration-200 hover:border-gold hover:text-gold active:scale-[0.99]"
+                  >
+                    <Navigation className="h-4 w-4" />
+                    Get directions
+                  </a>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      disabled
+                      aria-describedby="no-address-reason"
+                      className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-pill border border-midnight/10 bg-white px-6 py-3.5 text-sm font-bold text-slate/50"
+                    >
+                      <Navigation className="h-4 w-4" />
+                      Get directions
+                    </button>
+                    <p id="no-address-reason" className="mt-2 text-center text-[12px] leading-relaxed text-slate">
+                      No usable address on this job — ask the client where they are on WhatsApp.
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
           </Card>
 
           {/* ── Actions, gated by the real M1 status ─────────────────────────────── */}
