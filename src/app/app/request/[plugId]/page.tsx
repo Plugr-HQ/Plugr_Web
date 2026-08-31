@@ -16,7 +16,6 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { ClientIntakeForm, type ClientIntakeResult } from '@/src/components/client/ClientIntakeForm';
 import { getClientIdentity } from '@/src/lib/clientIdentity';
-import { openRequestPlugWhatsApp } from '@/src/lib/whatsappLink';
 
 export default function ClientIntakePage() {
   const router = useRouter();
@@ -43,17 +42,18 @@ export default function ClientIntakePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function handOff(client: { name: string }) {
-    if (after === 'profile') {
-      // Back to the profile they were sent. From there, "Book me on Plugr" sees a known client
-      // and goes straight to WhatsApp — no second form.
-      router.replace(`/p/${encodeURIComponent(plugId)}`);
-      return;
-    }
-
-    openRequestPlugWhatsApp({ plugId, plugName, plugTrade }, client.name);
-    // WhatsApp opens in a new tab; this one shouldn't be left sitting on a submitted form.
-    router.replace(`/app/plugs/${encodeURIComponent(plugId)}`);
+  function handOff(_client: { name: string }) {
+    // GATED for the Sept 1 launch. This screen used to end in openRequestPlugWhatsApp() for the
+    // browse path — a second way into the same conversation the bot cannot yet handle. Nothing
+    // routes here any more (RequestPlugButton opens the gated modal instead), but the route is
+    // still addressable, so the WhatsApp exit is closed here too rather than left live behind a
+    // URL someone might still have. Both paths now return to the Plug's profile, where the gated
+    // modal is the only booking action.
+    router.replace(
+      after === 'profile'
+        ? `/p/${encodeURIComponent(plugId)}`
+        : `/app/plugs/${encodeURIComponent(plugId)}`,
+    );
   }
 
   if (checking) return null;
@@ -61,7 +61,7 @@ export default function ClientIntakePage() {
   return (
     <ClientIntakeForm
       plugName={plugName}
-      submitLabel={after === 'profile' ? 'Continue' : 'Continue to WhatsApp'}
+      submitLabel="Continue"
       back={after === 'profile' ? `/p/${plugId}` : `/app/plugs/${plugId}`}
       onDone={(client: ClientIntakeResult) => handOff(client)}
     />

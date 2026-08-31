@@ -204,7 +204,9 @@ export default async function PublicPlugProfile({ params }: { params: Promise<{ 
             afterIntake="profile"
           />
           <p className="mt-3 text-center text-xs text-slate/70">
-            You&rsquo;ll finish booking {plug.name.split(' ')[0]} on WhatsApp.
+            {/* Booking is gated until client-side launch — this line used to promise a WhatsApp
+                hand-off that no longer happens. */}
+            Direct booking opens soon.
           </p>
         </section>
 
