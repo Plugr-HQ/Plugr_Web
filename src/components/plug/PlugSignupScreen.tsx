@@ -289,9 +289,7 @@ export function PlugSignupScreen({ base }: { base: string }) {
 
         {/* ------------------------------------------- email + INLINE verification */}
         <div>
-          <Label className="mb-2">
-            Email <span className="font-normal text-slate/60">(optional)</span>
-          </Label>
+          <Label className="mb-2">Email</Label>
           <div className="flex gap-2">
             <TextInput
               value={email}
