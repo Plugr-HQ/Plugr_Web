@@ -15,6 +15,7 @@ import { Shell } from '@/src/components/Shell';
 import { Card, Money } from '@/src/components/ui';
 import { cn } from '@/src/lib/utils';
 import { api, getToken } from '@/src/lib/api';
+import { JobListSkeleton } from '@/src/components/Skeleton';
 
 type Job = {
   id: string;
@@ -82,24 +83,9 @@ export default function MyJobsPage() {
         </Card>
       )}
 
-      {!jobs && !error && (
-        <div className="space-y-3">
-          {[0, 1].map((i) => (
-            <Card key={i} className="p-5 h-24 animate-pulse bg-midnight/3">
-              <div className="flex items-center justify-between mb-3">
-                <div className="min-w-0">
-                  <h4 className="font-bold text-sm text-midnight truncate">Loading...</h4>
-                </div>
-                <div className="w-10 h-4 bg-midnight/3 rounded" />
-              </div>
-              <div className="flex items-center justify-between pt-3 border-t border-bone">
-                <div className="w-10 h-4 bg-midnight/3 rounded" />
-                <div className="w-10 h-4 bg-midnight/3 rounded" />
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
+      {/* Shared skeleton rather than the hand-rolled placeholder cards that used to sit here —
+          those rendered the literal word "Loading..." inside each card. */}
+      {!jobs && !error && <JobListSkeleton />}
 
       {jobs && jobs.length === 0 && !error && (
         <Card className="p-8 text-center">

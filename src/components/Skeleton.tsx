@@ -221,3 +221,65 @@ export function JobDetailSkeleton() {
     </SkeletonRegion>
   );
 }
+
+/**
+ * Wallet (PLG-03) — balance card, the withdraw row, then the transaction list.
+ * Added so the wallet matches the dashboard's skeleton instead of the bare "⟳ Loading…" line it
+ * used to show; the two screens sit one tap apart and the change in treatment was noticeable.
+ */
+export function WalletSkeleton() {
+  return (
+    <SkeletonRegion label="Loading your wallet">
+      <Skeleton className="h-3 w-16" />
+      <Skeleton className="mt-3 h-32 rounded-[22px]" />
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <Skeleton className="h-20 rounded-[22px]" />
+        <Skeleton className="h-20 rounded-[22px]" />
+      </div>
+
+      <div className="mt-6">
+        <Skeleton className="h-3 w-28" />
+        <div className="mt-3 space-y-2">
+          <Skeleton className="h-14 rounded-[18px]" />
+          <Skeleton className="h-14 rounded-[18px]" />
+          <Skeleton className="h-14 rounded-[18px]" />
+        </div>
+      </div>
+    </SkeletonRegion>
+  );
+}
+
+/**
+ * A list of job rows (My Jobs). Replaces a hand-rolled inline block that rendered literal
+ * "Loading..." text inside placeholder cards.
+ */
+export function JobListSkeleton({ rows = 3 }: { rows?: number }) {
+  return (
+    <SkeletonRegion label="Loading your jobs">
+      <Skeleton className="h-3 w-20" />
+      <div className="mt-3 space-y-3">
+        {Array.from({ length: rows }, (_, i) => (
+          <Skeleton key={i} className="h-24 rounded-[22px]" />
+        ))}
+      </div>
+    </SkeletonRegion>
+  );
+}
+
+/** Settings — profile card, payout account, then the logout row. */
+export function SettingsSkeleton() {
+  return (
+    <SkeletonRegion label="Loading your settings">
+      <Skeleton className="h-3 w-16" />
+      <Skeleton className="mt-3 h-40 rounded-[22px]" />
+
+      <div className="mt-6">
+        <Skeleton className="h-3 w-28" />
+        <Skeleton className="mt-3 h-20 rounded-[22px]" />
+      </div>
+
+      <Skeleton className="mt-8 h-12 rounded-pill" />
+    </SkeletonRegion>
+  );
+}

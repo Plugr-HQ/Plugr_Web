@@ -20,6 +20,7 @@ import { Card } from '@/src/components/ui';
 import { jsonFetch } from '@/src/lib/net';
 import { api } from '@/src/lib/api';
 import { apiFetch } from '@/src/lib/api-client';
+import { SettingsSkeleton } from '@/src/components/Skeleton';
 import {
   getPlugId, getPlugPhone, maskPlugPhone, getPlugBank, setPlugBank, signOutPlug, type PlugBank,
 } from '@/src/app/app/_lib/plugAuth';
@@ -72,9 +73,7 @@ export function SettingsScreen({ base }: { base: string }) {
       <h1 className="mb-4 font-display text-2xl text-midnight">Settings</h1>
 
       {loading ? (
-        <div className="flex items-center gap-2 text-sm text-slate">
-          <Loader2 className="h-4 w-4 animate-spin" /> Loading…
-        </div>
+        <SettingsSkeleton />
       ) : (
         <div className="flex flex-col">
           <div className="space-y-5 pb-2">

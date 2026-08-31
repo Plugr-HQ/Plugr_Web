@@ -23,6 +23,7 @@ import { cn } from '@/src/lib/utils';
 import { Card, Divider, Money, Label, TextInput, GoldButton } from '@/src/components/ui';
 import { jsonFetch } from '@/src/lib/net';
 import { apiFetch } from '@/src/lib/api-client';
+import { WalletSkeleton } from '@/src/components/Skeleton';
 import {
   getPlugId,
   getPlugBank,
@@ -110,7 +111,7 @@ export function WalletScreen({ base }: { base: string }) {
         {error ? (
           <Card className="p-4 border-red-200"><p className="text-sm text-red-600">{error}</p></Card>
         ) : (
-          <div className="flex items-center gap-2 text-slate text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Loading…</div>
+          <WalletSkeleton />
         )}
       </PlugShell>
     );
