@@ -17,26 +17,10 @@ import Link from 'next/link';
 import { Loader2, MapPin, User, ArrowRight, AlertCircle } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
 import { Card } from '@/src/components/ui';
+import { plugStatusLabel } from '@/src/lib/jobStatusLadder';
 
 // Mirrors the M1 JobStatus values; same wording as the Plug job card.
-const STATUS_LABEL: Record<string, string> = {
-  PLUG_ASSIGNED: 'New assignment',
-  IN_DISCUSSION: 'In discussion',
-  VISIT_PENDING: 'Visit requested',
-  VISIT_DONE: 'Visit done',
-  QUOTED: 'Quote sent',
-  QUOTE_ACCEPTED: 'Quote accepted',
-  ESCROW_HELD: 'Paid into escrow',
-  EN_ROUTE: 'En route',
-  ARRIVED: 'Arrived',
-  IN_PROGRESS: 'In progress',
-  AWAITING_CONFIRM: 'Awaiting confirmation',
-  COMPLETED: 'Completed',
-  RELEASED: 'Released',
-  SEARCHING_PLUG: 'Back in the queue',
-  CANCELLED: 'Cancelled',
-  EXPIRED: 'Expired',
-};
+// Status wording comes from the shared ladder (src/lib/jobStatusLadder.ts), not a local map.
 
 type Job = {
   id: string;
@@ -110,7 +94,7 @@ export default function JobDeepLinkPage() {
       <Card className="space-y-3 p-4">
         {status && (
           <span className="inline-flex items-center rounded-full bg-gold/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#8a5a08]">
-            {STATUS_LABEL[status] ?? status}
+            {plugStatusLabel(status)}
           </span>
         )}
 

@@ -24,6 +24,7 @@ import { PlugShell, BadgeChip, JobStatusChip, EmptyState, plugTier } from './Plu
 import { DashboardSkeleton } from '@/src/components/Skeleton';
 import { withSource } from '@/src/lib/apiSource';
 import { authHeaders } from '@/src/lib/api';
+import { plugStatusLabel } from '@/src/lib/jobStatusLadder';
 
 function hhmm(total: number) {
   const h = Math.floor(total / 3600);
@@ -49,14 +50,8 @@ const M1_ACTIVE_STATUSES = new Set([
   'ESCROW_HELD', 'EN_ROUTE', 'ARRIVED', 'IN_PROGRESS', 'AWAITING_CONFIRM', 'DISPUTED',
 ]);
 
-/** Short labels for the chip. The shared JobStatusChip only knows the legacy lowercase set and
- *  would render a raw enum name, so M1 rows get their own labels here (same wording as the card). */
-const M1_STATUS_LABEL: Record<string, string> = {
-  PLUG_ASSIGNED: 'New assignment', IN_DISCUSSION: 'In discussion', VISIT_PENDING: 'Visit requested',
-  VISIT_DONE: 'Visit done', QUOTED: 'Quote sent', QUOTE_ACCEPTED: 'Quote accepted',
-  ESCROW_HELD: 'In escrow', EN_ROUTE: 'En route', ARRIVED: 'Arrived', IN_PROGRESS: 'In progress',
-  AWAITING_CONFIRM: 'Awaiting confirm', DISPUTED: 'Disputed',
-};
+// Status wording comes from the shared ladder — this screen used to keep its own map, which is
+// how "Awaiting confirm" here drifted from "Awaiting confirmation" on the job card.
 
 function M1StatusChip({ status }: { status: string }) {
   const urgent = status === 'PLUG_ASSIGNED';
@@ -67,7 +62,7 @@ function M1StatusChip({ status }: { status: string }) {
         urgent ? 'bg-gold/15 text-[#8a5a08]' : 'bg-emerald-500/12 text-emerald-700',
       )}
     >
-      {M1_STATUS_LABEL[status] ?? status}
+      {plugStatusLabel(status)}
     </span>
   );
 }

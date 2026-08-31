@@ -21,33 +21,17 @@ import { Card, Money, Divider, PrimaryButton, GoldButton } from '@/src/component
 import { apiFetch } from '@/src/lib/api-client';
 import { JobDetailSkeleton } from '@/src/components/Skeleton';
 import { directionsUrl } from '@/src/lib/mapsLink';
+import { rungFor, plugStatusLabel, LADDER_LENGTH, type LadderTone } from '@/src/lib/jobStatusLadder';
 
 const QUOTE_MIN = 500;
 const QUOTE_REVIEW_CEILING = 200_000;
 
 // Real M1 JobStatus values (mirrors the backend enum / JobStateMachine). Legacy escrow statuses
 // (paid_escrow, accepted, …) deliberately do NOT appear here.
-type Meta = { label: string; tone: Tone; hint?: string };
-type Tone = 'gold' | 'blue' | 'amber' | 'indigo' | 'green' | 'red' | 'neutral';
-
-const STATUS_META: Record<string, Meta> = {
-  PLUG_ASSIGNED: { label: 'New assignment', tone: 'gold', hint: 'A client booked you. Accept to open the line and scope the job — or decline to send it back to dispatch.' },
-  IN_DISCUSSION: { label: 'In discussion', tone: 'blue', hint: 'You’re matched. Send a quote when you’re ready, or request an on-site visit first if you need to diagnose.' },
-  VISIT_PENDING: { label: 'Visit requested', tone: 'amber', hint: 'You flagged this job for an on-site visit. Mark it done once you’ve been on site and diagnosed.' },
-  VISIT_DONE: { label: 'Visit done', tone: 'indigo', hint: 'Visit complete and the visit fee is held. Send your quote for the job.' },
-  QUOTED: { label: 'Quote sent', tone: 'green', hint: 'Your quote is with the client — they have 24h to accept or decline. You can re-quote if needed.' },
-  QUOTE_ACCEPTED: { label: 'Quote accepted', tone: 'green', hint: 'The client accepted your quote. Escrow payment is the next step (M2).' },
-  SEARCHING_PLUG: { label: 'Back in the queue', tone: 'neutral', hint: 'This job is no longer assigned to you.' },
-  CANCELLED: { label: 'Cancelled', tone: 'red' },
-  EXPIRED: { label: 'Expired', tone: 'neutral' },
-  ESCROW_HELD: { label: 'Paid into escrow', tone: 'green' },
-  EN_ROUTE: { label: 'En route', tone: 'blue' },
-  ARRIVED: { label: 'Arrived', tone: 'blue' },
-  IN_PROGRESS: { label: 'In progress', tone: 'amber' },
-  AWAITING_CONFIRM: { label: 'Awaiting confirmation', tone: 'amber' },
-  COMPLETED: { label: 'Completed', tone: 'green' },
-  RELEASED: { label: 'Released', tone: 'green' },
-};
+// Status wording comes from the shared ladder (src/lib/jobStatusLadder.ts) rather than a map
+// kept here. This screen, the dashboard chip and the deep-link page previously each held their
+// own copy and had already drifted apart on the same states.
+type Tone = LadderTone;
 
 const TONE_CLASS: Record<Tone, string> = {
   gold: 'bg-gold/15 text-[#8a5a08]',
@@ -60,10 +44,10 @@ const TONE_CLASS: Record<Tone, string> = {
 };
 
 function StatusBadge({ status }: { status: string }) {
-  const meta = STATUS_META[status] ?? { label: status, tone: 'neutral' as Tone };
+  const meta = rungFor(status);
   return (
     <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] ${TONE_CLASS[meta.tone]}`}>
-      {meta.label}
+      {meta.plug}
     </span>
   );
 }
@@ -151,7 +135,7 @@ export default function PlugJobCard() {
   }
 
   const status = job?.status ?? '';
-  const meta = STATUS_META[status];
+  const meta = rungFor(status);
   const canQuote = status === 'IN_DISCUSSION' || status === 'VISIT_DONE' || status === 'QUOTED';
 
   // Every state between "the Plug accepted" and "the work is finished". Directions are useful at
@@ -238,6 +222,27 @@ export default function PlugJobCard() {
                 </div>
               )}
             </dl>
+
+            {/* Where this job sits on the ladder. Only rendered for on-ladder states — a
+                cancelled or disputed job has no meaningful "step 4 of 9". */}
+            {meta.step > 0 && (
+              <div className="mt-5 rounded-2xl border border-midnight/[0.07] bg-white px-4 py-3.5">
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="text-sm font-bold text-midnight">{meta.plug}</p>
+                  <p className="shrink-0 text-[11px] font-bold uppercase tracking-[0.1em] text-slate/60">
+                    Step {meta.step} of {LADDER_LENGTH}
+                  </p>
+                </div>
+                <div className="mt-2.5 flex gap-1" aria-hidden>
+                  {Array.from({ length: LADDER_LENGTH }, (_, i) => (
+                    <span
+                      key={i}
+                      className={`h-1.5 flex-1 rounded-pill ${i < meta.step ? 'bg-gold' : 'bg-midnight/10'}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {meta?.hint && <p className="mt-5 rounded-2xl bg-bone/70 px-4 py-3 text-[13px] leading-relaxed text-slate">{meta.hint}</p>}
 
