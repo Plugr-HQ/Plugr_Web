@@ -23,7 +23,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ArrowRight, Zap, Droplet, Hammer, Check, Eye, EyeOff, Loader2, MailCheck,
+  ArrowRight, Zap, Droplet, Hammer, Check, Eye, EyeOff,
 } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
 import { Label, TextInput, GoldButton } from '@/src/components/ui';
@@ -48,7 +48,6 @@ function formatPhone(digits: string) {
   return [d.slice(0, 3), d.slice(3, 7), d.slice(7, 10)].filter(Boolean).join(' ');
 }
 
-type EmailOtpState = 'idle' | 'sending' | 'sent' | 'verifying' | 'verified' | 'unavailable';
 
 export function PlugSignupScreen({ base }: { base: string }) {
   const router = useRouter();
@@ -65,8 +64,6 @@ export function PlugSignupScreen({ base }: { base: string }) {
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
 
-  const [emailOtp, setEmailOtp] = useState('');
-  const [emailState, setEmailState] = useState<EmailOtpState>('idle');
   const [emailNote, setEmailNote] = useState<string | null>(null);
 
   const [busy, setBusy] = useState(false);
@@ -85,65 +82,17 @@ export function PlugSignupScreen({ base }: { base: string }) {
     !!trade &&
     latitude !== null &&
     longitude !== null &&
-    // An email that's been typed must be either valid-and-left-alone or verified; a half-typed
-    // address shouldn't silently save. Blank is always fine — the field is optional.
-    emailValid && emailState === 'verified';
+    // Email is optional (marketing only). Blank is fine; a half-typed address is not, so the only
+    // rule is "if you typed something, it has to look like an address". No verification gate:
+    // requiring one made a blank email block signup entirely, and an unconfigured mail provider
+    // locked out every applicant.
+    (email.trim() === '' || emailValid);
 
   function onPhoneChange(v: string) {
     setError(null);
     let d = v.replace(/\D/g, '');
     if (d.startsWith('0')) d = d.slice(1); // so +234 0801… can't happen
     setDigits(d.slice(0, 10));
-  }
-
-  /* ------------------------------------------------- inline email verification */
-
-  async function sendEmailOtp() {
-    if (!emailValid || emailState === 'sending') return;
-    setEmailState('sending');
-    setEmailNote(null);
-    try {
-      const res = await fetch('/api/auth/email-otp/request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() }),
-      });
-      const body = await res.json().catch(() => ({} as any));
-
-      if (res.status === 503) {
-        // No email provider is configured on the backend. Say so honestly and let them carry on —
-        // the address is still saved, just unverified.
-        setEmailState('unavailable');
-        setEmailNote('Email verification isn’t available yet — we’ll save your address and confirm it later.');
-        return;
-      }
-      if (!res.ok) throw new Error(body?.error || 'Could not send the code.');
-
-      setEmailOtp('');
-      setEmailState('sent');
-    } catch (e: any) {
-      setEmailState('idle');
-      setEmailNote(e?.message ?? 'Could not send the code. You can skip this for now.');
-    }
-  }
-
-  async function verifyEmailOtp() {
-    if (emailOtp.length !== 6 || emailState === 'verifying') return;
-    setEmailState('verifying');
-    setEmailNote(null);
-    try {
-      const res = await fetch('/api/auth/email-otp/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), otp: emailOtp }),
-      });
-      const body = await res.json().catch(() => ({} as any));
-      if (!res.ok) throw new Error(body?.error || 'Incorrect or expired code.');
-      setEmailState('verified');
-    } catch (e: any) {
-      setEmailState('sent');
-      setEmailNote(e?.message ?? 'Incorrect or expired code.');
-    }
   }
 
   /* --------------------------------------------------------------- submit */
@@ -287,83 +236,27 @@ export function PlugSignupScreen({ base }: { base: string }) {
           )}
         </div>
 
-        {/* ------------------------------------------- email + INLINE verification */}
+        {/* ------------------------------------------------------------- email */}
+        {/* Optional, and collected for marketing only. No verify button, no OTP, and no
+            "unverified" state shown to the Plug — nothing downstream treats a verified address
+            differently, so asking them to prove it was friction with no payoff. */}
         <div>
           <Label className="mb-2">Email</Label>
-          <div className="flex gap-2">
-            <TextInput
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                // Editing the address invalidates any code already sent for the old one.
-                setEmailState('idle');
-                setEmailOtp('');
-                setEmailNote(null);
-              }}
-              inputMode="email"
-              placeholder="you@example.com"
-              className="flex-1"
-              readOnly={emailState === 'verified'}
-            />
-            {emailValid && emailState !== 'verified' && emailState !== 'unavailable' && (
-              <button
-                type="button"
-                onClick={sendEmailOtp}
-                disabled={emailState === 'sending'}
-                className="shrink-0 rounded-2xl border border-midnight/10 bg-white px-4 text-[13px] font-bold text-midnight transition-colors hover:border-gold disabled:opacity-60"
-              >
-                {emailState === 'sending' ? <Loader2 className="h-4 w-4 animate-spin" /> : emailState === 'sent' ? 'Resend' : 'Verify'}
-              </button>
-            )}
-          </div>
-
-          {/* The inline OTP panel — expands directly under the field, no page break. */}
-          {emailState === 'sent' || emailState === 'verifying' ? (
-            <div className="mt-3 rounded-2xl border border-gold/40 bg-white p-4">
-              <p className="text-[13px] text-slate">
-                We sent a 6-digit code to <span className="font-semibold text-midnight">{email.trim()}</span>.
-              </p>
-              <div className="mt-3 flex gap-2">
-                <input
-                  value={emailOtp}
-                  onChange={(e) => {
-                    setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6));
-                    setEmailNote(null);
-                  }}
-                  inputMode="numeric"
-                  placeholder="123456"
-                  className="min-w-0 flex-1 rounded-xl border border-midnight/10 bg-bone/50 px-4 py-3 text-center font-mono tracking-[0.3em] text-midnight outline-none focus:border-gold"
-                />
-                <button
-                  type="button"
-                  onClick={verifyEmailOtp}
-                  disabled={emailOtp.length !== 6 || emailState === 'verifying'}
-                  className="shrink-0 rounded-xl bg-midnight px-5 text-[13px] font-bold text-white transition-opacity disabled:opacity-40"
-                >
-                  {emailState === 'verifying' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm'}
-                </button>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setEmailState('idle');
-                  setEmailOtp('');
-                  setEmailNote(null);
-                }}
-                className="mt-2 text-xs font-semibold text-slate hover:text-midnight"
-              >
-                Skip for now
-              </button>
-            </div>
-          ) : null}
-
-          {emailState === 'verified' && (
-            <p className="mt-2 inline-flex items-center gap-1.5 text-[13px] font-semibold text-emerald-700">
-              <MailCheck className="h-4 w-4" /> Email verified
-            </p>
+          <TextInput
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setEmailNote(null);
+            }}
+            inputMode="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+          />
+          {email.trim() !== '' && !emailValid ? (
+            <p className="mt-2 text-xs text-red-600">That does not look like a valid email address.</p>
+          ) : (
+            <p className="mt-2 text-xs text-slate/70">Optional — for receipts and updates.</p>
           )}
-
-          {emailNote && <p className="mt-2 text-xs text-slate">{emailNote}</p>}
         </div>
 
         {/* --------------------------------------------------------------- trade */}
