@@ -64,9 +64,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   const trade = tradeOf(plug);
   const title = `${plug.name} — ${trade} on Plugr`;
+  // Ends on the gate, not a promise. Client-side booking is off for the Sept 1 launch, so the old
+  // "Book them on WhatsApp." closer was telling everyone who received a shared link to do something
+  // the page no longer does. Same wording as the gate modal so the preview and the page agree.
   const description = plug.verified
-    ? `${plug.name} is identity-verified via NIN on Plugr${plug.service_area ? `, serving ${plug.service_area}` : ''}. Book them on WhatsApp.`
-    : `${plug.name} on Plugr${plug.service_area ? `, serving ${plug.service_area}` : ''}. Book them on WhatsApp.`;
+    ? `${plug.name} is identity-verified via NIN on Plugr${plug.service_area ? `, serving ${plug.service_area}` : ''}. Direct booking opens soon.`
+    : `${plug.name} on Plugr${plug.service_area ? `, serving ${plug.service_area}` : ''}. Direct booking opens soon.`;
 
   return {
     title,
