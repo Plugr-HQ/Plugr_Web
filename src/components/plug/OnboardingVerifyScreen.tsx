@@ -31,7 +31,8 @@ import { Card, Label, TextInput, GoldButton } from '@/src/components/ui';
 import { jsonFetch } from '@/src/lib/net';
 import { cn } from '@/src/lib/utils';
 import { setToken } from '@/src/lib/api';
-import {getPlugDraft,
+import {
+  getPlugDraft,
   savePlugDraft,
   clearPlugDraft,
   setPlugId,
@@ -224,14 +225,17 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
       const alreadyRegistered = Boolean(getPlugId());
 
       if (alreadyRegistered) {
-        // Record the NIN locally so the dashboard switches from "finish setting up" to
-        // "Under Review". Approval itself is an ops action (PATCH /plugs/:id/verification is
-        // ADMIN-only, correctly) — a Plug can never mark themselves verified.
-        //
-        // LIMITATION, stated rather than hidden: "submitted" lives only on this device until a
-        // `verificationSubmittedAt` column exists on PlugProfile. A Plug who submits here and
-        // then signs in elsewhere sees the prompt again. It is a nudge either way, and the
-        // server-side eligibility gate is completely unaffected.
+        try {
+          await jsonFetch(withSource('/api/plugs/nin', base), {
+            method: 'POST',
+            body: JSON.stringify({ nin: d.nin ?? nin }),
+          });
+        } catch (e: any) {
+          setError(e?.message ?? 'Could not submit your NIN. Try again.');
+          setSubmitting(false);
+          return;
+        }
+
         savePlugDraft({ nin: d.nin ?? nin, liveness: true });
         setPlugOnboarded(true);
         router.replace(`${base}/plug`);
@@ -249,9 +253,9 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
           phone: getPlugPhone() ?? d.phone,
           // Optional — omitted entirely when the Plug skipped the step.
           ...(emailValue ? { email: emailValue } : {}),
-          address: d.address ,
-          latitude: d.latitude ,
-          longitude: d.longitude ,
+          address: d.address,
+          latitude: d.latitude,
+          longitude: d.longitude,
           // The register endpoint must independently verify these — see CONSENT GATE note
           // at the top of this file. Do not treat their presence here as authoritative.
           consentAgreed: d.consentAgreed ?? consentAgreed,
