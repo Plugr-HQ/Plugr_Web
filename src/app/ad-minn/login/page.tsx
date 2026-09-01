@@ -16,6 +16,7 @@ import { Loader2, ShieldCheck } from 'lucide-react';
 import { api, setToken, clearToken } from '@/src/lib/api';
 import { cn } from '@/src/lib/utils';
 import { Card, PrimaryButton } from '@/src/components/ui';
+import { useResendCooldown, formatCooldown } from '@/src/lib/useResendCooldown';
 
 const LENGTH = 6;
 
@@ -41,6 +42,10 @@ export default function AdminLoginPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
   const submitting = useRef(false);
+  // Same clock the Plug login uses. Started on the FIRST send too, not just resends, so the
+  // button is never briefly enabled before a code could plausibly have arrived.
+  const cooldown = useResendCooldown();
+  const [resending, setResending] = useState(false);
 
   async function requestCode(e?: React.FormEvent) {
     e?.preventDefault();
@@ -56,6 +61,7 @@ export default function AdminLoginPage() {
     setBusy(true);
     try {
       await api.auth.requestOtp(formattedPhone);
+      cooldown.start();
       setStep('otp');
       setNotice(`We sent a 6-digit code via WhatsApp to ${formattedPhone}.`);
       setDigits(Array(LENGTH).fill(''));
@@ -70,6 +76,34 @@ export default function AdminLoginPage() {
       setError(serverMessage);
     } finally {
       setBusy(false);
+    }
+  }
+
+  /**
+   * Ask for another code. Deliberately the SAME call as the initial send
+   * (api.auth.requestOtp -> POST /auth/otp/request): the backend stores one code per phone under
+   * a single `otp:${phone}` Redis key, so issuing a new one overwrites the previous code and
+   * resets its attempt counter. There is nothing extra to invalidate client-side.
+   */
+  async function resendCode() {
+    if (cooldown.active || resending || busy) return;
+    setResending(true);
+    setError(null);
+    try {
+      const formattedPhone = formatPhone(phone);
+      await api.auth.requestOtp(formattedPhone);
+      cooldown.start();
+      // The previous code is dead server-side, so clear what they typed rather than let them
+      // submit digits that can no longer work.
+      setDigits(Array(LENGTH).fill(''));
+      setNotice(`New code sent via WhatsApp to ${formattedPhone}.`);
+      setTimeout(() => inputs.current[0]?.focus(), 50);
+    } catch (err: any) {
+      const serverMessage =
+        err?.response?.data?.message || err?.response?.data || err?.message || 'Could not resend the code.';
+      setError(serverMessage);
+    } finally {
+      setResending(false);
     }
   }
 
@@ -212,17 +246,33 @@ export default function AdminLoginPage() {
               )}
               {error && !busy && <p className="text-sm font-medium text-red-600">{error}</p>}
 
-              <button
-                type="button"
-                onClick={() => {
-                  setStep('phone');
-                  setError(null);
-                  setNotice(null);
-                }}
-                className="text-sm font-bold text-midnight underline underline-offset-4 transition-colors hover:text-gold"
-              >
-                Use a different number
-              </button>
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={resendCode}
+                  disabled={cooldown.active || resending || busy}
+                  className="text-sm font-bold text-midnight underline underline-offset-4 transition-colors hover:text-gold disabled:cursor-not-allowed disabled:text-slate disabled:no-underline disabled:hover:text-slate"
+                >
+                  {cooldown.active
+                    ? `Resend in ${formatCooldown(cooldown.remaining)}`
+                    : resending
+                      ? 'Sending…'
+                      : 'Resend code'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep('phone');
+                    setError(null);
+                    setNotice(null);
+                    cooldown.reset();
+                  }}
+                  className="text-sm font-bold text-midnight underline underline-offset-4 transition-colors hover:text-gold"
+                >
+                  Use a different number
+                </button>
+              </div>
             </div>
           )}
         </Card>

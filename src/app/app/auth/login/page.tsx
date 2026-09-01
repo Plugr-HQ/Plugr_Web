@@ -12,6 +12,7 @@ import { Label, GoldButton } from '@/src/components/ui';
 import { cn } from '@/src/lib/utils';
 import { api, setToken } from '@/src/lib/api';
 import { setPlugPhone, setPlugId, setPlugOnboarded, maskPlugPhone } from '@/src/app/app/_lib/plugAuth';
+import { useResendCooldown } from '@/src/lib/useResendCooldown';
 
 /** Where each role lands after a successful login. */
 function destinationFor(role: string): string {
@@ -45,18 +46,14 @@ export default function AppLoginPage() {
   // OTP Verification state
   const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(''));
   const [verifying, setVerifying] = useState(false);
-  const [resendIn, setResendIn] = useState(30);
+  // Shared with admin sign-in — see src/lib/useResendCooldown.ts.
+  const cooldown = useResendCooldown();
+  const resendIn = cooldown.remaining;
   const [resending, setResending] = useState(false);
   const otpInputs = useRef<(HTMLInputElement | null)[]>([]);
   const submittingOtp = useRef(false);
 
   const complete = digits.length === 10;
-
-  useEffect(() => {
-    if (step !== 'otp' || resendIn <= 0) return;
-    const t = setTimeout(() => setResendIn((s) => s - 1), 1000);
-    return () => clearTimeout(t);
-  }, [resendIn, step]);
 
   function onChange(v: string) {
     setError(null);
@@ -77,7 +74,7 @@ export default function AppLoginPage() {
       if (res.requiresOtp) {
         setPlugPhone(digits);
         setOtpDigits(Array(6).fill(''));
-        setResendIn(30);
+        cooldown.start();
         setStep('otp');
         setTimeout(() => otpInputs.current[0]?.focus(), 50);
       } else {
@@ -232,7 +229,7 @@ export default function AppLoginPage() {
       const phone = `+234${digits}`;
       await api.auth.requestOtp(phone, undefined, channel);
       setOtpDigits(Array(6).fill(''));
-      setResendIn(30);
+      cooldown.start();
       setTimeout(() => otpInputs.current[0]?.focus(), 50);
     } catch (e: any) {
       setError(e?.message ?? 'Could not resend the code.');
