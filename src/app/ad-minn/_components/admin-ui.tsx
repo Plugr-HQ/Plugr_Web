@@ -91,7 +91,7 @@ export function Avatar({
 }) {
   const styles = {
     bone: 'bg-pitch-black/[0.05] text-pitch-black',
-    'pitch-black': 'bg-pitch-black text-white',
+    'pitch-black': 'bg-pitch-black text-bone',
     gold: 'bg-gold text-pitch-black',
   };
 
@@ -208,7 +208,7 @@ export function StateRow({
             {variant === 'error' && onRetry && (
               <button
                 onClick={onRetry}
-                className="mt-4 rounded-pill bg-pitch-black px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-petrol"
+                className="mt-4 rounded-pill bg-pitch-black px-4 py-2 text-xs font-bold text-bone transition-colors hover:bg-petrol"
               >
                 Try again
               </button>
@@ -316,7 +316,7 @@ export function PillButton({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'gold' | 'ghost' | 'outline'; loading?: boolean }) {
   const styles = {
-    primary: 'bg-pitch-black text-white hover:bg-petrol shadow-[0_10px_24px_-14px] shadow-pitch-black/60',
+    primary: 'bg-pitch-black text-bone hover:bg-petrol shadow-[0_10px_24px_-14px] shadow-pitch-black/60',
     gold: 'bg-gold text-pitch-black hover:bg-gold-light shadow-[0_10px_24px_-14px_rgba(232,160,32,0.7)]',
     ghost: 'text-slate hover:text-pitch-black',
     outline: 'border border-pitch-black/10 bg-white text-pitch-black hover:bg-bone',

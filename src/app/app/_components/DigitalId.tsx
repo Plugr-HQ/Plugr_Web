@@ -14,11 +14,10 @@ import { X, Share2, Copy, Check, BadgeCheck, Star, Download } from 'lucide-react
 import { PlugrWordmark } from '@/src/components/Brand';
 import { plugHandle } from '@/src/lib/plugHandle';
 import { PlugAvatar } from '@/src/components/PlugAvatar';
-import { PITCH_BLACK } from '@/src/lib/palette';
+import { PITCH_BLACK, BONE_MUTED } from '@/src/lib/palette';
 
 const GOLD = '#E8A020';
 const BONE = '#F5F1EC';
-const STEEL = '#7A9CC8';
 
 // Handle generation lives in src/lib/plugHandle.ts so the card, the QR and the public
 // profile page can never print different identifiers for the same Plug.
@@ -94,7 +93,7 @@ export function DigitalId({
       ctx.fillStyle = GOLD;
       ctx.font = '700 30px "Clash Display", system-ui, sans-serif';
       ctx.fillText('plugr', 56, 90);
-      ctx.fillStyle = STEEL;
+      ctx.fillStyle = BONE_MUTED;
       ctx.font = '600 17px "Satoshi", system-ui, sans-serif';
       ctx.fillText('DIGITAL ID · VERIFIED PLUG', 56, 124);
 
@@ -102,7 +101,7 @@ export function DigitalId({
       ctx.fillStyle = BONE;
       ctx.font = '700 54px "Clash Display", system-ui, sans-serif';
       ctx.fillText(plug.name, 56, 224);
-      ctx.fillStyle = STEEL;
+      ctx.fillStyle = BONE_MUTED;
       ctx.font = '500 24px "Satoshi", system-ui, sans-serif';
       ctx.fillText(headline, 56, 262);
 
@@ -123,7 +122,7 @@ export function DigitalId({
       ctx.textAlign = 'left';
 
       // id + rating
-      ctx.fillStyle = STEEL;
+      ctx.fillStyle = BONE_MUTED;
       ctx.font = '600 17px "Satoshi", system-ui, sans-serif';
       ctx.fillText('PLUG ID', 56, 812);
       ctx.fillStyle = BONE;
@@ -131,7 +130,7 @@ export function DigitalId({
       ctx.fillText(id, 56, 854);
 
       ctx.textAlign = 'right';
-      ctx.fillStyle = STEEL;
+      ctx.fillStyle = BONE_MUTED;
       ctx.font = '600 17px "Satoshi", system-ui, sans-serif';
       ctx.fillText('RATING', W - 56, 812);
       ctx.fillStyle = GOLD;
@@ -146,7 +145,7 @@ export function DigitalId({
       ctx.moveTo(56, 916);
       ctx.lineTo(W - 56, 916);
       ctx.stroke();
-      ctx.fillStyle = STEEL;
+      ctx.fillStyle = BONE_MUTED;
       ctx.font = '500 19px "Satoshi", system-ui, sans-serif';
       // Recruiting line, not a badge. This card gets shared into WhatsApp groups full of other
       // tradespeople, so the footer is the one place on it that talks to them rather than to a
@@ -176,7 +175,7 @@ export function DigitalId({
             <X className="w-4 h-4" />
           </button>
           <PlugrWordmark className="h-5 text-gold" />
-          <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-steel-blue">Digital ID · Verified Plug</p>
+          <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-bone-muted">Digital ID · Verified Plug</p>
         </div>
 
         {/* Identity */}

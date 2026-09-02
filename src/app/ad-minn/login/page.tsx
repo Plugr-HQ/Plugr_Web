@@ -178,7 +178,7 @@ export default function AdminLoginPage() {
         <div className="mb-8 flex items-center justify-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="Plugr" className="h-7 w-auto" />
-          <span className="rounded-pill bg-pitch-black px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.15em] text-white">
+          <span className="rounded-pill bg-pitch-black px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.15em] text-bone">
             Admin
           </span>
         </div>

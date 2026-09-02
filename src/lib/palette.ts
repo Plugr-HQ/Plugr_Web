@@ -8,3 +8,6 @@ export const PITCH_BLACK = '#0F0A0A';
 
 /** Secondary dark anchor (elevated surfaces on the dark canvas). Mirrors --color-petrol. */
 export const PETROL = '#081F20';
+
+/** Supporting text on either dark anchor. Mirrors --color-bone-muted. */
+export const BONE_MUTED = '#8E8986';

@@ -7,6 +7,9 @@
   --color-gold: #E8A020;
   --color-gold-light: #F5C86A;
   --color-bone: #F5F1EC;
+  /* Supporting/secondary text on the dark anchors — a muted step off Bone,
+     not a separate colour family. */
+  --color-bone-muted: #8E8986;
   --color-ink: #1A1A1F;
   --color-steel-blue: #7A9CC8;
   --color-slate: #8A9DB0;

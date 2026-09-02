@@ -10,6 +10,7 @@
   --gold: #E8A020;
   --gold-light: #F5C86A;
   --bone: #F5F1EC;
+  --bone-muted: #8E8986;
   --white: #FFFFFF;
   --ink: #1A1A1F;
   --steel-blue: #7A9CC8;
@@ -86,7 +87,7 @@
   font-family: 'Satoshi', sans-serif;
   font-size: 12px;
   font-weight: 500;
-  color: var(--steel-blue);
+  color: var(--bone-muted);
   margin: 8px 0 0;
   letter-spacing: 0.01em;
 }
@@ -106,7 +107,7 @@
   font-size: clamp(16px, 2.2vw, 19px);
   font-weight: 400;
   line-height: 1.6;
-  color: var(--steel-blue);
+  color: var(--bone-muted);
   max-width: 620px;
   margin: 24px 0 0;
 }

@@ -348,7 +348,7 @@ export default function LandingPage() {
               <span className="text-gold">verified NIN</span>, and a job history that follows him
               from client to client.
             </p>
-            <p className="mt-7 max-w-2xl text-[17px] leading-relaxed text-steel-blue md:text-[19px]">
+            <p className="mt-7 max-w-2xl text-[17px] leading-relaxed text-bone-muted md:text-[19px]">
               Not a number scrawled on a receipt. A person you&rsquo;d recognize if you saw him twice.
             </p>
           </div>
@@ -533,7 +533,7 @@ export default function LandingPage() {
                 sizing you up, wondering if you&rsquo;ll overcharge, wondering if you actually know what
                 you&rsquo;re doing.
               </p>
-              <p className="mt-6 text-[16px] leading-relaxed text-steel-blue">
+              <p className="mt-6 text-[16px] leading-relaxed text-bone-muted">
                 Twenty years in the trade, and you&rsquo;re still proving yourself from zero, every single job.
               </p>
             </div>
@@ -675,7 +675,7 @@ export default function LandingPage() {
                   facts rather than as a strip of partner logos we do not have. */}
               <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 border-t border-white/10 pt-8">
                 {['NIN-verified Plugs', 'Escrow-held payments', '30-day fault guarantee'].map((t) => (
-                  <span key={t} className="flex items-center gap-2 text-[13px] text-steel-blue">
+                  <span key={t} className="flex items-center gap-2 text-[13px] text-bone-muted">
                     <Check className="h-3.5 w-3.5 shrink-0 text-gold" strokeWidth={3} />
                     {t}
                   </span>

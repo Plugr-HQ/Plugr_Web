@@ -222,10 +222,10 @@ export default function DataConsentPage() {
               <FileCheck2 className="w-6 h-6 text-gold" />
             </span>
             <p className="font-display text-xl text-white">Plugr Technologies Limited</p>
-            <p className="text-steel-blue text-sm mt-1">A subsidiary of Alhazen · Lagos, Nigeria</p>
+            <p className="text-bone-muted text-sm mt-1">A subsidiary of Alhazen · Lagos, Nigeria</p>
             <div className="mt-6 space-y-2 text-sm">
-              <p className="text-steel-blue"><span className="text-white font-semibold">Privacy inquiries:</span> privacy@getplugr.com</p>
-              <p className="text-steel-blue"><span className="text-white font-semibold">Website:</span> getplugr.com</p>
+              <p className="text-bone-muted"><span className="text-white font-semibold">Privacy inquiries:</span> privacy@getplugr.com</p>
+              <p className="text-bone-muted"><span className="text-white font-semibold">Website:</span> getplugr.com</p>
             </div>
           </div>
         </Section>

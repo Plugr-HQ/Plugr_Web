@@ -98,7 +98,7 @@ export function AdminShell({
       {/* Persistent sidebar — icon rail (w-16) or expanded menu (w-64). Always visible. */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex flex-col bg-pitch-black text-white transition-[width] duration-300 ease-in-out',
+          'fixed inset-y-0 left-0 z-40 flex flex-col bg-pitch-black text-bone transition-[width] duration-300 ease-in-out',
           expanded ? 'w-64' : 'w-16',
         )}
       >
@@ -112,7 +112,7 @@ export function AdminShell({
             onClick={toggle}
             title={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
             className={cn(
-              'flex w-full items-center rounded-xl py-2.5 text-xs font-bold text-steel-blue transition-colors hover:bg-white/5 hover:text-white',
+              'flex w-full items-center rounded-xl py-2.5 text-xs font-bold text-bone transition-colors hover:bg-white/5 hover:text-gold',
               expanded ? 'gap-3 px-3' : 'justify-center px-0',
             )}
           >
@@ -134,7 +134,7 @@ export function AdminShell({
                   expanded ? 'gap-3 px-3' : 'justify-center px-0',
                   isActive
                     ? 'bg-gold text-pitch-black shadow-[0_8px_20px_-10px_rgba(232,160,32,0.8)]'
-                    : 'text-steel-blue hover:bg-white/5 hover:text-white',
+                    : 'text-bone hover:bg-white/5 hover:text-gold',
                 )}
               >
                 <Icon className="h-5 w-5 shrink-0" />
@@ -145,7 +145,7 @@ export function AdminShell({
         </nav>
 
         {expanded && (
-          <p className="border-t border-white/5 px-5 py-4 text-[10px] uppercase tracking-[0.12em] text-steel-blue/60">Plugr Admin v1.0</p>
+          <p className="border-t border-white/5 px-5 py-4 text-[10px] uppercase tracking-[0.12em] text-bone-muted">Plugr Admin v1.0</p>
         )}
       </aside>
 

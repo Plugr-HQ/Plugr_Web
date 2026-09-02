@@ -8,10 +8,10 @@
 //   2. a rule, with copyright left and labelled socials right
 //   3. the signature: an oversized "plugr" centred and deliberately cut off by the bottom edge
 //
-// Flat colour throughout — no gradients anywhere on this site. The surface is pitch-black; the
-// wordmark is #1C3260, one flat step lighter. That tonal step is what makes a mark this large
-// readable without it shouting under the real logo in the brand column: it is felt before it is
-// read, which is the job.
+// Flat colour throughout — no gradients anywhere on this site. The surface is Pitch Black; the
+// oversized signature wordmark is Bone at 5%, barely-there texture rather than a shape you read.
+// That is what lets a mark this large sit under the real logo in the brand column without
+// competing with it: it is felt before it is read, which is the job.
 //
 // It is decorative: aria-hidden, pointer-events-none and unselectable, so it never reaches the
 // accessibility tree or copied text. The footer clips it, which produces the cut-off.
@@ -58,19 +58,19 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
 ];
 
 const linkTone =
-  'text-steel-blue transition-colors duration-200 hover:text-gold focus-visible:text-gold focus-visible:outline-none';
+  'text-bone transition-colors duration-200 hover:text-gold focus-visible:text-gold focus-visible:outline-none';
 const columnLink = `inline-block text-sm ${linkTone}`;
-const columnTitle = 'mb-5 text-[11px] font-bold uppercase tracking-[0.16em] text-white/45';
+const columnTitle = 'mb-5 text-[11px] font-bold uppercase tracking-[0.16em] text-bone-muted';
 
 export function SiteFooter() {
   return (
-    <footer className="relative isolate overflow-hidden bg-pitch-black text-white">
+    <footer className="relative isolate overflow-hidden bg-pitch-black text-bone">
       <div className="mx-auto max-w-6xl px-5 pt-16 md:pt-24">
         {/* --- columns --------------------------------------------------------------- */}
         <div className="grid gap-y-9 md:grid-cols-[1.7fr_1fr_1fr_1fr_1.1fr] md:gap-12">
           <div>
-            <PlugrWordmark className="h-6 text-white" />
-            <p className="mt-5 max-w-xs text-sm leading-relaxed text-steel-blue">
+            <PlugrWordmark className="h-6 text-bone" markClassName="text-gold" />
+            <p className="mt-5 max-w-xs text-sm leading-relaxed text-bone">
               A name that precedes them. The verified artisan network in Lagos — every Plug
               identity-checked before they can take work.
             </p>
@@ -112,7 +112,7 @@ export function SiteFooter() {
 
         {/* --- rule: copyright + socials ---------------------------------------------- */}
         <div className="mt-12 flex flex-col items-start gap-5 border-t border-white/10 pt-7 md:mt-16 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">
+          <p className="text-[11px] uppercase tracking-[0.14em] text-bone-muted">
             © 2026 Alhazen. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center gap-x-7 gap-y-3">
@@ -139,8 +139,8 @@ export function SiteFooter() {
         className="pointer-events-none relative mt-14 h-[15vw] min-h-[88px] select-none"
       >
         <span
-          className="absolute left-1/2 top-0 -translate-x-1/2 whitespace-nowrap font-display leading-[0.74] tracking-[-0.045em]"
-          style={{ fontSize: 'clamp(9rem, 38vw, 34rem)', color: '#1C3260' }}
+          className="absolute left-1/2 top-0 -translate-x-1/2 whitespace-nowrap font-display leading-[0.74] tracking-[-0.045em] text-bone/5"
+          style={{ fontSize: 'clamp(9rem, 38vw, 34rem)' }}
         >
           plugr
         </span>
