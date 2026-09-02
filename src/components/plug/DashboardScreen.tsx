@@ -157,7 +157,7 @@ export function DashboardScreen({ base }: { base: string }) {
           <p className="text-sm text-red-600">{error}</p>
           <button
             onClick={() => { signOutPlug(); router.replace(`${base}/auth/login`); }}
-            className="inline-flex items-center gap-2 rounded-pill border border-midnight/15 bg-white px-4 py-2 text-[13px] font-bold text-midnight hover:bg-bone transition-colors"
+            className="inline-flex items-center gap-2 rounded-pill border border-pitch-black/15 bg-white px-4 py-2 text-[13px] font-bold text-pitch-black hover:bg-bone transition-colors"
           >
             <LogOut className="w-4 h-4" /> Log out &amp; sign in again
           </button>
@@ -200,12 +200,12 @@ export function DashboardScreen({ base }: { base: string }) {
     <PlugShell base={base} plug={plug}>
       {/* Hero card -> PLG-02 */}
       <Link href={`${base}/plug/profile`} className="block rise">
-        <div className="relative overflow-hidden rounded-[22px] bg-midnight p-5">
+        <div className="relative overflow-hidden rounded-[22px] bg-pitch-black p-5">
           <div className="flex items-center gap-4">
             {plug.photo_url ? (
               <img src={plug.photo_url} alt="" className="h-14 w-14 rounded-2xl object-cover shrink-0" />
             ) : (
-              <span className="grid place-items-center h-14 w-14 rounded-2xl bg-gold text-midnight font-display text-xl shrink-0">
+              <span className="grid place-items-center h-14 w-14 rounded-2xl bg-gold text-pitch-black font-display text-xl shrink-0">
                 {String(plug.name)[0]}
               </span>
             )}
@@ -238,7 +238,7 @@ export function DashboardScreen({ base }: { base: string }) {
               <ShieldCheck className={cn('w-5 h-5', needsIdentity ? 'text-gold' : 'text-slate')} />
             </span>
             <div>
-              <p className="font-bold text-midnight">
+              <p className="font-bold text-pitch-black">
                 {needsIdentity ? 'Finish setting up your profile' : 'Under Review'}
               </p>
               <p className="mt-1 text-[13px] leading-relaxed text-slate">
@@ -256,7 +256,7 @@ export function DashboardScreen({ base }: { base: string }) {
               {needsIdentity && (
                 <Link
                   href={`${base}/onboarding/verify`}
-                  className="mt-3 inline-flex items-center gap-1.5 rounded-pill bg-gold px-4 py-2 text-[13px] font-bold text-midnight transition-all hover:bg-gold-light active:scale-[0.98]"
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-pill bg-gold px-4 py-2 text-[13px] font-bold text-pitch-black transition-all hover:bg-gold-light active:scale-[0.98]"
                 >
                   Verify my identity <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
@@ -288,7 +288,7 @@ export function DashboardScreen({ base }: { base: string }) {
             <Money amount={pending ? 0 : available} size="md" />
             {locked > 0 && !pending && (
               <p className="mt-1 text-[11px] text-slate">
-                <span className="tnum font-semibold text-midnight">₦{locked.toLocaleString('en-NG')}</span> locked
+                <span className="tnum font-semibold text-pitch-black">₦{locked.toLocaleString('en-NG')}</span> locked
               </p>
             )}
           </div>
@@ -299,7 +299,7 @@ export function DashboardScreen({ base }: { base: string }) {
               disabled={pending}
               className={cn(
                 'rounded-pill px-4 py-2.5 text-[13px] font-bold transition-colors',
-                pending ? 'bg-slate/20 text-slate' : 'bg-gold text-midnight hover:bg-gold-light'
+                pending ? 'bg-slate/20 text-slate' : 'bg-gold text-pitch-black hover:bg-gold-light'
               )}
             >
               Withdraw
@@ -321,11 +321,11 @@ export function DashboardScreen({ base }: { base: string }) {
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-2.5">Active job</p>
           <Card className="p-4 hover:border-gold/40 transition-colors">
             <div className="flex items-center gap-3">
-              <span className="grid place-items-center h-11 w-11 rounded-2xl bg-midnight text-white font-display shrink-0">
+              <span className="grid place-items-center h-11 w-11 rounded-2xl bg-pitch-black text-white font-display shrink-0">
                 {initials(m1Job.client?.name)}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-midnight truncate">{m1Job.title || m1Job.description || 'Job'}</p>
+                <p className="font-bold text-pitch-black truncate">{m1Job.title || m1Job.description || 'Job'}</p>
                 <p className="text-xs text-slate">{m1Job.client?.name ?? 'Client'}</p>
               </div>
               <div className="flex flex-col items-end gap-1.5 shrink-0">
@@ -343,11 +343,11 @@ export function DashboardScreen({ base }: { base: string }) {
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-2.5">Active job</p>
           <Card className="p-4 hover:border-gold/40 transition-colors">
             <div className="flex items-center gap-3">
-              <span className="grid place-items-center h-11 w-11 rounded-2xl bg-midnight text-white font-display shrink-0">
+              <span className="grid place-items-center h-11 w-11 rounded-2xl bg-pitch-black text-white font-display shrink-0">
                 {initials(activeJob.client_name)}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-midnight truncate">{activeJob.job_description || 'Job'}</p>
+                <p className="font-bold text-pitch-black truncate">{activeJob.job_description || 'Job'}</p>
                 <p className="text-xs text-slate">{activeJob.client_name}</p>
               </div>
               <div className="flex flex-col items-end gap-1.5 shrink-0">
@@ -365,7 +365,7 @@ export function DashboardScreen({ base }: { base: string }) {
           <div className="flex items-center justify-between mb-2.5">
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate">Recent jobs</p>
             {recentJobs.length > 0 && (
-              <Link href={`${base}/plug/wallet`} className="text-[11px] font-bold text-gold hover:text-midnight transition-colors">
+              <Link href={`${base}/plug/wallet`} className="text-[11px] font-bold text-gold hover:text-pitch-black transition-colors">
                 See all
               </Link>
             )}
@@ -383,11 +383,11 @@ export function DashboardScreen({ base }: { base: string }) {
             <div className="space-y-2.5">
               {recentJobs.map((j: any) => (
                 <Card key={j.id} className="p-4 flex items-center gap-3">
-                  <span className="grid place-items-center h-10 w-10 rounded-xl bg-midnight/[0.04] text-midnight text-xs font-bold shrink-0">
+                  <span className="grid place-items-center h-10 w-10 rounded-xl bg-pitch-black/[0.04] text-pitch-black text-xs font-bold shrink-0">
                     {initials(j.client_name)}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-midnight truncate">{j.job_description || 'Job'}</p>
+                    <p className="text-sm font-semibold text-pitch-black truncate">{j.job_description || 'Job'}</p>
                     <p className="text-[11px] text-slate">{new Date(j.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">

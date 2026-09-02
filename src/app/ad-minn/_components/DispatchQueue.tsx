@@ -147,7 +147,7 @@ export function DispatchQueue() {
                   <div className="flex items-center gap-3">
                     <Avatar name={job.client?.name} />
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-bold text-midnight">{job.client?.name ?? 'Unknown'}</p>
+                      <p className="truncate text-sm font-bold text-pitch-black">{job.client?.name ?? 'Unknown'}</p>
                       <p className="truncate text-xs text-slate">{job.client?.phone ?? '—'}</p>
                     </div>
                   </div>
@@ -175,7 +175,7 @@ export function DispatchQueue() {
                         </button>
                         <button
                           onClick={() => setConfirmDeleteId(null)}
-                          className="rounded-full bg-slate/10 px-2.5 py-1 text-xs font-bold text-midnight hover:bg-slate/20"
+                          className="rounded-full bg-slate/10 px-2.5 py-1 text-xs font-bold text-pitch-black hover:bg-slate/20"
                         >
                           No
                         </button>
@@ -291,7 +291,7 @@ function AssignModal({
       ) : plugs.length === 0 ? (
         <div className="py-10 text-center">
           <Briefcase className="mx-auto mb-3 h-8 w-8 text-slate/30" />
-          <p className="text-sm font-bold text-midnight">No plugs in this category</p>
+          <p className="text-sm font-bold text-pitch-black">No plugs in this category</p>
           <p className="text-sm text-slate">There are no providers registered for this trade yet.</p>
         </div>
       ) : (
@@ -304,18 +304,18 @@ function AssignModal({
                   onClick={() => setSelectedId(plug.id)}
                   className={cn(
                     'flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-colors',
-                    selected ? 'border-gold bg-gold/5 ring-4 ring-gold/10' : 'border-midnight/10 hover:bg-bone/60',
+                    selected ? 'border-gold bg-gold/5 ring-4 ring-gold/10' : 'border-pitch-black/10 hover:bg-bone/60',
                   )}
                 >
                   <Avatar name={plug.name} tone={selected ? 'gold' : 'bone'} />
                   <div className="min-w-0 grow">
                     <span className="flex items-center gap-1.5">
-                      <span className="truncate text-sm font-bold text-midnight">{plug.name ?? 'Unnamed'}</span>
+                      <span className="truncate text-sm font-bold text-pitch-black">{plug.name ?? 'Unnamed'}</span>
                       {plug.verified && <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-500" />}
                     </span>
                     <span className="text-xs capitalize text-slate">{plug.trade ?? '—'}</span>
                   </div>
-                  <span className="flex shrink-0 items-center gap-1 text-sm font-bold text-midnight">
+                  <span className="flex shrink-0 items-center gap-1 text-sm font-bold text-pitch-black">
                     <Star className="h-3.5 w-3.5 fill-gold text-gold" />
                     {(plug.rating ?? 0).toFixed(1)}
                   </span>

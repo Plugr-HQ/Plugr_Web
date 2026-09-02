@@ -25,7 +25,7 @@ export default function ClientSettingsPage() {
       <Navbar />
 
       <div className="px-6 py-8 max-w-7xl mx-auto w-full">
-        <h1 className="text-3xl font-display text-midnight mb-8">Settings</h1>
+        <h1 className="text-3xl font-display text-pitch-black mb-8">Settings</h1>
 
         <div className="space-y-8">
           {sections.map((section, idx) => (
@@ -38,11 +38,11 @@ export default function ClientSettingsPage() {
                     className="w-full flex items-center justify-between p-4 hover:bg-bone/20 transition-colors border-b border-bone last:border-0"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-bone rounded-full flex items-center justify-center text-midnight">
+                      <div className="w-10 h-10 bg-bone rounded-full flex items-center justify-center text-pitch-black">
                         <item.icon className="w-5 h-5" />
                       </div>
                       <div className="text-left">
-                        <h4 className="font-bold text-sm text-midnight">{item.label}</h4>
+                        <h4 className="font-bold text-sm text-pitch-black">{item.label}</h4>
                         <p className="text-[10px] text-slate">{item.desc}</p>
                       </div>
                     </div>

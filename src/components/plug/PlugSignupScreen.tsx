@@ -180,8 +180,8 @@ export function PlugSignupScreen({ base }: { base: string }) {
         {/* --------------------------------------------------------------- phone */}
         <div>
           <Label className="mb-2">WhatsApp number</Label>
-          <div className="flex items-stretch overflow-hidden rounded-2xl border border-midnight/10 bg-white transition-colors focus-within:border-gold">
-            <span className="grid place-items-center border-r border-midnight/10 bg-bone/60 px-4 text-sm font-bold text-slate">
+          <div className="flex items-stretch overflow-hidden rounded-2xl border border-pitch-black/10 bg-white transition-colors focus-within:border-gold">
+            <span className="grid place-items-center border-r border-pitch-black/10 bg-bone/60 px-4 text-sm font-bold text-slate">
               +234
             </span>
             <input
@@ -189,7 +189,7 @@ export function PlugSignupScreen({ base }: { base: string }) {
               onChange={(e) => onPhoneChange(e.target.value)}
               inputMode="tel"
               placeholder="801 2345 678"
-              className="min-w-0 flex-1 bg-transparent px-4 py-3.5 text-midnight outline-none placeholder:text-slate/40"
+              className="min-w-0 flex-1 bg-transparent px-4 py-3.5 text-pitch-black outline-none placeholder:text-slate/40"
             />
           </div>
           <p className="mt-2 text-xs text-slate/70">Jobs and updates reach you here.</p>
@@ -198,20 +198,20 @@ export function PlugSignupScreen({ base }: { base: string }) {
         {/* ------------------------------------------------------------ password */}
         <div>
           <Label className="mb-2">Password</Label>
-          <div className="flex items-stretch overflow-hidden rounded-2xl border border-midnight/10 bg-white transition-colors focus-within:border-gold">
+          <div className="flex items-stretch overflow-hidden rounded-2xl border border-pitch-black/10 bg-white transition-colors focus-within:border-gold">
             <input
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="At least 8 characters"
               autoComplete="new-password"
-              className="min-w-0 flex-1 bg-transparent px-4 py-3.5 text-midnight outline-none placeholder:text-slate/40"
+              className="min-w-0 flex-1 bg-transparent px-4 py-3.5 text-pitch-black outline-none placeholder:text-slate/40"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
-              className="grid place-items-center px-4 text-slate transition-colors hover:text-midnight"
+              className="grid place-items-center px-4 text-slate transition-colors hover:text-pitch-black"
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -271,19 +271,19 @@ export function PlugSignupScreen({ base }: { base: string }) {
                 className={cn(
                   'flex flex-col items-center gap-2 rounded-2xl border p-4 transition-all',
                   trade === t.value
-                    ? 'border-gold bg-white shadow-[0_8px_20px_-14px_rgba(15,31,61,0.5)]'
-                    : 'border-midnight/[0.08] bg-white/60 hover:border-midnight/20'
+                    ? 'border-gold bg-white shadow-[0_8px_20px_-14px] shadow-pitch-black/50'
+                    : 'border-pitch-black/[0.08] bg-white/60 hover:border-pitch-black/20'
                 )}
               >
                 <span
                   className={cn(
                     'grid h-10 w-10 place-items-center rounded-xl',
-                    trade === t.value ? 'bg-midnight text-gold' : 'bg-midnight/[0.06] text-slate'
+                    trade === t.value ? 'bg-pitch-black text-gold' : 'bg-pitch-black/[0.06] text-slate'
                   )}
                 >
                   {t.icon}
                 </span>
-                <span className={cn('text-[12px] font-bold', trade === t.value ? 'text-midnight' : 'text-slate')}>
+                <span className={cn('text-[12px] font-bold', trade === t.value ? 'text-pitch-black' : 'text-slate')}>
                   {t.label}
                 </span>
                 {trade === t.value && <Check className="h-3.5 w-3.5 text-gold" strokeWidth={3} />}

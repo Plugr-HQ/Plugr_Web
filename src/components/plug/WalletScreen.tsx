@@ -154,7 +154,7 @@ export function WalletScreen({ base }: { base: string }) {
               <span className="inline-flex items-center gap-1.5 text-[13px] text-slate">
                 <Lock className="w-3.5 h-3.5 text-gold" /> Pending
               </span>
-              <span className="font-display text-lg text-midnight tnum">{naira(locked)}</span>
+              <span className="font-display text-lg text-pitch-black tnum">{naira(locked)}</span>
             </div>
           </>
         )}
@@ -165,7 +165,7 @@ export function WalletScreen({ base }: { base: string }) {
         <GoldButton onClick={() => setSheet(bank ? 'withdraw' : 'bank')}>Withdraw to Bank</GoldButton>
         {counting && (
           <p className="mt-2 flex items-center justify-center gap-1.5 text-[13px] text-slate">
-            <Clock className="w-3.5 h-3.5" /> Available in <span className="tnum font-semibold text-midnight">{hhmm(left!)}</span>
+            <Clock className="w-3.5 h-3.5" /> Available in <span className="tnum font-semibold text-pitch-black">{hhmm(left!)}</span>
           </p>
         )}
       </div>
@@ -175,25 +175,25 @@ export function WalletScreen({ base }: { base: string }) {
          icon if there's no logo or the image fails to load. */}
       <Card className="mt-4 p-4 rise rise-2">
         <div className="flex items-center gap-3">
-          <span className="grid place-items-center h-10 w-10 rounded-xl bg-midnight/[0.04] text-midnight shrink-0 overflow-hidden">
+          <span className="grid place-items-center h-10 w-10 rounded-xl bg-pitch-black/[0.04] text-pitch-black shrink-0 overflow-hidden">
             <BankLogo url={bank?.bankLogoUrl} />
           </span>
           <div className="flex-1 min-w-0">
             {bank ? (
               <>
-                <p className="text-sm font-bold text-midnight truncate">{bank.bankName}</p>
+                <p className="text-sm font-bold text-pitch-black truncate">{bank.bankName}</p>
                 <p className="text-[11px] text-slate tnum">•••• {bankLast4(bank)} · {bank.accountName}</p>
               </>
             ) : (
               <>
-                <p className="text-sm font-bold text-midnight">No bank linked</p>
+                <p className="text-sm font-bold text-pitch-black">No bank linked</p>
                 <p className="text-[11px] text-slate">Link one account to get paid out.</p>
               </>
             )}
           </div>
           <button
             onClick={() => setSheet(bank ? 'changeBank' : 'bank')}
-            className="shrink-0 rounded-pill border border-midnight/10 px-3 py-1.5 text-[11px] font-bold text-midnight hover:border-gold hover:text-gold transition-colors"
+            className="shrink-0 rounded-pill border border-pitch-black/10 px-3 py-1.5 text-[11px] font-bold text-pitch-black hover:border-gold hover:text-gold transition-colors"
           >
             {bank ? 'Change' : 'Link'}
           </button>
@@ -208,7 +208,7 @@ export function WalletScreen({ base }: { base: string }) {
             onClick={() => setTab(t)}
             className={cn(
               'rounded-pill px-4 py-2 text-[13px] font-bold capitalize transition-colors',
-              tab === t ? 'bg-midnight text-white' : 'bg-white text-slate border border-midnight/[0.08]'
+              tab === t ? 'bg-pitch-black text-white' : 'bg-white text-slate border border-pitch-black/[0.08]'
             )}
           >
             {t}
@@ -225,7 +225,7 @@ export function WalletScreen({ base }: { base: string }) {
                 onClick={() => setRange(k)}
                 className={cn(
                   'flex-1 rounded-xl py-2 text-[11px] font-bold transition-colors',
-                  range === k ? 'bg-gold/15 text-[#8a5a08]' : 'text-slate hover:text-midnight'
+                  range === k ? 'bg-gold/15 text-[#8a5a08]' : 'text-slate hover:text-pitch-black'
                 )}
               >
                 {label}
@@ -251,7 +251,7 @@ export function WalletScreen({ base }: { base: string }) {
               {rows.map((j: any) => (
                 <Card key={j.id} className="p-4 flex items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-midnight truncate">{j.job_description || 'Job'}</p>
+                    <p className="text-sm font-semibold text-pitch-black truncate">{j.job_description || 'Job'}</p>
                     <p className="text-[11px] text-slate">
                       {new Date(j.escrow_released_at ?? j.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })}
                     </p>
@@ -275,7 +275,7 @@ export function WalletScreen({ base }: { base: string }) {
             withdrawals.map((w: any) => (
               <Card key={w.id} className="p-4 flex items-center justify-between">
                 <div>
-                  <div className="font-display text-midnight tnum">{naira(w.amount)}</div>
+                  <div className="font-display text-pitch-black tnum">{naira(w.amount)}</div>
                   <div className="text-[11px] text-slate">
                     {new Date(w.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })}
                     {bank && <> · •••• {bankLast4(bank)}</>}
@@ -329,13 +329,13 @@ function Sheets({
   reload: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-midnight/50 backdrop-blur-sm" onClick={close}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-pitch-black/50 backdrop-blur-sm" onClick={close}>
       <div
         className="w-full max-w-[440px] rounded-t-[24px] bg-bone p-5 pb-8 rise"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mx-auto mb-4 h-1 w-10 rounded-pill bg-midnight/15" />
-        <button onClick={close} className="absolute right-5 grid place-items-center h-8 w-8 rounded-full bg-midnight/[0.05] text-midnight" aria-label="Close">
+        <div className="mx-auto mb-4 h-1 w-10 rounded-pill bg-pitch-black/15" />
+        <button onClick={close} className="absolute right-5 grid place-items-center h-8 w-8 rounded-full bg-pitch-black/[0.05] text-pitch-black" aria-label="Close">
           <X className="w-4 h-4" />
         </button>
 
@@ -468,7 +468,7 @@ function BankSetup({
 
   return (
     <>
-      <h3 className="font-display text-2xl text-midnight">Link your bank</h3>
+      <h3 className="font-display text-2xl text-pitch-black">Link your bank</h3>
       <p className="mt-1 text-sm text-slate">One account at a time. This is where your money lands.</p>
 
       <div className="mt-5 space-y-4">
@@ -502,7 +502,7 @@ function BankSetup({
           </div>
         )}
         {!validating && validated && (
-          <div className="flex items-center gap-2 rounded-2xl bg-gold/10 px-4 py-2.5 text-sm font-semibold text-midnight">
+          <div className="flex items-center gap-2 rounded-2xl bg-gold/10 px-4 py-2.5 text-sm font-semibold text-pitch-black">
             <Check className="h-4 w-4 text-gold" /> {validated.accountName}
           </div>
         )}
@@ -516,7 +516,7 @@ function BankSetup({
             <div className="flex items-start gap-3">
               <ShieldCheck className="w-4 h-4 text-gold shrink-0 mt-0.5" />
               <p className="text-[13px] text-slate">
-                <span className="font-bold text-midnight">Set your withdrawal PIN.</span> You’ll enter it every time you
+                <span className="font-bold text-pitch-black">Set your withdrawal PIN.</span> You’ll enter it every time you
                 move money out.
               </p>
             </div>
@@ -620,7 +620,7 @@ function ChangeBank({
 
   return (
     <>
-      <h3 className="font-display text-2xl text-midnight">Confirm it’s you</h3>
+      <h3 className="font-display text-2xl text-pitch-black">Confirm it’s you</h3>
       <p className="mt-1 text-sm text-slate">
         Changing your payout account needs a code. Sent to {phone ? maskPlugPhone(phone) : 'your phone'}.
       </p>
@@ -648,7 +648,7 @@ function ChangeBank({
           {sending ? 'Sending your code…' : (
             <>
               Didn&rsquo;t get it?{' '}
-              <button onClick={sendCode} className="font-bold text-midnight underline underline-offset-4">Resend</button>
+              <button onClick={sendCode} className="font-bold text-pitch-black underline underline-offset-4">Resend</button>
             </>
           )}
         </p>
@@ -711,10 +711,10 @@ function Withdraw({
         <span className="mx-auto mb-4 grid place-items-center h-14 w-14 rounded-full bg-gold/15">
           <Clock className="w-7 h-7 text-gold" />
         </span>
-        <h3 className="font-display text-2xl text-midnight">Withdrawal processing</h3>
+        <h3 className="font-display text-2xl text-pitch-black">Withdrawal processing</h3>
         <p className="mt-2 text-sm text-slate leading-relaxed">
           {naira(Number(amount))} is on its way to •••• {bankLast4(bank)}. Payouts are bank-initiated, so this stays{' '}
-          <span className="font-bold text-midnight">pending</span> — we don’t fake a completed transfer.
+          <span className="font-bold text-pitch-black">pending</span> — we don’t fake a completed transfer.
         </p>
         <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
           <Check className="w-4 h-4" strokeWidth={3} /> Deducted from available
@@ -728,9 +728,9 @@ function Withdraw({
 
   return (
     <>
-      <h3 className="font-display text-2xl text-midnight">Withdraw to bank</h3>
+      <h3 className="font-display text-2xl text-pitch-black">Withdraw to bank</h3>
       <div className="mt-1 flex items-center gap-2">
-        <span className="grid place-items-center h-6 w-6 rounded-full bg-midnight/[0.04] shrink-0 overflow-hidden">
+        <span className="grid place-items-center h-6 w-6 rounded-full bg-pitch-black/[0.04] shrink-0 overflow-hidden">
           <BankLogo url={bank?.bankLogoUrl} />
         </span>
         <p className="text-sm text-slate truncate">
@@ -741,7 +741,7 @@ function Withdraw({
       {counting && (
         <div className="mt-4 flex items-start gap-3 rounded-2xl border border-gold/20 bg-gold/[0.08] p-4">
           <Lock className="w-4 h-4 text-gold shrink-0 mt-0.5" />
-          <p className="text-[13px] leading-relaxed text-midnight">
+          <p className="text-[13px] leading-relaxed text-pitch-black">
             <span className="font-bold">{naira(locked)} is still in the dispute window.</span> It becomes available in{' '}
             <span className="tnum font-bold">{hhmm(left!)}</span>. Anything already available you can take now.
           </p>

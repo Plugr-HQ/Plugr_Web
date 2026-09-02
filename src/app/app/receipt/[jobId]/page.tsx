@@ -40,13 +40,13 @@ export default function AppReceiptPage() {
     <Shell eyebrow="Receipt" title="Transaction receipt" subtitle={`Job ${String(job.id).slice(0, 8)}…`} back="/app/browse">
       <div className="relative">
         <Card className="p-6 pb-8">
-          <div className="flex items-center justify-between mb-6"><PlugrWordmark className="h-5 text-midnight" /><StatusChip status={job.status} /></div>
+          <div className="flex items-center justify-between mb-6"><PlugrWordmark className="h-5 text-pitch-black" /><StatusChip status={job.status} /></div>
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate">Total</p>
           <div className="mt-1"><Money amount={job.amount} size="xl" /></div>
           <Divider className="my-6" />
           <div className="grid grid-cols-2 gap-5">
-            <div><p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-1">Plug</p><p className="font-bold text-midnight">{plug?.name ?? '—'}</p><p className="text-xs text-slate capitalize">{plug?.trade}</p></div>
-            <div><p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-1">Client</p><p className="font-bold text-midnight">{job.client_name}</p><p className="text-xs text-slate">{job.client_phone || '—'}</p></div>
+            <div><p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-1">Plug</p><p className="font-bold text-pitch-black">{plug?.name ?? '—'}</p><p className="text-xs text-slate capitalize">{plug?.trade}</p></div>
+            <div><p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-1">Client</p><p className="font-bold text-pitch-black">{job.client_name}</p><p className="text-xs text-slate">{job.client_phone || '—'}</p></div>
           </div>
           <Divider className="my-6" />
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-3">ALATPay reference</p>
@@ -75,7 +75,7 @@ function RefRow({ label, value, mono }: { label: string; value?: string | null; 
   return (
     <div className="flex items-start justify-between gap-4">
       <span className="text-xs text-slate shrink-0">{label}</span>
-      <span className={'text-xs text-midnight text-right break-all ' + (mono ? 'font-mono' : 'font-semibold tnum')}>{value || '—'}</span>
+      <span className={'text-xs text-pitch-black text-right break-all ' + (mono ? 'font-mono' : 'font-semibold tnum')}>{value || '—'}</span>
     </div>
   );
 }

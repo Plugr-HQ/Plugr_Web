@@ -70,7 +70,7 @@ export default function AppConfirmPage() {
 
       {job && phase === 'confirm' && (
         <Card className="p-6 mb-6">
-          <p className="text-midnight font-medium leading-relaxed">{job.job_description || 'Job'}</p>
+          <p className="text-pitch-black font-medium leading-relaxed">{job.job_description || 'Job'}</p>
           <Divider className="my-5" />
           <div className="flex items-center justify-between"><span className="text-sm text-slate">In escrow</span><Money amount={job.amount} size="md" /></div>
         </Card>
@@ -78,9 +78,9 @@ export default function AppConfirmPage() {
 
       {phase === 'confirm' && (
         <>
-          <div className="flex items-start gap-3 rounded-2xl bg-white border border-midnight/[0.06] p-4 mb-6 card-shadow">
+          <div className="flex items-start gap-3 rounded-2xl bg-white border border-pitch-black/[0.06] p-4 mb-6 card-shadow">
             <span className="grid place-items-center h-9 w-9 rounded-full bg-gold/15 shrink-0"><ShieldCheck className="w-5 h-5 text-gold" /></span>
-            <p className="text-[13px] leading-relaxed text-slate">Only confirm once the Plug has completed the work. Production opens a 24-hour dispute window — <span className="font-bold text-midnight">compressed to 60 seconds here.</span></p>
+            <p className="text-[13px] leading-relaxed text-slate">Only confirm once the Plug has completed the work. Production opens a 24-hour dispute window — <span className="font-bold text-pitch-black">compressed to 60 seconds here.</span></p>
           </div>
           <GoldButton onClick={confirm} loading={busy} disabled={!job}>{busy ? 'Releasing…' : 'Confirm — job is done'}</GoldButton>
         </>
@@ -90,12 +90,12 @@ export default function AppConfirmPage() {
         <div className="text-center py-4">
           <div className="relative mx-auto h-32 w-32">
             <svg className="h-32 w-32 -rotate-90" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r={R} fill="none" stroke="rgba(15,31,61,0.08)" strokeWidth="8" />
+              <circle cx="60" cy="60" r={R} fill="none" className="stroke-pitch-black/[0.08]" strokeWidth="8" />
               <circle cx="60" cy="60" r={R} fill="none" stroke="var(--color-gold)" strokeWidth="8" strokeLinecap="round" strokeDasharray={C} strokeDashoffset={C * (1 - progress)} style={{ transition: 'stroke-dashoffset 1s linear' }} />
             </svg>
-            <span className="absolute inset-0 grid place-items-center font-display text-4xl text-midnight tnum">{remaining}</span>
+            <span className="absolute inset-0 grid place-items-center font-display text-4xl text-pitch-black tnum">{remaining}</span>
           </div>
-          <h3 className="mt-6 font-display text-xl text-midnight">Releasing to the Plug’s wallet</h3>
+          <h3 className="mt-6 font-display text-xl text-pitch-black">Releasing to the Plug’s wallet</h3>
           <p className="mt-1.5 text-sm text-slate">Available in {remaining}s.</p>
         </div>
       )}
@@ -103,7 +103,7 @@ export default function AppConfirmPage() {
       {phase === 'done' && (
         <Card className="p-7 text-center">
           <span className="mx-auto mb-4 grid place-items-center h-16 w-16 rounded-full bg-emerald-500/10"><CheckCircle2 className="w-9 h-9 text-emerald-600" /></span>
-          <h3 className="font-display text-2xl text-midnight">Job complete</h3>
+          <h3 className="font-display text-2xl text-pitch-black">Job complete</h3>
           <p className="mt-1.5 text-sm text-slate">Escrow released. Thanks for using Plugr.</p>
           <div className="mt-6 space-y-2">
             <PrimaryButtonLink href={`/app/receipt/${jobId}`} router={router} label="View receipt" />

@@ -82,10 +82,10 @@ export default function AppBookPage() {
             {plug.verified && <span className="absolute -bottom-1 -right-1 grid place-items-center h-5 w-5 rounded-full bg-white"><BadgeCheck className="w-4 h-4 text-gold" /></span>}
           </div>
           <div>
-            <h3 className="font-bold text-midnight">{plug.name}</h3>
+            <h3 className="font-bold text-pitch-black">{plug.name}</h3>
             <p className="text-sm text-slate capitalize flex items-center gap-2">
               {plug.trade}
-              <span className="inline-flex items-center gap-1 text-midnight font-semibold"><Star className="w-3.5 h-3.5 fill-gold text-gold" />{Number(plug.rating).toFixed(1)}</span>
+              <span className="inline-flex items-center gap-1 text-pitch-black font-semibold"><Star className="w-3.5 h-3.5 fill-gold text-gold" />{Number(plug.rating).toFixed(1)}</span>
             </p>
           </div>
         </Card>

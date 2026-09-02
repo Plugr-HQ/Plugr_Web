@@ -115,7 +115,7 @@ export default function MyJobsPage() {
                 className="w-full p-4 flex items-center justify-between hover:bg-bone/40 transition-colors text-left"
               >
                 <div className="min-w-0">
-                  <h4 className="font-bold text-sm text-midnight truncate">{job.title}</h4>
+                  <h4 className="font-bold text-sm text-pitch-black truncate">{job.title}</h4>
                   <p className="text-[10px] text-slate mt-0.5">
                     {job.plug?.user?.name ?? 'Unassigned'} · {new Date(job.createdAt).toLocaleDateString()}
                   </p>
@@ -138,7 +138,7 @@ function JobRow({ job, onClick }: { job: Job; onClick: () => void }) {
     <Card className="p-5">
       <div className="flex items-center justify-between mb-3">
         <div className="min-w-0">
-          <h4 className="font-bold text-midnight truncate">{job.title}</h4>
+          <h4 className="font-bold text-pitch-black truncate">{job.title}</h4>
           <p className="text-[10px] text-slate font-medium mt-0.5">
             {job.category?.name ?? job.category?.code ?? 'Service'}
             {job.plug?.user?.name ? ` · ${job.plug.user.name}` : ''}
@@ -151,7 +151,7 @@ function JobRow({ job, onClick }: { job: Job; onClick: () => void }) {
         <Money amount={job.escrowAmount ?? job.price} size="sm" />
         <button
           onClick={onClick}
-          className="bg-midnight text-white px-4 py-2 rounded-pill text-xs font-bold hover:bg-gold hover:text-midnight transition-colors flex items-center gap-1"
+          className="bg-pitch-black text-white px-4 py-2 rounded-pill text-xs font-bold hover:bg-gold hover:text-pitch-black transition-colors flex items-center gap-1"
         >
           View <ChevronRight className="w-3.5 h-3.5" />
         </button>

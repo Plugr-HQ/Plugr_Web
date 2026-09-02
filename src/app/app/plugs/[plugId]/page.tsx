@@ -37,8 +37,8 @@ export default function PlugProfilePage() {
   return (
     <Shell back="/app/browse" mark={false} footer={<RequestPlugButton plugId={plugId} plugName={plug?.name} plugTrade={plug?.trade} />}>
       {/* Cover + identity */}
-      <div className="rounded-[24px] overflow-hidden border border-midnight/[0.06] card-shadow bg-white">
-        <div className="h-24 bg-gradient-to-br from-midnight to-deep-blue relative">
+      <div className="rounded-[24px] overflow-hidden border border-pitch-black/[0.06] card-shadow bg-white">
+        <div className="h-24 bg-gradient-to-br from-pitch-black to-petrol relative">
           <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #E8A020 0, transparent 40%)' }} />
           <button onClick={() => setShowId(true)} className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-pill bg-white/15 hover:bg-white/25 backdrop-blur text-white text-[12px] font-bold px-3 py-1.5 transition-colors">
             <Share2 className="w-3.5 h-3.5" /> Share
@@ -50,7 +50,7 @@ export default function PlugProfilePage() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={plug.photo_url} alt={plug.name} className="h-20 w-20 rounded-3xl object-cover border-4 border-white" />
             ) : (
-              <div className="grid place-items-center h-20 w-20 rounded-3xl bg-gold text-midnight font-display text-3xl border-4 border-white">{plug.name?.[0]}</div>
+              <div className="grid place-items-center h-20 w-20 rounded-3xl bg-gold text-pitch-black font-display text-3xl border-4 border-white">{plug.name?.[0]}</div>
             )}
             {/* The seal was previously unconditional, so every Plug wore a verification tick
                 whether or not anything had been verified. It follows the real flag now. */}
@@ -58,7 +58,7 @@ export default function PlugProfilePage() {
               <span className="absolute -bottom-1 -right-1 grid place-items-center h-7 w-7 rounded-full bg-white"><BadgeCheck className="w-6 h-6 text-gold" /></span>
             )}
           </div>
-          <h1 className="mt-3 font-display text-2xl text-midnight">{plug.name}</h1>
+          <h1 className="mt-3 font-display text-2xl text-pitch-black">{plug.name}</h1>
           {/* Plain trade, not "Licensed <trade>" — no licence is checked anywhere in this product. */}
           <p className="text-sm text-slate">{trade}</p>
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate">
@@ -68,7 +68,7 @@ export default function PlugProfilePage() {
               <span className="inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {plug.service_area}</span>
             )}
             {rating.kind === 'rating' ? (
-              <span className="inline-flex items-center gap-1 text-midnight font-semibold"><Star className="w-3.5 h-3.5 fill-gold text-gold" /> {rating.value}</span>
+              <span className="inline-flex items-center gap-1 text-pitch-black font-semibold"><Star className="w-3.5 h-3.5 fill-gold text-gold" /> {rating.value}</span>
             ) : (
               <span className="text-slate">{rating.value}</span>
             )}
@@ -97,7 +97,7 @@ export default function PlugProfilePage() {
 
       <Card className="mt-4 p-5">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-2">About</p>
-        <p className={plug.bio ? 'text-sm text-midnight leading-relaxed' : 'text-sm text-slate leading-relaxed'}>
+        <p className={plug.bio ? 'text-sm text-pitch-black leading-relaxed' : 'text-sm text-slate leading-relaxed'}>
           {plug.bio || 'This Plug hasn’t written an intro yet.'}
         </p>
       </Card>
@@ -106,7 +106,7 @@ export default function PlugProfilePage() {
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-3">Skills</p>
         <div className="flex flex-wrap gap-2">
           {(plug.skills ?? []).map((s: string) => (
-            <span key={s} className="rounded-pill bg-bone border border-midnight/[0.06] px-3 py-1.5 text-[13px] font-medium text-midnight">{s}</span>
+            <span key={s} className="rounded-pill bg-bone border border-pitch-black/[0.06] px-3 py-1.5 text-[13px] font-medium text-pitch-black">{s}</span>
           ))}
         </div>
       </Card>
@@ -116,11 +116,11 @@ export default function PlugProfilePage() {
         {(plug.experience ?? []).map((h: any, i: number, a: any[]) => (
           <div key={h.title} className="flex gap-3">
             <div className="flex flex-col items-center">
-              <span className="grid place-items-center h-9 w-9 rounded-xl bg-midnight/[0.06] text-gold shrink-0"><Briefcase className="w-4 h-4" /></span>
-              {i < a.length - 1 && <span className="w-0.5 flex-1 bg-midnight/10 my-1" />}
+              <span className="grid place-items-center h-9 w-9 rounded-xl bg-pitch-black/[0.06] text-gold shrink-0"><Briefcase className="w-4 h-4" /></span>
+              {i < a.length - 1 && <span className="w-0.5 flex-1 bg-pitch-black/10 my-1" />}
             </div>
             <div className="pb-5">
-              <p className="font-bold text-sm text-midnight">{h.title}</p>
+              <p className="font-bold text-sm text-pitch-black">{h.title}</p>
               <p className="text-xs text-slate">{h.org} · {h.period}</p>
               <p className="text-xs text-slate mt-1">{h.note}</p>
             </div>
@@ -144,9 +144,9 @@ export default function PlugProfilePage() {
 
 function Stat({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
   return (
-    <div className="rounded-2xl bg-white border border-midnight/[0.06] p-3 text-center">
+    <div className="rounded-2xl bg-white border border-pitch-black/[0.06] p-3 text-center">
       <span className="text-gold flex justify-center mb-1">{icon}</span>
-      <div className="font-display text-lg text-midnight tnum leading-none">{value}</div>
+      <div className="font-display text-lg text-pitch-black tnum leading-none">{value}</div>
       <div className="text-[10.5px] text-slate mt-1">{label}</div>
     </div>
   );

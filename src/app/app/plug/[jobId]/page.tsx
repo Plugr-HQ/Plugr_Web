@@ -42,7 +42,7 @@ export default function AppPlugJob() {
         <>
           <Card className="p-6 mb-6">
             <div className="flex items-center justify-between mb-4"><span className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate">Job</span><StatusChip status={status} /></div>
-            <p className="text-midnight font-medium leading-relaxed">{job.job_description || 'Job'}</p>
+            <p className="text-pitch-black font-medium leading-relaxed">{job.job_description || 'Job'}</p>
             <Divider className="my-5" />
             <div className="flex items-center justify-between"><span className="text-sm text-slate">From {job.client_name}</span><Money amount={job.amount} size="md" /></div>
           </Card>

@@ -56,7 +56,7 @@ export function RequestPlugButton({
       <button
         onClick={go}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-pill bg-gold text-midnight font-bold hover:bg-gold-light active:scale-[0.98] transition-all',
+          'inline-flex items-center justify-center gap-2 rounded-pill bg-gold text-pitch-black font-bold hover:bg-gold-light active:scale-[0.98] transition-all',
           compact ? 'px-4 py-2 text-[13px]' : 'w-full py-4 px-6',
           className
         )}

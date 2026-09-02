@@ -1,6 +1,6 @@
 function SocialIcons() {
     return (
-        <div className="flex items-center gap-4 bg-midnight p-6">
+        <div className="flex items-center gap-4 bg-pitch-black p-6">
 
             {/* X (formerly Twitter) */}
             <a

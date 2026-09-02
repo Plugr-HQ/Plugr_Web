@@ -44,8 +44,8 @@ export default function AppBrowseClient({ plugs, configError }: { plugs: HackPlu
             className={cn(
               'shrink-0 px-4 py-2 rounded-pill text-[13px] font-bold capitalize transition-all',
               tab === t
-                ? 'bg-midnight text-white shadow-[0_8px_20px_-12px_rgba(15,31,61,0.6)]'
-                : 'bg-white text-slate border border-midnight/[0.08] hover:border-midnight/20'
+                ? 'bg-pitch-black text-white shadow-[0_8px_20px_-12px] shadow-pitch-black/60'
+                : 'bg-white text-slate border border-pitch-black/[0.08] hover:border-pitch-black/20'
             )}
           >
             {t === 'all' ? 'All' : `${t}s`}
@@ -55,7 +55,7 @@ export default function AppBrowseClient({ plugs, configError }: { plugs: HackPlu
 
       {configError && (
         <Card className="p-5">
-          <div className="flex items-center gap-2 text-midnight mb-2">
+          <div className="flex items-center gap-2 text-pitch-black mb-2">
             <Info className="w-4 h-4 text-gold" />
             <span className="font-bold text-sm">Database not connected</span>
           </div>
@@ -76,14 +76,14 @@ export default function AppBrowseClient({ plugs, configError }: { plugs: HackPlu
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-midnight truncate">{plug.name}</h3>
+                <h3 className="font-bold text-pitch-black truncate">{plug.name}</h3>
                 <p className="text-sm text-slate capitalize">{plug.trade}</p>
                 {/* A Plug with no completed jobs has no rating to show. "0.0" beside a gold star
                     reads as a score they earned and lost; "New to Plugr" is what is actually true. */}
                 <div className="flex items-center gap-3 mt-1.5 text-xs">
                   {Number(plug.jobs_completed ?? 0) > 0 && Number(plug.rating ?? 0) > 0 ? (
                     <>
-                      <span className="inline-flex items-center gap-1 text-midnight font-semibold"><Star className="w-3.5 h-3.5 fill-gold text-gold" />{Number(plug.rating).toFixed(1)}</span>
+                      <span className="inline-flex items-center gap-1 text-pitch-black font-semibold"><Star className="w-3.5 h-3.5 fill-gold text-gold" />{Number(plug.rating).toFixed(1)}</span>
                       <span className="text-slate">{plug.jobs_completed} jobs done</span>
                     </>
                   ) : (

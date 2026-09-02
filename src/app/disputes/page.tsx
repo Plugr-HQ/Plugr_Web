@@ -13,17 +13,17 @@ export const metadata: Metadata = {
 
 export default function DisputeResolutionPage() {
   return (
-    <main className="min-h-screen bg-bone text-midnight font-body antialiased">
+    <main className="min-h-screen bg-bone text-pitch-black font-body antialiased">
       {/* Nav — matches the landing */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-bone/80 backdrop-blur border-b border-midnight/[0.06]">
+      <nav className="fixed top-0 inset-x-0 z-50 bg-bone/80 backdrop-blur border-b border-pitch-black/[0.06]">
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center">
-            <PlugrWordmark className="h-6 text-midnight" />
+            <PlugrWordmark className="h-6 text-pitch-black" />
           </a>
           <div className="flex items-center gap-4">
             <Link
               href="/app/browse"
-              className="inline-flex items-center gap-1.5 rounded-pill bg-gold text-midnight text-sm font-bold px-4 sm:px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all"
+              className="inline-flex items-center gap-1.5 rounded-pill bg-gold text-pitch-black text-sm font-bold px-4 sm:px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all"
             >
               Use Plugr <ArrowRight className="w-4 h-4" />
             </Link>
@@ -44,7 +44,7 @@ export default function DisputeResolutionPage() {
             This Policy explains how disagreements arising from a Job &mdash; between a Client and a Plug,
             or between a user and Plugr &mdash; are reported, reviewed, and resolved. It forms part of, and
             should be read together with, our{' '}
-            <Link href="/terms" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+            <Link href="/terms" className="text-pitch-black font-semibold underline decoration-gold/40 hover:decoration-gold">
               Terms of Service
             </Link>
             .
@@ -52,7 +52,7 @@ export default function DisputeResolutionPage() {
           <a
             href="/Plugr_Dispute_Resolution_Policy.pdf"
             download
-            className="shrink-0 inline-flex items-center justify-center gap-2 rounded-pill border border-midnight/15 bg-white text-midnight text-sm font-bold px-5 py-3 hover:border-gold hover:text-gold transition-colors"
+            className="shrink-0 inline-flex items-center justify-center gap-2 rounded-pill border border-pitch-black/15 bg-white text-pitch-black text-sm font-bold px-5 py-3 hover:border-gold hover:text-gold transition-colors"
           >
             <Download className="w-4 h-4" /> Download PDF
           </a>
@@ -71,7 +71,7 @@ export default function DisputeResolutionPage() {
             This Policy does not cover criminal conduct (theft, assault, fraud) &mdash; report that to the
             Nigeria Police Force in addition to Plugr &mdash; or data protection complaints, which are
             handled under our{' '}
-            <Link href="/privacy" className="text-midnight font-semibold underline decoration-gold/60">
+            <Link href="/privacy" className="text-pitch-black font-semibold underline decoration-gold/60">
               Privacy Policy
             </Link>{' '}
             and may separately be escalated to the Nigeria Data Protection Commission.
@@ -153,7 +153,7 @@ export default function DisputeResolutionPage() {
             If a dispute is not resolved to a party&rsquo;s satisfaction through Plugr&rsquo;s internal
             process, either party may pursue resolution through mediation, arbitration, or the courts, as
             set out in the{' '}
-            <Link href="/terms" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+            <Link href="/terms" className="text-pitch-black font-semibold underline decoration-gold/40 hover:decoration-gold">
               Terms of Service
             </Link>
             . Plugr encourages parties to attempt resolution through its internal process first, as it is
@@ -177,7 +177,7 @@ export default function DisputeResolutionPage() {
         </Section>
 
         <Section number="9" title="Contact Us">
-          <div className="rounded-[24px] bg-midnight text-white p-8 mt-2 text-center">
+          <div className="rounded-[24px] bg-pitch-black text-white p-8 mt-2 text-center">
             <span className="mx-auto mb-4 grid place-items-center h-12 w-12 rounded-2xl bg-gold/15">
               <Gavel className="w-6 h-6 text-gold" />
             </span>

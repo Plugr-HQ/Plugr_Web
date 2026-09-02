@@ -40,7 +40,7 @@ export function Shell({
   }
 
   return (
-    <main className="min-h-screen bg-bone text-midnight font-body antialiased flex justify-center">
+    <main className="min-h-screen bg-bone text-pitch-black font-body antialiased flex justify-center">
       <div className="relative w-full max-w-110 min-h-screen flex flex-col">
         <div className="flex-1 px-5 pt-6 pb-32">
           {(back || onBack || mark || title || eyebrow) && (
@@ -49,14 +49,14 @@ export function Shell({
                 {back || onBack ? (
                   <button
                     onClick={goBack}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-slate hover:text-midnight transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-slate hover:text-pitch-black transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" /> Back
                   </button>
                 ) : (
                   <span />
                 )}
-                {mark && <PlugrMark className="w-4.5 h-4.5 text-midnight/75" />}
+                {mark && <PlugrMark className="w-4.5 h-4.5 text-pitch-black/75" />}
               </div>
 
               {eyebrow && (
@@ -65,7 +65,7 @@ export function Shell({
                 </div>
               )}
               {title && (
-                <h1 className="font-display text-[2rem] leading-[1.1] text-midnight rise rise-1">{title}</h1>
+                <h1 className="font-display text-[2rem] leading-[1.1] text-pitch-black rise rise-1">{title}</h1>
               )}
               {subtitle && <p className="mt-2.5 text-sm text-slate rise rise-2">{subtitle}</p>}
             </header>
@@ -77,7 +77,7 @@ export function Shell({
         {footer && (
           <div className="sticky bottom-0 z-20">
             <div className="pointer-events-none absolute -top-8 inset-x-0 h-8 bg-linear-to-t from-bone to-transparent" />
-            <div className="relative bg-bone/92 backdrop-blur px-5 pb-6 pt-3 border-t border-midnight/6">{footer}</div>
+            <div className="relative bg-bone/92 backdrop-blur px-5 pb-6 pt-3 border-t border-pitch-black/6">{footer}</div>
           </div>
         )}
       </div>

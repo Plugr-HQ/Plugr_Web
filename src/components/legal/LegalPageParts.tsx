@@ -2,10 +2,10 @@ import type { ReactNode } from 'react';
 
 export function Section({ number, title, children }: { number: string; title: string; children: ReactNode }) {
   return (
-    <section className="mb-12 border-t border-midnight/8 pt-8">
+    <section className="mb-12 border-t border-pitch-black/8 pt-8">
       <div className="flex items-baseline gap-3 mb-5">
         <span className="font-display text-lg text-gold tnum">{number.padStart(2, '0')}</span>
-        <h2 className="font-display text-[1.6rem] leading-tight text-midnight">{title}</h2>
+        <h2 className="font-display text-[1.6rem] leading-tight text-pitch-black">{title}</h2>
       </div>
       <div className="space-y-4">{children}</div>
     </section>
@@ -37,7 +37,7 @@ export function BulletList({ items }: { items: ReactNode[] }) {
 export function Note({ children }: { children: ReactNode }) {
   return (
     <div className="rounded-2xl bg-gold/[0.08] border border-gold/20 p-4 mt-4">
-      <p className="text-sm font-medium leading-relaxed text-midnight">{children}</p>
+      <p className="text-sm font-medium leading-relaxed text-pitch-black">{children}</p>
     </div>
   );
 }
@@ -59,14 +59,14 @@ export function ConsentItem({
   return (
     <label
       htmlFor={id}
-      className="flex items-start gap-3 rounded-2xl border border-midnight/10 bg-white p-4 cursor-pointer hover:border-gold/40 transition-colors"
+      className="flex items-start gap-3 rounded-2xl border border-pitch-black/10 bg-white p-4 cursor-pointer hover:border-gold/40 transition-colors"
     >
       <input
         id={id}
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 h-4 w-4 shrink-0 rounded border-midnight/30 text-gold focus:ring-gold"
+        className="mt-0.5 h-4 w-4 shrink-0 rounded border-pitch-black/30 text-gold focus:ring-gold"
       />
       <span className="text-sm leading-relaxed text-slate">
         {label}
@@ -93,12 +93,12 @@ export function LegalHeader({
   version: string;
 }) {
   return (
-    <header className="pt-28 md:pt-36 pb-14 px-5 border-b border-midnight/[0.06]">
+    <header className="pt-28 md:pt-36 pb-14 px-5 border-b border-pitch-black/[0.06]">
       <div className="max-w-3xl mx-auto">
         <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-gold">
           <span className="h-px w-6 bg-gold/50" /> {eyebrow}
         </span>
-        <h1 className="mt-4 font-display text-[2.75rem] md:text-[3.5rem] leading-[1.02] text-midnight">
+        <h1 className="mt-4 font-display text-[2.75rem] md:text-[3.5rem] leading-[1.02] text-pitch-black">
           {title} <span className="text-gold">{highlight}</span>
         </h1>
         <p className="mt-4 text-sm text-slate">{version}</p>

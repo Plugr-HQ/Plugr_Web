@@ -37,7 +37,7 @@ export function Splash({ done }: { done: boolean }) {
       <p className="splash-fade-up mt-5 font-body text-sm text-slate">{TAGLINE}</p>
 
       {/* determinate loading bar */}
-      <div className="mt-10 h-[3px] w-40 overflow-hidden rounded-pill bg-midnight/10">
+      <div className="mt-10 h-[3px] w-40 overflow-hidden rounded-pill bg-pitch-black/10">
         <div className="splash-bar h-full w-full rounded-pill bg-gold" />
       </div>
     </div>

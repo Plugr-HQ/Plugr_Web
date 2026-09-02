@@ -276,16 +276,16 @@ export default function AppLoginPage() {
           <div
             className={cn(
               'flex items-stretch rounded-2xl bg-white border transition-colors overflow-hidden',
-              error ? 'border-red-400' : 'border-midnight/10 focus-within:border-gold'
+              error ? 'border-red-400' : 'border-pitch-black/10 focus-within:border-gold'
             )}
           >
-            <span className="flex items-center gap-2 px-4 border-r border-midnight/10 bg-bone/60 select-none">
-              <svg viewBox="0 0 6 3" preserveAspectRatio="none" aria-hidden className="h-3.5 w-6 shrink-0 rounded-[2px] border border-midnight/10">
+            <span className="flex items-center gap-2 px-4 border-r border-pitch-black/10 bg-bone/60 select-none">
+              <svg viewBox="0 0 6 3" preserveAspectRatio="none" aria-hidden className="h-3.5 w-6 shrink-0 rounded-[2px] border border-pitch-black/10">
                 <rect width="6" height="3" fill="#fff" />
                 <rect width="2" height="3" fill="#008751" />
                 <rect x="4" width="2" height="3" fill="#008751" />
               </svg>
-              <span className="font-body text-base font-bold text-midnight tnum">+234</span>
+              <span className="font-body text-base font-bold text-pitch-black tnum">+234</span>
             </span>
 
             <input
@@ -297,7 +297,7 @@ export default function AppLoginPage() {
               placeholder="801 234 5678"
               aria-label="Phone number"
               onKeyDown={(e) => e.key === 'Enter' && login()}
-              className="flex-1 min-w-0 bg-transparent px-4 py-3.5 font-body text-base text-midnight tnum tracking-wide placeholder:text-slate/40 focus:outline-none"
+              className="flex-1 min-w-0 bg-transparent px-4 py-3.5 font-body text-base text-pitch-black tnum tracking-wide placeholder:text-slate/40 focus:outline-none"
             />
 
             {busy && (
@@ -309,12 +309,12 @@ export default function AppLoginPage() {
 
           {notRegistered ? (
             <div className="mt-3 rounded-xl bg-gold/10 border border-gold/30 px-4 py-3">
-              <p className="text-sm text-midnight font-medium">
+              <p className="text-sm text-pitch-black font-medium">
                 No account found for that number.
               </p>
               <button
                 onClick={() => router.push('/app/signup')}
-                className="mt-1 text-sm font-bold text-midnight underline underline-offset-4 hover:text-gold transition-colors"
+                className="mt-1 text-sm font-bold text-pitch-black underline underline-offset-4 hover:text-gold transition-colors"
               >
                 Sign up as a Plug instead
               </button>
@@ -332,7 +332,7 @@ export default function AppLoginPage() {
           {mode === 'password' ? (
             <>
               <Label className="mt-6 mb-2">Password</Label>
-              <div className="flex items-stretch rounded-2xl bg-white border border-midnight/10 transition-colors overflow-hidden focus-within:border-gold">
+              <div className="flex items-stretch rounded-2xl bg-white border border-pitch-black/10 transition-colors overflow-hidden focus-within:border-gold">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -345,13 +345,13 @@ export default function AppLoginPage() {
                   placeholder="Your password"
                   aria-label="Password"
                   onKeyDown={(e) => e.key === 'Enter' && loginWithPassword()}
-                  className="flex-1 min-w-0 bg-transparent px-4 py-3.5 font-body text-base text-midnight placeholder:text-slate/40 focus:outline-none"
+                  className="flex-1 min-w-0 bg-transparent px-4 py-3.5 font-body text-base text-pitch-black placeholder:text-slate/40 focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  className="grid place-items-center px-4 text-slate transition-colors hover:text-midnight"
+                  className="grid place-items-center px-4 text-slate transition-colors hover:text-pitch-black"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -373,7 +373,7 @@ export default function AppLoginPage() {
           ) : (
             <>
               <Label className="mt-6 mb-2">Send code via</Label>
-              <div className="flex gap-2 rounded-2xl bg-bone/60 border border-midnight/10 p-1">
+              <div className="flex gap-2 rounded-2xl bg-bone/60 border border-pitch-black/10 p-1">
                 {(['whatsapp', 'sms'] as const).map((c) => (
                   <button
                     key={c}
@@ -383,7 +383,7 @@ export default function AppLoginPage() {
                     aria-pressed={channel === c}
                     className={cn(
                       'flex-1 rounded-xl py-2.5 font-body text-sm font-bold transition-colors',
-                      channel === c ? 'bg-white text-midnight shadow-sm' : 'text-slate/70'
+                      channel === c ? 'bg-white text-pitch-black shadow-sm' : 'text-slate/70'
                     )}
                   >
                     {c === 'whatsapp' ? 'WhatsApp' : 'SMS'}
@@ -422,8 +422,8 @@ export default function AppLoginPage() {
                 readOnly={verifying}
                 aria-label={`Digit ${i + 1}`}
                 className={cn(
-                  'h-14 flex-1 min-w-0 rounded-xl border bg-white text-center font-display text-2xl text-midnight tnum transition-colors focus:outline-none',
-                  error ? 'border-red-400' : d ? 'border-gold' : 'border-midnight/10 focus:border-gold'
+                  'h-14 flex-1 min-w-0 rounded-xl border bg-white text-center font-display text-2xl text-pitch-black tnum transition-colors focus:outline-none',
+                  error ? 'border-red-400' : d ? 'border-gold' : 'border-pitch-black/10 focus:border-gold'
                 )}
               />
             ))}
@@ -440,13 +440,13 @@ export default function AppLoginPage() {
           <div className="mt-8 text-sm text-slate">
             {resendIn > 0 ? (
               <span>
-                Resend code in <span className="font-bold text-midnight tnum">{resendIn}s</span>
+                Resend code in <span className="font-bold text-pitch-black tnum">{resendIn}s</span>
               </span>
             ) : (
               <button
                 onClick={resend}
                 disabled={resending}
-                className="font-bold text-midnight underline underline-offset-4 hover:text-gold transition-colors disabled:opacity-60"
+                className="font-bold text-pitch-black underline underline-offset-4 hover:text-gold transition-colors disabled:opacity-60"
               >
                 {resending ? 'Sending…' : 'Resend code'}
               </button>

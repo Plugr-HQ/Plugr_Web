@@ -13,19 +13,19 @@
 
 import { cn } from '@/src/lib/utils';
 
-type Tone = 'midnight' | 'gold' | 'bone';
+type Tone = 'pitch-black' | 'gold' | 'bone';
 
 const TONES: Record<Tone, string> = {
-  midnight: 'bg-midnight text-white',
-  gold: 'bg-gold text-midnight',
-  bone: 'bg-midnight/[0.05] text-midnight',
+  'pitch-black': 'bg-pitch-black text-white',
+  gold: 'bg-gold text-pitch-black',
+  bone: 'bg-pitch-black/[0.05] text-pitch-black',
 };
 
 export function PlugAvatar({
   name,
   photoUrl,
   className,
-  tone = 'midnight',
+  tone = 'pitch-black',
   rounded = 'rounded-2xl',
 }: {
   name?: string | null;

@@ -154,7 +154,7 @@ export function Flags() {
               return (
                 <tr key={d.id} className={rowClass}>
                   <td className={cellClass}>
-                    <p className="text-sm font-bold text-midnight">{d.job?.client?.name ?? 'Unknown'}</p>
+                    <p className="text-sm font-bold text-pitch-black">{d.job?.client?.name ?? 'Unknown'}</p>
                     <p className="mt-0.5 flex items-center gap-1.5 text-xs capitalize text-slate">
                       {d.job?.category?.name ?? d.job?.category?.code ?? '—'}
                       <span className="text-slate/40">·</span>
@@ -239,12 +239,12 @@ function ResolveModal({
         }}
         className={cn(
           'flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-colors',
-          selected ? 'border-gold bg-gold/5 ring-4 ring-gold/10' : 'border-midnight/10 hover:bg-bone/60',
+          selected ? 'border-gold bg-gold/5 ring-4 ring-gold/10' : 'border-pitch-black/10 hover:bg-bone/60',
         )}
       >
         <span className={cn('shrink-0', selected ? 'text-gold' : 'text-slate')}>{icon}</span>
         <span className="min-w-0">
-          <span className="block text-sm font-bold text-midnight">{title}</span>
+          <span className="block text-sm font-bold text-pitch-black">{title}</span>
           <span className="block text-xs text-slate">{sub}</span>
         </span>
       </button>
@@ -267,19 +267,19 @@ function ResolveModal({
     >
       <div className="space-y-4">
         {/* Context so the admin decides informed, not blind. */}
-        <div className="rounded-2xl border border-midnight/[0.06] bg-bone/50 p-4">
-          <div className="flex items-center justify-between border-b border-midnight/[0.06] pb-3">
+        <div className="rounded-2xl border border-pitch-black/[0.06] bg-bone/50 p-4">
+          <div className="flex items-center justify-between border-b border-pitch-black/[0.06] pb-3">
             <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate">Escrow amount</span>
-            {amount == null ? <span className="text-sm font-bold text-midnight">—</span> : <Money amount={amount} size="sm" />}
+            {amount == null ? <span className="text-sm font-bold text-pitch-black">—</span> : <Money amount={amount} size="sm" />}
           </div>
           <div className="grid grid-cols-2 gap-3 py-3 text-sm">
-            <div><span className="block text-xs text-slate">Client</span><span className="font-bold text-midnight">{clientName}</span></div>
-            <div><span className="block text-xs text-slate">Plug</span><span className="font-bold text-midnight">{plugName ?? '— none'}</span></div>
+            <div><span className="block text-xs text-slate">Client</span><span className="font-bold text-pitch-black">{clientName}</span></div>
+            <div><span className="block text-xs text-slate">Plug</span><span className="font-bold text-pitch-black">{plugName ?? '— none'}</span></div>
           </div>
-          <div className="border-t border-midnight/[0.06] pt-3">
+          <div className="border-t border-pitch-black/[0.06] pt-3">
             <span className="text-xs text-slate">Raised by </span>
-            <span className="text-sm font-bold text-midnight">{rb.name}{rb.role && <span className="ml-1 font-normal text-slate/70">({rb.role})</span>}</span>
-            <p className="mt-1.5 rounded-xl bg-white px-3 py-2 text-sm text-midnight">&ldquo;{dispute.reason}&rdquo;</p>
+            <span className="text-sm font-bold text-pitch-black">{rb.name}{rb.role && <span className="ml-1 font-normal text-slate/70">({rb.role})</span>}</span>
+            <p className="mt-1.5 rounded-xl bg-white px-3 py-2 text-sm text-pitch-black">&ldquo;{dispute.reason}&rdquo;</p>
           </div>
         </div>
 
@@ -297,7 +297,7 @@ function ResolveModal({
             onChange={(e) => setNote(e.target.value)}
             rows={2}
             placeholder="Why this outcome?"
-            className="w-full resize-none rounded-2xl border border-midnight/10 bg-white px-4 py-3 text-sm text-midnight placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow"
+            className="w-full resize-none rounded-2xl border border-pitch-black/10 bg-white px-4 py-3 text-sm text-pitch-black placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow"
           />
         </div>
 

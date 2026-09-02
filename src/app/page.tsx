@@ -86,22 +86,22 @@ const FAQS = [
   { q: 'How are Plugs verified?', a: 'Every Plug verifies their National Identification Number (NIN) before they’re eligible to take on jobs — so their real identity is confirmed and on record before they ever knock on your door. We’re adding further checks, like facial verification, over the coming weeks as we grow.' },
 ];
 
-// Gold = primary. Midnight (solid) = the alternate when two sit side by side.
+// Gold = primary. Pitch Black (solid) = the alternate when two sit side by side.
 const btnGold =
-  'inline-flex items-center justify-center gap-2 rounded-pill bg-gold text-midnight font-bold px-7 py-4 hover:bg-gold-light active:scale-[0.98] transition-all shadow-[0_14px_32px_-16px_rgba(232,160,32,0.75)]';
+  'inline-flex items-center justify-center gap-2 rounded-pill bg-gold text-pitch-black font-bold px-7 py-4 hover:bg-gold-light active:scale-[0.98] transition-all shadow-[0_14px_32px_-16px_rgba(232,160,32,0.75)]';
 const btnAlt =
-  'inline-flex items-center justify-center gap-2 rounded-pill bg-midnight text-white font-bold px-7 py-4 hover:bg-deep-blue active:scale-[0.98] transition-all';
+  'inline-flex items-center justify-center gap-2 rounded-pill bg-pitch-black text-white font-bold px-7 py-4 hover:bg-petrol active:scale-[0.98] transition-all';
 /**
  * Section label. A bordered pill rather than a rule-and-caps line: it reads as a tag on the
  * section, gives every section the same visible starting point, and survives on both the bone
- * and midnight surfaces. The gold dot is the only accent it carries.
+ * and pitch-black surfaces. The gold dot is the only accent it carries.
  */
 function Eyebrow({ children, tone = 'light' }: { children: React.ReactNode; tone?: 'light' | 'dark' }) {
   return (
     <span
       className={
         'inline-flex items-center gap-2 rounded-pill border px-3.5 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] ' +
-        (tone === 'dark' ? 'border-white/15 bg-white/[0.05] text-white/75' : 'border-midnight/10 bg-white text-midnight/70')
+        (tone === 'dark' ? 'border-white/15 bg-white/[0.05] text-white/75' : 'border-pitch-black/10 bg-white text-pitch-black/70')
       }
     >
       <span className="h-1.5 w-1.5 rounded-full bg-gold" />
@@ -151,7 +151,7 @@ function SectionHead({
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between md:gap-12">
         <div className="max-w-xl">
           <Eyebrow>{eyebrow}</Eyebrow>
-          <h2 className="mt-5 font-display text-[2.4rem] leading-[1.04] tracking-[-0.02em] text-midnight md:text-[3rem]">
+          <h2 className="mt-5 font-display text-[2.4rem] leading-[1.04] tracking-[-0.02em] text-pitch-black md:text-[3rem]">
             {title}
           </h2>
         </div>
@@ -184,15 +184,15 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-bone text-midnight font-body antialiased overflow-x-hidden">
+    <div className="min-h-screen bg-bone text-pitch-black font-body antialiased overflow-x-hidden">
       {/* ---------------------------------------------------------------- Nav */}
-      <nav className="fixed inset-x-0 top-0 z-50 border-b border-midnight/[0.08] bg-bone">
+      <nav className="fixed inset-x-0 top-0 z-50 border-b border-pitch-black/[0.08] bg-bone">
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
           {/* Plain anchor (not next/link) so every click does a full reload of the main page */}
           <a href="/" className="flex items-center">
-            <PlugrWordmark className="h-6 text-midnight" />
+            <PlugrWordmark className="h-6 text-pitch-black" />
           </a>
-          <div className="hidden md:flex items-center gap-9 text-sm font-semibold text-midnight/80">
+          <div className="hidden md:flex items-center gap-9 text-sm font-semibold text-pitch-black/80">
             {NAV_LINKS.map((l) => (
               <a key={l.href} href={l.href} className="hover:text-gold transition-colors">
                 {l.label}
@@ -200,20 +200,20 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/app" className="inline-flex items-center gap-1.5 rounded-pill bg-gold text-midnight text-sm font-bold px-4 sm:px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all">
+            <Link href="/app" className="inline-flex items-center gap-1.5 rounded-pill bg-gold text-pitch-black text-sm font-bold px-4 sm:px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all">
               Use Plugr <ArrowRight className="w-4 h-4" />
             </Link>
-            <button className="md:hidden text-midnight" onClick={() => setMenuOpen((o) => !o)} aria-label="Menu">
+            <button className="md:hidden text-pitch-black" onClick={() => setMenuOpen((o) => !o)} aria-label="Menu">
               {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
         {menuOpen && (
-          <div className="fixed right-5 top-18.25 z-40 flex h-fit w-45 flex-col gap-2 rounded-3xl border border-midnight/10 bg-white p-6 md:hidden animate-in slide-in-from-top-10 duration-500">
-            <Link href="#how" onClick={() => setMenuOpen(false)} className="text-md font-bold text-midnight">How it Works</Link>
-            <Link href="#why" onClick={() => setMenuOpen(false)} className="text-md font-bold text-midnight">Why Plugr</Link>
-            <Link href="#trades" onClick={() => setMenuOpen(false)} className="text-md font-bold text-midnight">Trades</Link>
-            <Link href="#faq" onClick={() => setMenuOpen(false)} className="text-md font-bold text-midnight">FAQ</Link>
+          <div className="fixed right-5 top-18.25 z-40 flex h-fit w-45 flex-col gap-2 rounded-3xl border border-pitch-black/10 bg-white p-6 md:hidden animate-in slide-in-from-top-10 duration-500">
+            <Link href="#how" onClick={() => setMenuOpen(false)} className="text-md font-bold text-pitch-black">How it Works</Link>
+            <Link href="#why" onClick={() => setMenuOpen(false)} className="text-md font-bold text-pitch-black">Why Plugr</Link>
+            <Link href="#trades" onClick={() => setMenuOpen(false)} className="text-md font-bold text-pitch-black">Trades</Link>
+            <Link href="#faq" onClick={() => setMenuOpen(false)} className="text-md font-bold text-pitch-black">FAQ</Link>
           </div>
         )}
       </nav>
@@ -235,7 +235,7 @@ export default function LandingPage() {
               opening on its own, the way the reference's does. */}
           <motion.h1
             variants={heroItem}
-            className="font-display text-[3.25rem] leading-[0.95] tracking-[-0.03em] text-midnight md:text-[4.75rem]"
+            className="font-display text-[3.25rem] leading-[0.95] tracking-[-0.03em] text-pitch-black md:text-[4.75rem]"
           >
             Know exactly <span className="text-gold">who&rsquo;s</span> fixing your home.
           </motion.h1>
@@ -263,7 +263,7 @@ export default function LandingPage() {
               { icon: <Lock className="h-4 w-4" />, label: 'Escrow Protected' },
               { icon: <FaWhatsapp className="h-4 w-4" />, label: 'WhatsApp Native' },
             ].map((b) => (
-              <div key={b.label} className="flex items-center gap-2 text-midnight">
+              <div key={b.label} className="flex items-center gap-2 text-pitch-black">
                 <span className="shrink-0 text-gold">{b.icon}</span>
                 <span className="text-[13px] font-semibold">{b.label}</span>
               </div>
@@ -278,7 +278,7 @@ export default function LandingPage() {
           animate={reduce ? undefined : { opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.2, 0.7, 0.2, 1], delay: 0.25 }}
         >
-          <div className="overflow-hidden rounded-[28px] border border-midnight/10">
+          <div className="overflow-hidden rounded-[28px] border border-pitch-black/10">
             <img
               src={IMG.hero}
               alt="An artisan in safety glasses working with a hand tool"
@@ -288,14 +288,14 @@ export default function LandingPage() {
           </div>
 
           <motion.div
-            className="relative mt-4 w-full rounded-2xl border border-midnight/10 bg-white p-5 md:absolute md:-bottom-6 md:left-8 md:mt-0 md:w-64"
+            className="relative mt-4 w-full rounded-2xl border border-pitch-black/10 bg-white p-5 md:absolute md:-bottom-6 md:left-8 md:mt-0 md:w-64"
             // Only floats on desktop, where it overlaps the photo. Stacked under the image on
             // mobile it would just drift against static copy.
             animate={reduce || !floats ? undefined : { y: [0, -8, 0] }}
             transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
           >
             <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-midnight">
+              <div className="flex items-center gap-1.5 text-pitch-black">
                 <PlugrMark className="h-4 w-4" />
                 <span className="font-display text-base">Escrow</span>
               </div>
@@ -304,12 +304,12 @@ export default function LandingPage() {
               </span>
             </div>
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate">Amount held</p>
-            <p className="tnum mt-0.5 font-display text-[2.25rem] leading-none text-midnight">
+            <p className="tnum mt-0.5 font-display text-[2.25rem] leading-none text-pitch-black">
               <span className="text-gold/90">₦</span>7,500
             </p>
             <div className="mt-4 flex items-center gap-2 rounded-xl bg-bone px-3 py-2">
               <ShieldCheck className="h-4 w-4 shrink-0 text-gold" />
-              <span className="text-[11px] text-midnight">Safe until you confirm.</span>
+              <span className="text-[11px] text-pitch-black">Safe until you confirm.</span>
             </div>
           </motion.div>
         </motion.div>
@@ -324,7 +324,7 @@ export default function LandingPage() {
           {/* One scene, told straight. The last sentence is the thesis of the whole page, so it
               gets its own line and the only colour in the block — everything before it is the
               setup and stays in the reading tone. */}
-          <p className="font-display text-[1.75rem] leading-[1.28] tracking-[-0.01em] text-midnight md:text-[2.35rem] md:leading-[1.24]">
+          <p className="font-display text-[1.75rem] leading-[1.28] tracking-[-0.01em] text-pitch-black md:text-[2.35rem] md:leading-[1.24]">
             It&rsquo;s 9pm and your shower&rsquo;s leaking. You call the number your neighbor gave you
             two years ago — it rings out. You try someone else. A different guy shows up. The
             ₦5,000 quote is ₦15,000 by the time he&rsquo;s done, and he&rsquo;s gone before you notice
@@ -341,7 +341,7 @@ export default function LandingPage() {
           reader accepts the premise that who shows up is the thing being fixed. */}
       <section className="px-5 pb-20">
         <Reveal className="max-w-5xl mx-auto">
-          <div className="rounded-4xl bg-midnight text-white p-10 md:p-16">
+          <div className="rounded-4xl bg-pitch-black text-white p-10 md:p-16">
             <Eyebrow tone="dark">Identity</Eyebrow>
             <p className="mt-7 font-display text-[1.75rem] leading-[1.24] tracking-[-0.01em] text-white md:text-[2.6rem]">
               Every Plug here has a name, a{' '}
@@ -356,7 +356,7 @@ export default function LandingPage() {
       </section>
 
       {/* ------------------------------------------------------------ How it works */}
-      <section id="how" className="border-y border-midnight/[0.08] bg-white px-5 py-24 md:py-32">
+      <section id="how" className="border-y border-pitch-black/[0.08] bg-white px-5 py-24 md:py-32">
         <div className="max-w-6xl mx-auto">
           <SectionHead
             eyebrow="How it works"
@@ -372,14 +372,14 @@ export default function LandingPage() {
                 <div
                   className={
                     'group h-full pl-0 md:pl-8 ' +
-                    (i > 0 ? 'md:border-l md:border-midnight/[0.09] ' : '') +
+                    (i > 0 ? 'md:border-l md:border-pitch-black/[0.09] ' : '') +
                     (i === 1 ? 'md:mt-10 ' : i === 2 ? 'md:mt-20 ' : '')
                   }
                 >
-                  <span className="inline-flex items-center gap-2 rounded-pill border border-midnight/10 bg-white px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.14em] text-midnight/70">
+                  <span className="inline-flex items-center gap-2 rounded-pill border border-pitch-black/10 bg-white px-3 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.14em] text-pitch-black/70">
                     Step {step.n.replace(/^0/, '')}
                   </span>
-                  <h3 className="mt-6 font-display text-[1.45rem] leading-[1.18] text-midnight transition-colors duration-300 group-hover:text-gold">
+                  <h3 className="mt-6 font-display text-[1.45rem] leading-[1.18] text-pitch-black transition-colors duration-300 group-hover:text-gold">
                     {step.title}
                   </h3>
                   <p className="mt-3 max-w-xs text-[15px] leading-relaxed text-slate">{step.body}</p>
@@ -404,13 +404,13 @@ export default function LandingPage() {
           />
 
           <Reveal>
-            <div className="mt-14 grid overflow-hidden rounded-[28px] border border-midnight/[0.09] bg-white md:grid-cols-2">
+            <div className="mt-14 grid overflow-hidden rounded-[28px] border border-pitch-black/[0.09] bg-white md:grid-cols-2">
               {/* left: the list */}
               <div className="p-6 md:p-8">
                 {REASONS.map((r, i) => {
                   const open = openReason === i;
                   return (
-                    <div key={r.title} className={i > 0 ? 'border-t border-midnight/[0.07]' : ''}>
+                    <div key={r.title} className={i > 0 ? 'border-t border-pitch-black/[0.07]' : ''}>
                       <button
                         onClick={() => setOpenReason(i)}
                         aria-expanded={open}
@@ -419,12 +419,12 @@ export default function LandingPage() {
                         <span
                           className={
                             'grid h-9 w-9 shrink-0 place-items-center rounded-xl border transition-colors duration-200 ' +
-                            (open ? 'border-gold bg-gold text-midnight' : 'border-midnight/10 text-slate group-hover:border-gold/50 group-hover:text-gold')
+                            (open ? 'border-gold bg-gold text-pitch-black' : 'border-pitch-black/10 text-slate group-hover:border-gold/50 group-hover:text-gold')
                           }
                         >
                           {r.icon}
                         </span>
-                        <span className={'text-[15px] font-bold transition-colors ' + (open ? 'text-midnight' : 'text-slate group-hover:text-midnight')}>
+                        <span className={'text-[15px] font-bold transition-colors ' + (open ? 'text-pitch-black' : 'text-slate group-hover:text-pitch-black')}>
                           {r.title}
                         </span>
                       </button>
@@ -437,17 +437,17 @@ export default function LandingPage() {
               </div>
 
               {/* right: the photograph, bleeding to the panel edge */}
-              <div className="relative min-h-64 border-t border-midnight/[0.07] md:min-h-0 md:border-l md:border-t-0">
+              <div className="relative min-h-64 border-t border-pitch-black/[0.07] md:min-h-0 md:border-l md:border-t-0">
                 <img
                   src={IMG.panel}
                   alt="An electrician working on a breaker panel"
                   className="h-full w-full object-cover"
                   loading="lazy"
                 />
-                <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-midnight/10 bg-white p-4">
+                <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-pitch-black/10 bg-white p-4">
                   <div className="flex items-center gap-2">
-                    <PlugrMark className="h-4 w-4 text-midnight" />
-                    <p className="font-display text-[15px] text-midnight">
+                    <PlugrMark className="h-4 w-4 text-pitch-black" />
+                    <p className="font-display text-[15px] text-pitch-black">
                       Skilled workers deserve a professional identity.
                     </p>
                   </div>
@@ -463,7 +463,7 @@ export default function LandingPage() {
       </section>
 
       {/* ------------------------------------------------------------------ Trades */}
-      <section id="trades" className="border-y border-midnight/[0.08] bg-white px-5 py-24 md:py-32">
+      <section id="trades" className="border-y border-pitch-black/[0.08] bg-white px-5 py-24 md:py-32">
         <div className="max-w-6xl mx-auto">
           <SectionHead
             eyebrow="What we fix"
@@ -480,7 +480,7 @@ export default function LandingPage() {
                 <Link
                   href="/app/browse"
                   aria-label={t.cta}
-                  className="group flex h-full flex-col overflow-hidden rounded-3xl border border-midnight/[0.09] bg-white transition-colors hover:border-gold/50"
+                  className="group flex h-full flex-col overflow-hidden rounded-3xl border border-pitch-black/[0.09] bg-white transition-colors hover:border-gold/50"
                 >
                   {/* The photo sits inset on a tinted ground rather than bleeding to the card
                       edge — the reference's treatment, and it stops three photographs in a row
@@ -493,17 +493,17 @@ export default function LandingPage() {
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         loading="lazy"
                       />
-                      <span className="absolute left-3 top-3 grid h-10 w-10 place-items-center rounded-xl border border-midnight/10 bg-white text-gold">
+                      <span className="absolute left-3 top-3 grid h-10 w-10 place-items-center rounded-xl border border-pitch-black/10 bg-white text-gold">
                         {t.icon}
                       </span>
                     </div>
                   </div>
                   <div className="flex flex-1 flex-col p-6">
-                    <h3 className="font-display text-[1.5rem] text-midnight">{t.title}</h3>
+                    <h3 className="font-display text-[1.5rem] text-pitch-black">{t.title}</h3>
                     <p className="mt-2 text-[14.5px] leading-relaxed text-slate">{t.body}</p>
-                    <div className="mt-6 flex items-center justify-between gap-3 border-t border-midnight/[0.07] pt-5">
-                      <span className="text-[13px] font-bold text-midnight">{t.cta}</span>
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-midnight/10 text-midnight transition-colors duration-200 group-hover:border-gold group-hover:bg-gold">
+                    <div className="mt-6 flex items-center justify-between gap-3 border-t border-pitch-black/[0.07] pt-5">
+                      <span className="text-[13px] font-bold text-pitch-black">{t.cta}</span>
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-pitch-black/10 text-pitch-black transition-colors duration-200 group-hover:border-gold group-hover:bg-gold">
                         <ArrowUpRight className="h-4 w-4" />
                       </span>
                     </div>
@@ -525,7 +525,7 @@ export default function LandingPage() {
               copy to be read off a ragged centre axis — the hardest possible setting for the
               longest passage on the page. The story reads down the left; the payoff, the
               benefits and the CTA sit together on the right. */}
-          <div className="grid gap-12 rounded-4xl bg-midnight p-10 text-white md:grid-cols-2 md:gap-16 md:p-14">
+          <div className="grid gap-12 rounded-4xl bg-pitch-black p-10 text-white md:grid-cols-2 md:gap-16 md:p-14">
             <div>
               <Eyebrow tone="dark">For Plugs</Eyebrow>
               <p className="mt-7 font-display text-[1.5rem] leading-[1.3] text-white md:text-[1.85rem]">
@@ -569,18 +569,18 @@ export default function LandingPage() {
       </section>
 
       {/* ----------------------------------------------------------------- For clients */}
-      <section className="border-y border-midnight/[0.08] bg-white px-5 py-24 md:py-32">
+      <section className="border-y border-pitch-black/[0.08] bg-white px-5 py-24 md:py-32">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <Reveal>
             <Eyebrow>For clients</Eyebrow>
-            <h2 className="mt-5 font-display text-[2.4rem] leading-[1.04] tracking-[-0.02em] text-midnight md:text-[3rem]">
+            <h2 className="mt-5 font-display text-[2.4rem] leading-[1.04] tracking-[-0.02em] text-pitch-black md:text-[3rem]">
               No more random referrals.
             </h2>
             <div className="mt-9 space-y-4">
               {['Hire verified electricians and plumbers', 'Track payments securely', 'Get quote transparency', 'Raise disputes when necessary'].map((t, i) => (
                 <div key={t} className="flex items-center gap-3">
-                  <span className="grid place-items-center h-7 w-7 rounded-full bg-gold text-midnight text-xs font-black shrink-0">{i + 1}</span>
-                  <span className="text-midnight font-medium">{t}</span>
+                  <span className="grid place-items-center h-7 w-7 rounded-full bg-gold text-pitch-black text-xs font-black shrink-0">{i + 1}</span>
+                  <span className="text-pitch-black font-medium">{t}</span>
                 </div>
               ))}
             </div>
@@ -589,7 +589,7 @@ export default function LandingPage() {
             </Link>
           </Reveal>
           <Reveal delay={0.1}>
-            <div className="rounded-3xl border border-midnight/[0.09] bg-bone p-8">
+            <div className="rounded-3xl border border-pitch-black/[0.09] bg-bone p-8">
               <div className="flex items-center gap-2 text-slate mb-6">
                 <Clock className="w-4 h-4 text-gold" />
                 <span className="text-[11px] font-bold uppercase tracking-[0.14em]">Escrow timeline</span>
@@ -598,11 +598,11 @@ export default function LandingPage() {
                 <div key={t} className="flex gap-3">
                   <div className="flex flex-col items-center">
                     <span className="grid place-items-center h-5 w-5 rounded-full bg-gold">
-                      <span className="h-1.5 w-1.5 rounded-full bg-midnight" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-pitch-black" />
                     </span>
                     {i < a.length - 1 && <span className="w-0.5 flex-1 bg-gold/40 my-1" />}
                   </div>
-                  <span className="text-sm text-midnight font-medium pb-5">{t}</span>
+                  <span className="text-sm text-pitch-black font-medium pb-5">{t}</span>
                 </div>
               ))}
             </div>
@@ -618,7 +618,7 @@ export default function LandingPage() {
           <Reveal>
             <div className="md:sticky md:top-28">
               <Eyebrow>FAQ</Eyebrow>
-              <h2 className="mt-5 font-display text-[2.4rem] leading-[1.04] tracking-[-0.02em] text-midnight md:text-[3rem]">
+              <h2 className="mt-5 font-display text-[2.4rem] leading-[1.04] tracking-[-0.02em] text-pitch-black md:text-[3rem]">
                 Common questions.
               </h2>
               <p className="mt-5 max-w-sm text-[15px] leading-relaxed text-slate">
@@ -630,13 +630,13 @@ export default function LandingPage() {
           <div className="space-y-3">
             {FAQS.map((f, i) => (
               <Reveal key={f.q} delay={i * 0.06}>
-                <div className="overflow-hidden rounded-2xl border border-midnight/[0.09] bg-white transition-colors duration-200 hover:border-gold/50">
+                <div className="overflow-hidden rounded-2xl border border-pitch-black/[0.09] bg-white transition-colors duration-200 hover:border-gold/50">
                   <button
                     onClick={() => setOpenFaq((o) => (o === i ? null : i))}
                     aria-expanded={openFaq === i}
                     className="flex w-full items-center justify-between gap-4 p-6 text-left transition-colors duration-200 hover:bg-bone/60"
                   >
-                    <span className="font-bold text-midnight">{f.q}</span>
+                    <span className="font-bold text-pitch-black">{f.q}</span>
                     <Plus className={'h-5 w-5 shrink-0 text-gold transition-transform duration-300 ' + (openFaq === i ? 'rotate-45' : '')} />
                   </button>
                   {openFaq === i && <p className="-mt-1 px-6 pb-6 text-[15px] leading-relaxed text-slate">{f.a}</p>}
@@ -652,7 +652,7 @@ export default function LandingPage() {
           footer, and the closing ask reads as a panel placed on it. */}
       <section className="px-5 pb-24 pt-8 md:pb-32">
         <Reveal className="mx-auto max-w-6xl">
-          <div className="relative overflow-hidden rounded-[32px] bg-midnight px-6 py-20 text-center md:py-24">
+          <div className="relative overflow-hidden rounded-[32px] bg-pitch-black px-6 py-20 text-center md:py-24">
             <div className="relative">
               <Eyebrow tone="dark">Launching in Yaba</Eyebrow>
               <h2 className="mx-auto mt-7 max-w-3xl font-display text-[2.6rem] leading-[1.02] tracking-[-0.02em] text-white md:text-[4rem]">

@@ -93,9 +93,9 @@ export default function AppPayPage() {
 
   return (
     <Shell eyebrow="Pay" title="Pay into escrow" back="/app/browse">
-      <div className="flex items-start gap-3 rounded-2xl bg-white border border-midnight/[0.06] p-4 mb-6 card-shadow">
+      <div className="flex items-start gap-3 rounded-2xl bg-white border border-pitch-black/[0.06] p-4 mb-6 card-shadow">
         <span className="grid place-items-center h-9 w-9 rounded-full bg-gold/15 shrink-0"><ShieldCheck className="w-5 h-5 text-gold" /></span>
-        <p className="text-[13px] leading-relaxed text-slate"><span className="font-bold text-midnight">Escrow protected.</span> ALATPay holds your transfer until you confirm the job is done.</p>
+        <p className="text-[13px] leading-relaxed text-slate"><span className="font-bold text-pitch-black">Escrow protected.</span> ALATPay holds your transfer until you confirm the job is done.</p>
       </div>
 
       {job && (
@@ -109,7 +109,7 @@ export default function AppPayPage() {
       {paid ? (
         <Card className="p-7 text-center">
           <span className="mx-auto mb-4 grid place-items-center h-16 w-16 rounded-full bg-emerald-500/10"><CheckCircle2 className="w-9 h-9 text-emerald-600" /></span>
-          <h3 className="font-display text-2xl text-midnight">Payment confirmed</h3>
+          <h3 className="font-display text-2xl text-pitch-black">Payment confirmed</h3>
           <p className="mt-1.5 text-sm text-slate">Funds held in escrow. The Plug will accept and complete the job — you’ll confirm when it’s done.</p>
           <div className="mt-6 space-y-2">
             <PrimaryButton onClick={() => router.push(`/app/confirm/${jobId}`)}>Track & confirm job <ArrowRight className="w-4 h-4" /></PrimaryButton>
@@ -121,16 +121,16 @@ export default function AppPayPage() {
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-4">Transfer to this account</p>
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <div className="font-display text-[2rem] leading-none text-midnight tnum tracking-wide break-all">{va.accountNumber ?? '—'}</div>
+              <div className="font-display text-[2rem] leading-none text-pitch-black tnum tracking-wide break-all">{va.accountNumber ?? '—'}</div>
               <div className="mt-2 text-sm text-slate">{va.bankName ?? 'Bank pending'}</div>
             </div>
-            <button onClick={copy} className="shrink-0 inline-flex items-center gap-1.5 rounded-pill border border-midnight/10 px-3 py-2 text-[13px] font-bold text-midnight hover:border-gold hover:text-gold transition-colors">
+            <button onClick={copy} className="shrink-0 inline-flex items-center gap-1.5 rounded-pill border border-pitch-black/10 px-3 py-2 text-[13px] font-bold text-pitch-black hover:border-gold hover:text-gold transition-colors">
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}{copied ? 'Copied' : 'Copy'}
             </button>
           </div>
           {va.accountName && <p className="mt-3 text-xs text-slate">Account name · {va.accountName}</p>}
           <Divider className="my-5" />
-          <div className="flex items-center gap-2.5 text-sm text-midnight">
+          <div className="flex items-center gap-2.5 text-sm text-pitch-black">
             <Loader2 className="w-4 h-4 animate-spin text-gold" />
             <span className="font-medium">Waiting for your transfer…</span>
             {alatState === 'pending' && (
@@ -146,14 +146,14 @@ export default function AppPayPage() {
           <button
             onClick={checkNow}
             disabled={checking}
-            className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-pill bg-midnight text-white font-bold py-3.5 text-sm hover:bg-deep-blue disabled:opacity-50 transition-colors"
+            className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-pill bg-pitch-black text-white font-bold py-3.5 text-sm hover:bg-petrol disabled:opacity-50 transition-colors"
           >
             {checking ? <><Loader2 className="w-4 h-4 animate-spin" /> Checking…</> : 'I’ve sent the transfer'}
           </button>
           {checkMsg && <p className="mt-2 text-xs text-slate leading-relaxed">{checkMsg}</p>}
 
           <Divider className="my-5" />
-          <button onClick={simulate} disabled={simulating} className="w-full inline-flex items-center justify-center gap-2 rounded-pill border border-dashed border-gold/40 hover:border-gold hover:bg-gold/5 disabled:opacity-50 transition-all text-[13px] font-bold text-midnight py-3">
+          <button onClick={simulate} disabled={simulating} className="w-full inline-flex items-center justify-center gap-2 rounded-pill border border-dashed border-gold/40 hover:border-gold hover:bg-gold/5 disabled:opacity-50 transition-all text-[13px] font-bold text-pitch-black py-3">
             {simulating ? <><Loader2 className="w-4 h-4 animate-spin" /> Simulating…</> : 'Sandbox: simulate transfer'}
           </button>
         </Card>

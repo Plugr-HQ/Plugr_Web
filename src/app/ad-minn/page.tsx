@@ -93,7 +93,7 @@ function PlugsTable() {
           placeholder="Search by name, phone, or trade…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-sm rounded-2xl border border-midnight/10 bg-white px-4 py-2.5 text-sm text-midnight placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10"
+          className="w-full max-w-sm rounded-2xl border border-pitch-black/10 bg-white px-4 py-2.5 text-sm text-pitch-black placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10"
         />
         <div className="text-xs font-semibold text-slate">{plugs?.length ?? 0} Artisan(s) Found</div>
       </div>
@@ -129,7 +129,7 @@ function PlugsTable() {
                   <div className="flex items-center gap-3">
                     <Avatar name={plug.name} photoUrl={plug.photo_url} />
                     <div>
-                      <span className="block text-sm font-bold text-midnight">{plug.name}</span>
+                      <span className="block text-sm font-bold text-pitch-black">{plug.name}</span>
                       {plug.phone && <span className="text-xs text-slate">{plug.phone}</span>}
                     </div>
                   </div>
@@ -148,12 +148,12 @@ function PlugsTable() {
                     {plug.status}
                   </Chip>
                 </td>
-                <td className={cn(cellClass, 'text-sm font-bold text-midnight')}>{plug.jobsCompleted ?? 0}</td>
+                <td className={cn(cellClass, 'text-sm font-bold text-pitch-black')}>{plug.jobsCompleted ?? 0}</td>
                 <td className={cn(cellClass, 'whitespace-nowrap text-sm text-slate')}>
                   {new Date(plug.joined).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </td>
                 <td className={cn(cellClass, 'text-right')}>
-                  <button className="rounded-full p-1.5 text-slate transition-colors hover:bg-bone hover:text-midnight">
+                  <button className="rounded-full p-1.5 text-slate transition-colors hover:bg-bone hover:text-pitch-black">
                     <MoreVertical className="h-5 w-5" />
                   </button>
                 </td>
@@ -232,20 +232,20 @@ function PendingVerifications() {
       )}
 
       {plugs.length === 0 ? (
-        <div className="rounded-[22px] border border-midnight/6 bg-white p-10 text-center card-shadow">
+        <div className="rounded-[22px] border border-pitch-black/6 bg-white p-10 text-center card-shadow">
           <CheckCircle2 className="mx-auto mb-3 h-8 w-8 text-emerald-500" />
-          <h4 className="font-bold text-midnight">Queue clear</h4>
+          <h4 className="font-bold text-pitch-black">Queue clear</h4>
           <p className="mt-1 text-sm text-slate">No plugs are waiting for verification right now.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {plugs.map((plug, i) => (
-            <div key={plug.id} className={cn('rounded-[22px] border border-midnight/6 bg-white p-6 card-shadow rise', i === 1 && 'rise-1')}>
+            <div key={plug.id} className={cn('rounded-[22px] border border-pitch-black/6 bg-white p-6 card-shadow rise', i === 1 && 'rise-1')}>
               <div className="mb-6 flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <Avatar name={plug.name} photoUrl={plug.photo_url} tone="midnight" />
+                  <Avatar name={plug.name} photoUrl={plug.photo_url} tone="pitch-black" />
                   <div>
-                    <h4 className="font-bold text-midnight">{plug.name || 'Unnamed plug'}</h4>
+                    <h4 className="font-bold text-pitch-black">{plug.name || 'Unnamed plug'}</h4>
                     <p className="text-xs text-slate">Joined {new Date(plug.created_at).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                   </div>
                 </div>

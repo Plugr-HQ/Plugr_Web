@@ -43,7 +43,7 @@ export default function AppWallet() {
       </div>
 
       {locked > 0 && (
-        <div className="flex items-start gap-3 rounded-2xl bg-gold/[0.08] border border-gold/20 p-4 mb-6"><Clock className="w-5 h-5 text-gold shrink-0 mt-0.5" /><p className="text-[13px] text-midnight leading-relaxed">Locked earnings release to Available after the dispute window — <span className="font-bold">60s during early access.</span></p></div>
+        <div className="flex items-start gap-3 rounded-2xl bg-gold/[0.08] border border-gold/20 p-4 mb-6"><Clock className="w-5 h-5 text-gold shrink-0 mt-0.5" /><p className="text-[13px] text-pitch-black leading-relaxed">Locked earnings release to Available after the dispute window — <span className="font-bold">60s during early access.</span></p></div>
       )}
 
       <div className="mb-8"><GoldButton onClick={() => router.push(`/app/withdraw/${plugId}`)} disabled={available <= 0}>Withdraw to bank</GoldButton></div>
@@ -54,7 +54,7 @@ export default function AppWallet() {
           <div className="space-y-2.5">
             {withdrawals.map((w) => (
               <Card key={w.id} className="p-4 flex items-center justify-between">
-                <div><div className="font-display text-midnight tnum">{naira(w.amount)}</div><div className="text-[11px] text-slate mt-0.5">{new Date(w.created_at).toLocaleString()}</div></div>
+                <div><div className="font-display text-pitch-black tnum">{naira(w.amount)}</div><div className="text-[11px] text-slate mt-0.5">{new Date(w.created_at).toLocaleString()}</div></div>
                 <span className="inline-flex items-center gap-1.5 rounded-pill bg-gold/15 px-3 py-1 text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#8a5a08]"><span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />{w.status}</span>
               </Card>
             ))}

@@ -8,7 +8,7 @@
 //   2. a rule, with copyright left and labelled socials right
 //   3. the signature: an oversized "plugr" centred and deliberately cut off by the bottom edge
 //
-// Flat colour throughout — no gradients anywhere on this site. The surface is midnight; the
+// Flat colour throughout — no gradients anywhere on this site. The surface is pitch-black; the
 // wordmark is #1C3260, one flat step lighter. That tonal step is what makes a mark this large
 // readable without it shouting under the real logo in the brand column: it is felt before it is
 // read, which is the job.
@@ -64,7 +64,7 @@ const columnTitle = 'mb-5 text-[11px] font-bold uppercase tracking-[0.16em] text
 
 export function SiteFooter() {
   return (
-    <footer className="relative isolate overflow-hidden bg-midnight text-white">
+    <footer className="relative isolate overflow-hidden bg-pitch-black text-white">
       <div className="mx-auto max-w-6xl px-5 pt-16 md:pt-24">
         {/* --- columns --------------------------------------------------------------- */}
         <div className="grid gap-y-9 md:grid-cols-[1.7fr_1fr_1fr_1fr_1.1fr] md:gap-12">

@@ -17,13 +17,13 @@ export default function PaymentPage() {
       <Navbar />
 
       <div className="max-w-md mx-auto w-full px-6 py-10">
-        <h1 className="text-3xl font-display text-midnight mb-2">Secure Payment</h1>
+        <h1 className="text-3xl font-display text-pitch-black mb-2">Secure Payment</h1>
         <p className="text-slate mb-8">Pay the Visit Deposit to confirm your booking.</p>
 
         {/* Escrow Badge */}
         <div className="bg-gold/10 border border-gold/20 rounded-card p-4 flex gap-3 mb-8">
           <ShieldCheck className="w-6 h-6 text-gold shrink-0" />
-          <div className="text-xs text-midnight leading-relaxed">
+          <div className="text-xs text-pitch-black leading-relaxed">
             <span className="font-bold">Escrow Protected:</span> Funds are held safely and only released when you confirm the job is done.
           </div>
         </div>
@@ -33,11 +33,11 @@ export default function PaymentPage() {
           <h3 className="text-xs font-bold text-slate uppercase tracking-widest mb-4">Job Summary</h3>
           <div className="space-y-4">
             <div className="flex justify-between">
-              <span className="text-sm text-midnight">{jobSummary.task}</span>
-              <span className="text-sm font-bold text-midnight">₦{jobSummary.fee}</span>
+              <span className="text-sm text-pitch-black">{jobSummary.task}</span>
+              <span className="text-sm font-bold text-pitch-black">₦{jobSummary.fee}</span>
             </div>
             <div className="flex justify-between py-2 border-t border-bone">
-              <span className="text-sm font-bold text-midnight">Total to Pay</span>
+              <span className="text-sm font-bold text-pitch-black">Total to Pay</span>
               <span className="text-lg font-display text-gold">₦{jobSummary.total}</span>
             </div>
           </div>
@@ -47,8 +47,8 @@ export default function PaymentPage() {
         <div className="space-y-3 mb-10">
           <div className="bg-white border-2 border-gold rounded-card p-4 flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-3">
-              <CreditCard className="w-5 h-5 text-midnight" />
-              <span className="font-bold text-midnight">Pay via Paystack</span>
+              <CreditCard className="w-5 h-5 text-pitch-black" />
+              <span className="font-bold text-pitch-black">Pay via Paystack</span>
             </div>
             <div className="w-4 h-4 rounded-full border-4 border-gold" />
           </div>

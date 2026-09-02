@@ -63,10 +63,10 @@ export default function JobDeepLinkPage() {
         <Card className="flex items-start gap-3 p-4">
           <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
           <div>
-            <p className="text-sm text-midnight">{error}</p>
+            <p className="text-sm text-pitch-black">{error}</p>
             <Link
               href="/app/plug"
-              className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-midnight underline underline-offset-4 hover:text-gold"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-bold text-pitch-black underline underline-offset-4 hover:text-gold"
             >
               Open your dashboard <ArrowRight className="h-3.5 w-3.5" />
             </Link>
@@ -98,10 +98,10 @@ export default function JobDeepLinkPage() {
           </span>
         )}
 
-        {job.job_description && <p className="text-sm leading-relaxed text-midnight">{job.job_description}</p>}
+        {job.job_description && <p className="text-sm leading-relaxed text-pitch-black">{job.job_description}</p>}
 
         <div className="space-y-2 pt-1 text-sm text-slate">
-          {job.category && <p className="font-semibold text-midnight">{job.category}</p>}
+          {job.category && <p className="font-semibold text-pitch-black">{job.category}</p>}
           {job.address && (
             <p className="flex items-center gap-2">
               <MapPin className="h-4 w-4 shrink-0 text-gold" /> {job.address}
@@ -127,7 +127,7 @@ export default function JobDeepLinkPage() {
 
       <Link
         href={`/app/plug-job/${job.id}`}
-        className="mt-4 flex w-full items-center justify-center gap-2 rounded-pill bg-midnight py-3.5 text-sm font-bold text-white transition-colors hover:bg-deep-blue"
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-pill bg-pitch-black py-3.5 text-sm font-bold text-white transition-colors hover:bg-petrol"
       >
         Open the full job card <ArrowRight className="h-4 w-4" />
       </Link>

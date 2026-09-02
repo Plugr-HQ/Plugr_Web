@@ -308,7 +308,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
           </GoldButton>
         }
       >
-        <div className="rise rounded-[22px] border border-midnight/10 bg-white p-5">
+        <div className="rise rounded-[22px] border border-pitch-black/10 bg-white p-5">
           <div className="flex items-start gap-3 mb-4">
             <span className="grid place-items-center h-10 w-10 rounded-2xl bg-gold/15 shrink-0">
               <ShieldCheck className="w-5 h-5 text-gold" />
@@ -316,11 +316,11 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
             <p className="text-sm leading-relaxed text-slate">
               Verifying your identity means checking your NIN against the national register and
               running a face-match liveness scan. This is covered by our{' '}
-              <Link href="/consent" target="_blank" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+              <Link href="/consent" target="_blank" className="text-pitch-black font-semibold underline decoration-gold/40 hover:decoration-gold">
                 Data Consent &amp; Processing Agreement
               </Link>{' '}
               and{' '}
-              <Link href="/privacy" target="_blank" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+              <Link href="/privacy" target="_blank" className="text-pitch-black font-semibold underline decoration-gold/40 hover:decoration-gold">
                 Privacy Policy
               </Link>
               . We can&rsquo;t start verification without it.
@@ -329,16 +329,16 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
 
           <label
             htmlFor="verify-consent"
-            className="flex items-start gap-3 rounded-2xl border border-midnight/10 bg-bone/60 p-4 cursor-pointer hover:border-gold/40 transition-colors"
+            className="flex items-start gap-3 rounded-2xl border border-pitch-black/10 bg-bone/60 p-4 cursor-pointer hover:border-gold/40 transition-colors"
           >
             <input
               id="verify-consent"
               type="checkbox"
               checked={gateChecked}
               onChange={(e) => setGateChecked(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-midnight/30 text-gold focus:ring-gold"
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-pitch-black/30 text-gold focus:ring-gold"
             />
-            <span className="text-sm font-medium text-midnight">
+            <span className="text-sm font-medium text-pitch-black">
               I agree to Plugr verifying my identity and processing my data as described above.
             </span>
           </label>
@@ -394,7 +394,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
             <button
               onClick={() => finish(undefined)}
               disabled={submitting}
-              className="w-full py-3 text-sm font-bold text-slate hover:text-midnight transition-colors disabled:opacity-50"
+              className="w-full py-3 text-sm font-bold text-slate hover:text-pitch-black transition-colors disabled:opacity-50"
             >
               Skip for now
             </button>
@@ -405,7 +405,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
       {/* progress — NIN · liveness · optional email */}
       <div className="flex gap-1.5 mb-8">
         {[0, 1, 2].map((i) => (
-          <span key={i} className={cn('h-1.5 flex-1 rounded-pill', i <= step ? 'bg-gold' : 'bg-midnight/10')} />
+          <span key={i} className={cn('h-1.5 flex-1 rounded-pill', i <= step ? 'bg-gold' : 'bg-pitch-black/10')} />
         ))}
       </div>
 
@@ -417,7 +417,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
               <ShieldCheck className="w-5 h-5 text-gold" />
             </span>
             <p className="text-[13px] leading-relaxed text-slate">
-              <span className="font-bold text-midnight">Why we ask.</span> Anonymity is what burns clients. Confirming
+              <span className="font-bold text-pitch-black">Why we ask.</span> Anonymity is what burns clients. Confirming
               your NIN is what turns you from a stranger into a verified professional.
             </p>
           </Card>
@@ -464,7 +464,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
         <div className="rise flex flex-col items-center">
           <div className="relative h-64 w-64">
             {/* circular face guide */}
-            <div className="absolute inset-0 rounded-full overflow-hidden bg-midnight">
+            <div className="absolute inset-0 rounded-full overflow-hidden bg-pitch-black">
               <video
                 ref={videoRef}
                 playsInline
@@ -484,17 +484,17 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
               )}
             />
             {liveState === 'verified' && (
-              <span className="absolute inset-0 grid place-items-center rounded-full bg-midnight/50">
+              <span className="absolute inset-0 grid place-items-center rounded-full bg-pitch-black/50">
                 <Check className="w-14 h-14 text-emerald-400" strokeWidth={3} />
               </span>
             )}
             {liveState === 'verifying' && (
-              <span className="absolute inset-0 grid place-items-center rounded-full bg-midnight/40">
+              <span className="absolute inset-0 grid place-items-center rounded-full bg-pitch-black/40">
                 <Loader2 className="w-10 h-10 animate-spin text-gold" />
               </span>
             )}
             {camError && (
-              <span className="absolute inset-0 grid place-items-center rounded-full bg-midnight">
+              <span className="absolute inset-0 grid place-items-center rounded-full bg-pitch-black">
                 <Camera className="w-10 h-10 text-steel-blue" />
               </span>
             )}
@@ -510,7 +510,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
               <p className="text-sm text-red-600">{camError}</p>
               <button
                 onClick={startCamera}
-                className="mt-2 text-sm font-bold text-midnight underline underline-offset-4 hover:text-gold"
+                className="mt-2 text-sm font-bold text-pitch-black underline underline-offset-4 hover:text-gold"
               >
                 Retry camera
               </button>
@@ -539,7 +539,7 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
               <Check className="h-5 w-5 text-emerald-600" strokeWidth={3} />
             </span>
             <p className="text-[13px] leading-relaxed text-slate">
-              <span className="font-bold text-midnight">You’re verified.</span> Last thing — an email lets us send
+              <span className="font-bold text-pitch-black">You’re verified.</span> Last thing — an email lets us send
               receipts and payout records you can keep. It’s not required, and clients never see it.
             </p>
           </Card>
@@ -576,13 +576,13 @@ export function OnboardingVerifyScreen({ base }: { base: string }) {
 
 function SupportRow() {
   return (
-    <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-midnight/6 bg-white p-4">
+    <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-pitch-black/6 bg-white p-4">
       <p className="text-[13px] text-slate">
-        <span className="font-bold text-midnight">Stuck?</span> Our team can verify you manually.
+        <span className="font-bold text-pitch-black">Stuck?</span> Our team can verify you manually.
       </p>
       <a
         href="mailto:hello@getplugr.com?subject=Verification%20help"
-        className="shrink-0 inline-flex items-center gap-1.5 rounded-pill bg-midnight px-4 py-2 text-[13px] font-bold text-white hover:bg-deep-blue transition-colors"
+        className="shrink-0 inline-flex items-center gap-1.5 rounded-pill bg-pitch-black px-4 py-2 text-[13px] font-bold text-white hover:bg-petrol transition-colors"
       >
         <LifeBuoy className="w-4 h-4" /> Contact support
       </a>

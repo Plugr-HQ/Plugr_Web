@@ -178,7 +178,7 @@ export default function AdminLoginPage() {
         <div className="mb-8 flex items-center justify-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="Plugr" className="h-7 w-auto" />
-          <span className="rounded-pill bg-midnight px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.15em] text-white">
+          <span className="rounded-pill bg-pitch-black px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.15em] text-white">
             Admin
           </span>
         </div>
@@ -189,7 +189,7 @@ export default function AdminLoginPage() {
               <ShieldCheck className="h-5 w-5" />
             </span>
             <div>
-              <h1 className="font-display text-xl text-midnight">Admin sign in</h1>
+              <h1 className="font-display text-xl text-pitch-black">Admin sign in</h1>
               <p className="text-sm text-slate">
                 {step === 'phone' ? 'Verify your admin phone number' : 'Enter the code we sent you'}
               </p>
@@ -206,7 +206,7 @@ export default function AdminLoginPage() {
                 onChange={(e) => setPhone(e.target.value)}
                 inputMode="tel"
                 placeholder="+234 800 000 0001"
-                className="w-full rounded-2xl border border-midnight/10 bg-white px-4 py-3.5 text-midnight placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow"
+                className="w-full rounded-2xl border border-pitch-black/10 bg-white px-4 py-3.5 text-pitch-black placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow"
               />
               {error && <p className="text-sm font-medium text-red-600">{error}</p>}
               <PrimaryButton type="submit" loading={busy}>
@@ -232,8 +232,8 @@ export default function AdminLoginPage() {
                     readOnly={busy}
                     aria-label={`Digit ${i + 1}`}
                     className={cn(
-                      'h-14 flex-1 min-w-0 rounded-2xl border bg-white text-center font-display text-2xl text-midnight tnum transition-shadow focus:outline-none focus:ring-4 focus:ring-gold/10',
-                      error ? 'border-red-400' : d ? 'border-gold' : 'border-midnight/10 focus:border-gold'
+                      'h-14 flex-1 min-w-0 rounded-2xl border bg-white text-center font-display text-2xl text-pitch-black tnum transition-shadow focus:outline-none focus:ring-4 focus:ring-gold/10',
+                      error ? 'border-red-400' : d ? 'border-gold' : 'border-pitch-black/10 focus:border-gold'
                     )}
                   />
                 ))}
@@ -251,7 +251,7 @@ export default function AdminLoginPage() {
                   type="button"
                   onClick={resendCode}
                   disabled={cooldown.active || resending || busy}
-                  className="text-sm font-bold text-midnight underline underline-offset-4 transition-colors hover:text-gold disabled:cursor-not-allowed disabled:text-slate disabled:no-underline disabled:hover:text-slate"
+                  className="text-sm font-bold text-pitch-black underline underline-offset-4 transition-colors hover:text-gold disabled:cursor-not-allowed disabled:text-slate disabled:no-underline disabled:hover:text-slate"
                 >
                   {cooldown.active
                     ? `Resend in ${formatCooldown(cooldown.remaining)}`
@@ -268,7 +268,7 @@ export default function AdminLoginPage() {
                     setNotice(null);
                     cooldown.reset();
                   }}
-                  className="text-sm font-bold text-midnight underline underline-offset-4 transition-colors hover:text-gold"
+                  className="text-sm font-bold text-pitch-black underline underline-offset-4 transition-colors hover:text-gold"
                 >
                   Use a different number
                 </button>

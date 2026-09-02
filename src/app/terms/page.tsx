@@ -13,17 +13,17 @@ export const metadata: Metadata = {
 
 export default function TermsOfServicePage() {
   return (
-    <main className="min-h-screen bg-bone text-midnight font-body antialiased">
+    <main className="min-h-screen bg-bone text-pitch-black font-body antialiased">
       {/* Nav — matches the landing */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-bone/80 backdrop-blur border-b border-midnight/[0.06]">
+      <nav className="fixed top-0 inset-x-0 z-50 bg-bone/80 backdrop-blur border-b border-pitch-black/[0.06]">
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center">
-            <PlugrWordmark className="h-6 text-midnight" />
+            <PlugrWordmark className="h-6 text-pitch-black" />
           </a>
           <div className="flex items-center gap-4">
             <Link
               href="/app/browse"
-              className="inline-flex items-center gap-1.5 rounded-pill bg-gold text-midnight text-sm font-bold px-4 sm:px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all"
+              className="inline-flex items-center gap-1.5 rounded-pill bg-gold text-pitch-black text-sm font-bold px-4 sm:px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all"
             >
               Use Plugr <ArrowRight className="w-4 h-4" />
             </Link>
@@ -45,7 +45,7 @@ export default function TermsOfServicePage() {
             including the Plugr WhatsApp bot, web application, and any related services (together, the
             &ldquo;Platform&rdquo;). By registering for or using the Platform, you agree to be bound by
             these Terms and by our{' '}
-            <Link href="/privacy" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+            <Link href="/privacy" className="text-pitch-black font-semibold underline decoration-gold/40 hover:decoration-gold">
               Privacy Policy
             </Link>
             .
@@ -53,7 +53,7 @@ export default function TermsOfServicePage() {
           <a
             href="/Plugr_Terms_of_Service.pdf"
             download
-            className="shrink-0 inline-flex items-center justify-center gap-2 rounded-pill border border-midnight/15 bg-white text-midnight text-sm font-bold px-5 py-3 hover:border-gold hover:text-gold transition-colors"
+            className="shrink-0 inline-flex items-center justify-center gap-2 rounded-pill border border-pitch-black/15 bg-white text-pitch-black text-sm font-bold px-5 py-3 hover:border-gold hover:text-gold transition-colors"
           >
             <Download className="w-4 h-4" /> Download PDF
           </a>
@@ -61,11 +61,11 @@ export default function TermsOfServicePage() {
 
         <Section number="1" title="Definitions">
           <BulletList items={[
-            <><strong className="text-midnight font-semibold">Plugr / Platform:</strong> the service operated by Plugr Technologies Limited connecting Clients with verified service providers.</>,
-            <><strong className="text-midnight font-semibold">Plug:</strong> a verified service provider offering services through the Platform.</>,
-            <><strong className="text-midnight font-semibold">Client:</strong> a user who requests or books services through the Platform.</>,
-            <><strong className="text-midnight font-semibold">Job:</strong> a specific service engagement arranged between a Client and a Plug through the Platform.</>,
-            <><strong className="text-midnight font-semibold">Services:</strong> the work performed by a Plug for a Client in connection with a Job.</>,
+            <><strong className="text-pitch-black font-semibold">Plugr / Platform:</strong> the service operated by Plugr Technologies Limited connecting Clients with verified service providers.</>,
+            <><strong className="text-pitch-black font-semibold">Plug:</strong> a verified service provider offering services through the Platform.</>,
+            <><strong className="text-pitch-black font-semibold">Client:</strong> a user who requests or books services through the Platform.</>,
+            <><strong className="text-pitch-black font-semibold">Job:</strong> a specific service engagement arranged between a Client and a Plug through the Platform.</>,
+            <><strong className="text-pitch-black font-semibold">Services:</strong> the work performed by a Plug for a Client in connection with a Job.</>,
           ]} />
         </Section>
 
@@ -110,7 +110,7 @@ export default function TermsOfServicePage() {
             Fees payable for a Job, and any platform service fee retained by Plugr, are disclosed to both
             parties before a Job is confirmed. Payments are processed through our payment partner,
             Alatpay. Plugr does not store full payment card details; payment data is handled per our{' '}
-            <Link href="/privacy" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+            <Link href="/privacy" className="text-pitch-black font-semibold underline decoration-gold/40 hover:decoration-gold">
               Privacy Policy
             </Link>{' '}
             and Alatpay&rsquo;s own terms. Plugr may change its payment processing partner from time to
@@ -139,7 +139,7 @@ export default function TermsOfServicePage() {
             Cancellation and refund terms for a given Job are governed by the specific policy shown to both
             parties at the time of booking. Where a dispute arises over a cancellation, refund, or the
             quality of Services rendered, it is handled under Plugr&rsquo;s{' '}
-            <Link href="/disputes" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+            <Link href="/disputes" className="text-pitch-black font-semibold underline decoration-gold/40 hover:decoration-gold">
               Dispute Resolution Policy
             </Link>
             , which forms part of these Terms by reference.
@@ -197,7 +197,7 @@ export default function TermsOfServicePage() {
           <p className="text-sm text-slate">
             These Terms are governed by the laws of the Federal Republic of Nigeria. Disputes between
             users, or between a user and Plugr, are handled in accordance with Plugr&rsquo;s{' '}
-            <Link href="/disputes" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+            <Link href="/disputes" className="text-pitch-black font-semibold underline decoration-gold/40 hover:decoration-gold">
               Dispute Resolution Policy
             </Link>{' '}
             in the first instance. Where a dispute cannot be resolved through that process, it shall be
@@ -215,7 +215,7 @@ export default function TermsOfServicePage() {
         </Section>
 
         <Section number="15" title="Contact Us">
-          <div className="rounded-[24px] bg-midnight text-white p-8 mt-2 text-center">
+          <div className="rounded-[24px] bg-pitch-black text-white p-8 mt-2 text-center">
             <span className="mx-auto mb-4 grid place-items-center h-12 w-12 rounded-2xl bg-gold/15">
               <Scale className="w-6 h-6 text-gold" />
             </span>

@@ -15,12 +15,12 @@ export function Navbar() {
 
           <Image src="/logo.svg" alt="Plugr Logo" fill className="bg-cover" />
         </Link>
-        <div className="flex items-center gap-4 text-sm font-semibold text-midnight">
+        <div className="flex items-center gap-4 text-sm font-semibold text-pitch-black">
           <Link href="/privacy" className="hover:text-gold transition-colors hidden md:inline">Privacy</Link>
-          <Link href="/app" className="bg-gold text-white px-4 py-2 rounded-full hover:text-gold hover:bg-midnight/90 transition-colors">Use Plugr</Link>
+          <Link href="/app" className="bg-gold text-white px-4 py-2 rounded-full hover:text-gold hover:bg-pitch-black/90 transition-colors">Use Plugr</Link>
         </div>
         <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? <X className="w-6 h-6 text-midnight" /> : <Menu className="w-6 h-6 text-midnight" />}
+          {isMobileMenuOpen ? <X className="w-6 h-6 text-pitch-black" /> : <Menu className="w-6 h-6 text-pitch-black" />}
         </button>
       </nav>
 
@@ -30,21 +30,21 @@ export function Navbar() {
             <Link
               href="/"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full py-3 text-center border-2 border-midnight text-midnight rounded-full font-bold text-sm"
+              className="w-full py-3 text-center border-2 border-pitch-black text-pitch-black rounded-full font-bold text-sm"
             >
               Home
             </Link>
             <Link
               href="/find"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full py-3 text-center border-2 border-midnight text-midnight rounded-full font-bold text-sm"
+              className="w-full py-3 text-center border-2 border-pitch-black text-pitch-black rounded-full font-bold text-sm"
             >
               Find A Plug
             </Link>
             <Link
               href="/privacy"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full py-3 text-center border-2 border-midnight text-midnight rounded-full font-bold text-sm"
+              className="w-full py-3 text-center border-2 border-pitch-black text-pitch-black rounded-full font-bold text-sm"
             >
               Privacy Policy
             </Link>

@@ -94,17 +94,17 @@ export default async function PublicPlugProfile({ params }: { params: Promise<{ 
   const initial = (plug.name?.trim()?.[0] ?? 'P').toUpperCase();
 
   return (
-    <div className="min-h-screen bg-bone text-midnight antialiased">
+    <div className="min-h-screen bg-bone text-pitch-black antialiased">
       {/* Branding — this page is often the first thing a client ever sees of Plugr. */}
-      <header className="flex items-center justify-center border-b border-midnight/[0.06] bg-white/60 py-4">
-        <PlugrWordmark className="h-6 text-midnight" />
+      <header className="flex items-center justify-center border-b border-pitch-black/[0.06] bg-white/60 py-4">
+        <PlugrWordmark className="h-6 text-pitch-black" />
       </header>
 
       <main className="mx-auto w-full max-w-xl px-6 pb-28 pt-8">
         <section className="flex flex-col items-center text-center">
           {/* Photo, prominent */}
           <div className="relative mb-5 h-32 w-32">
-            <div className="h-full w-full overflow-hidden rounded-full bg-midnight shadow-sm ring-4 ring-white">
+            <div className="h-full w-full overflow-hidden rounded-full bg-pitch-black shadow-sm ring-4 ring-white">
               {plug.photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={plug.photo_url} alt={plug.name} className="h-full w-full object-cover object-top" />
@@ -117,12 +117,12 @@ export default async function PublicPlugProfile({ params }: { params: Promise<{ 
             {/* The seal only appears for a Plug who is actually verified — never decoration. */}
             {plug.verified && (
               <span className="absolute bottom-1 right-1 grid h-8 w-8 place-items-center rounded-full bg-gold ring-4 ring-bone">
-                <BadgeCheck className="h-5 w-5 text-midnight" strokeWidth={2.5} />
+                <BadgeCheck className="h-5 w-5 text-pitch-black" strokeWidth={2.5} />
               </span>
             )}
           </div>
 
-          <h1 className="font-display text-2xl tracking-tight text-midnight">{plug.name}</h1>
+          <h1 className="font-display text-2xl tracking-tight text-pitch-black">{plug.name}</h1>
           <p className="mt-1 text-base font-medium text-slate">{trade}</p>
 
           {plug.service_area && (
@@ -144,9 +144,9 @@ export default async function PublicPlugProfile({ params }: { params: Promise<{ 
         </section>
 
         {plug.bio && (
-          <section className="mt-8 rounded-3xl border border-midnight/[0.06] bg-white p-6">
+          <section className="mt-8 rounded-3xl border border-pitch-black/[0.06] bg-white p-6">
             <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-gold">About</h2>
-            <p className="text-sm leading-relaxed text-midnight">{plug.bio}</p>
+            <p className="text-sm leading-relaxed text-pitch-black">{plug.bio}</p>
           </section>
         )}
 
@@ -155,13 +155,13 @@ export default async function PublicPlugProfile({ params }: { params: Promise<{ 
             profile reads worse than no heading, and this page is often a client's first
             impression of Plugr. */}
         {plug.skills && plug.skills.length > 0 && (
-          <section className="mt-4 rounded-3xl border border-midnight/[0.06] bg-white p-6">
+          <section className="mt-4 rounded-3xl border border-pitch-black/[0.06] bg-white p-6">
             <h2 className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-gold">Skills</h2>
             <div className="flex flex-wrap gap-2">
               {plug.skills.map((skill) => (
                 <span
                   key={skill}
-                  className="rounded-pill border border-midnight/[0.06] bg-bone px-3 py-1.5 text-[13px] font-medium text-midnight"
+                  className="rounded-pill border border-pitch-black/[0.06] bg-bone px-3 py-1.5 text-[13px] font-medium text-pitch-black"
                 >
                   {skill}
                 </span>
@@ -171,16 +171,16 @@ export default async function PublicPlugProfile({ params }: { params: Promise<{ 
         )}
 
         {plug.experience && plug.experience.length > 0 && (
-          <section className="mt-4 rounded-3xl border border-midnight/[0.06] bg-white p-6">
+          <section className="mt-4 rounded-3xl border border-pitch-black/[0.06] bg-white p-6">
             <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-gold">Experience</h2>
             {plug.experience.map((h, i, a) => (
               <div key={h.id ?? `${h.title}-${i}`} className="flex gap-3">
                 <div className="flex flex-col items-center">
                   <span className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full bg-gold" />
-                  {i < a.length - 1 && <span className="my-1 w-0.5 flex-1 bg-midnight/10" />}
+                  {i < a.length - 1 && <span className="my-1 w-0.5 flex-1 bg-pitch-black/10" />}
                 </div>
                 <div className="pb-5">
-                  <p className="text-sm font-bold text-midnight">{h.title}</p>
+                  <p className="text-sm font-bold text-pitch-black">{h.title}</p>
                   {(h.org || h.period) && (
                     <p className="text-xs text-slate">{[h.org, h.period].filter(Boolean).join(' · ')}</p>
                   )}

@@ -81,14 +81,14 @@ export function LocationInput({ onLocationSelect }: LocationInputProps) {
           onChange={(e) => setAddress(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleManualSearch()}
           placeholder="Enter address, street, or city…"
-          className="w-full rounded-2xl bg-white border border-midnight/10 px-4 py-3.5 text-midnight placeholder:text-slate/50 focus:outline-none focus:border-gold focus:ring-4 focus:ring-gold/10 transition-shadow"
+          className="w-full rounded-2xl bg-white border border-pitch-black/10 px-4 py-3.5 text-pitch-black placeholder:text-slate/50 focus:outline-none focus:border-gold focus:ring-4 focus:ring-gold/10 transition-shadow"
         />
         <button
           type="button"
           onClick={handleManualSearch}
           disabled={loading}
           aria-label="Search address"
-          className="shrink-0 grid place-items-center rounded-2xl bg-gold text-midnight px-4 hover:bg-gold-light active:scale-[0.98] transition-all disabled:opacity-45 disabled:pointer-events-none"
+          className="shrink-0 grid place-items-center rounded-2xl bg-gold text-pitch-black px-4 hover:bg-gold-light active:scale-[0.98] transition-all disabled:opacity-45 disabled:pointer-events-none"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
         </button>
@@ -98,7 +98,7 @@ export function LocationInput({ onLocationSelect }: LocationInputProps) {
         type="button"
         onClick={handleGetBrowserLocation}
         disabled={loading}
-        className="inline-flex items-center justify-center gap-2 rounded-pill bg-midnight text-white font-bold py-3.5 px-6 hover:bg-deep-blue active:scale-[0.99] transition-all disabled:opacity-45 disabled:pointer-events-none"
+        className="inline-flex items-center justify-center gap-2 rounded-pill bg-pitch-black text-white font-bold py-3.5 px-6 hover:bg-petrol active:scale-[0.99] transition-all disabled:opacity-45 disabled:pointer-events-none"
       >
         <MapPin className="w-4 h-4" /> Use current location
       </button>

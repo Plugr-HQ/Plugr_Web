@@ -82,7 +82,7 @@ export function CompleteProfileDialog({ base, onClose }: { base: string; onClose
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-midnight/40 backdrop-blur-[2px] sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-pitch-black/40 backdrop-blur-[2px] sm:items-center"
       role="dialog"
       aria-modal="true"
       aria-labelledby="complete-profile-title"
@@ -94,19 +94,19 @@ export function CompleteProfileDialog({ base, onClose }: { base: string; onClose
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gold text-midnight">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gold text-pitch-black">
             <BadgeCheck className="h-6 w-6" strokeWidth={2.5} />
           </span>
           <button
             onClick={dismiss}
             aria-label="Close"
-            className="-mr-1 -mt-1 grid h-8 w-8 place-items-center rounded-full text-slate transition-colors hover:bg-midnight/5"
+            className="-mr-1 -mt-1 grid h-8 w-8 place-items-center rounded-full text-slate transition-colors hover:bg-pitch-black/5"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <h2 id="complete-profile-title" className="mt-4 font-display text-2xl leading-tight text-midnight">
+        <h2 id="complete-profile-title" className="mt-4 font-display text-2xl leading-tight text-pitch-black">
           Complete your profile to start receiving jobs
         </h2>
         <p className="mt-2 text-[15px] leading-relaxed text-slate">
@@ -122,13 +122,13 @@ export function CompleteProfileDialog({ base, onClose }: { base: string; onClose
                 'flex items-start gap-3 rounded-2xl border p-3.5',
                 step.state === 'now'
                   ? 'border-gold/40 bg-white'
-                  : 'border-midnight/[0.06] bg-white/50'
+                  : 'border-pitch-black/[0.06] bg-white/50'
               )}
             >
               <span
                 className={cn(
                   'grid h-8 w-8 shrink-0 place-items-center rounded-xl',
-                  step.state === 'now' ? 'bg-midnight text-gold' : 'bg-midnight/[0.06] text-slate'
+                  step.state === 'now' ? 'bg-pitch-black text-gold' : 'bg-pitch-black/[0.06] text-slate'
                 )}
               >
                 {step.icon}
@@ -137,7 +137,7 @@ export function CompleteProfileDialog({ base, onClose }: { base: string; onClose
                 <p
                   className={cn(
                     'text-sm font-bold',
-                    step.state === 'now' ? 'text-midnight' : 'text-slate'
+                    step.state === 'now' ? 'text-pitch-black' : 'text-slate'
                   )}
                 >
                   {step.label}
@@ -151,7 +151,7 @@ export function CompleteProfileDialog({ base, onClose }: { base: string; onClose
         <Link
           href={`${base}/onboarding/verify`}
           onClick={dismiss}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-pill bg-gold px-6 py-4 font-bold text-midnight transition-all hover:bg-gold-light active:scale-[0.98]"
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-pill bg-gold px-6 py-4 font-bold text-pitch-black transition-all hover:bg-gold-light active:scale-[0.98]"
         >
           Verify my identity
           <ArrowRight className="h-4 w-4" />
@@ -159,7 +159,7 @@ export function CompleteProfileDialog({ base, onClose }: { base: string; onClose
 
         <button
           onClick={dismiss}
-          className="mt-3 w-full py-2 text-sm font-semibold text-slate transition-colors hover:text-midnight"
+          className="mt-3 w-full py-2 text-sm font-semibold text-slate transition-colors hover:text-pitch-black"
         >
           I&rsquo;ll do this later
         </button>

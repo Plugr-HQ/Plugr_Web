@@ -99,20 +99,20 @@ export default function GuestPayPage() {
   const needsAmount = !va && !paid && !!job && !(Number(job?.amount) > 0);
 
   return (
-    <main className="min-h-screen bg-bone text-midnight font-body antialiased flex justify-center">
+    <main className="min-h-screen bg-bone text-pitch-black font-body antialiased flex justify-center">
       <div className="w-full max-w-110 min-h-screen flex flex-col px-6 pt-10 pb-12">
-        <a href="/" className="mx-auto"><PlugrWordmark className="h-7 text-midnight" /></a>
+        <a href="/" className="mx-auto"><PlugrWordmark className="h-7 text-pitch-black" /></a>
 
         <div className="mt-10">
-          <div className="flex items-start gap-3 rounded-2xl bg-white border border-midnight/[0.06] p-4 mb-6 card-shadow">
+          <div className="flex items-start gap-3 rounded-2xl bg-white border border-pitch-black/[0.06] p-4 mb-6 card-shadow">
             <span className="grid place-items-center h-9 w-9 rounded-full bg-gold/15 shrink-0"><ShieldCheck className="w-5 h-5 text-gold" /></span>
-            <p className="text-[13px] leading-relaxed text-slate"><span className="font-bold text-midnight">Escrow protected.</span> Your transfer is held securely and only released to the artisan once you confirm the job is done.</p>
+            <p className="text-[13px] leading-relaxed text-slate"><span className="font-bold text-pitch-black">Escrow protected.</span> Your transfer is held securely and only released to the artisan once you confirm the job is done.</p>
           </div>
 
           {plug?.name && (
             <div className="flex items-center justify-between mb-6 px-1">
               <span className="text-sm text-slate">Booking</span>
-              <span className="text-sm font-bold text-midnight capitalize">{plug.name}{plug.trade ? ` · ${plug.trade}` : ''}</span>
+              <span className="text-sm font-bold text-pitch-black capitalize">{plug.name}{plug.trade ? ` · ${plug.trade}` : ''}</span>
             </div>
           )}
 
@@ -121,7 +121,7 @@ export default function GuestPayPage() {
           {paid ? (
             <Card className="p-7 text-center">
               <span className="mx-auto mb-4 grid place-items-center h-16 w-16 rounded-full bg-emerald-500/10"><CheckCircle2 className="w-9 h-9 text-emerald-600" /></span>
-              <h3 className="font-display text-2xl text-midnight">Payment confirmed</h3>
+              <h3 className="font-display text-2xl text-pitch-black">Payment confirmed</h3>
               <p className="mt-1.5 text-sm text-slate">Your funds are held safely in escrow. We’ve notified your artisan — you can head back to WhatsApp to coordinate the job.</p>
             </Card>
           ) : needsAmount ? (
@@ -152,16 +152,16 @@ export default function GuestPayPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-4">Transfer to this account</p>
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <div className="font-display text-[2rem] leading-none text-midnight tnum tracking-wide break-all">{va.accountNumber ?? '—'}</div>
+                  <div className="font-display text-[2rem] leading-none text-pitch-black tnum tracking-wide break-all">{va.accountNumber ?? '—'}</div>
                   <div className="mt-2 text-sm text-slate">{va.bankName ?? 'Bank pending'}</div>
                 </div>
-                <button onClick={copy} className="shrink-0 inline-flex items-center gap-1.5 rounded-pill border border-midnight/10 px-3 py-2 text-[13px] font-bold text-midnight hover:border-gold hover:text-gold transition-colors">
+                <button onClick={copy} className="shrink-0 inline-flex items-center gap-1.5 rounded-pill border border-pitch-black/10 px-3 py-2 text-[13px] font-bold text-pitch-black hover:border-gold hover:text-gold transition-colors">
                   {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}{copied ? 'Copied' : 'Copy'}
                 </button>
               </div>
               {va.accountName && <p className="mt-3 text-xs text-slate">Account name · {va.accountName}</p>}
               <Divider className="my-5" />
-              <div className="flex items-center gap-2.5 text-sm text-midnight">
+              <div className="flex items-center gap-2.5 text-sm text-pitch-black">
                 <Loader2 className="w-4 h-4 animate-spin text-gold" />
                 <span className="font-medium">Waiting for your transfer…</span>
               </div>
@@ -173,7 +173,7 @@ export default function GuestPayPage() {
               <button
                 onClick={checkNow}
                 disabled={checking}
-                className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-pill bg-midnight text-white font-bold py-3.5 text-sm hover:bg-deep-blue disabled:opacity-50 transition-colors"
+                className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-pill bg-pitch-black text-white font-bold py-3.5 text-sm hover:bg-petrol disabled:opacity-50 transition-colors"
               >
                 {checking ? <><Loader2 className="w-4 h-4 animate-spin" /> Checking…</> : 'I’ve sent the transfer'}
               </button>

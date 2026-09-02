@@ -16,7 +16,7 @@ export default function ActiveJobTracker() {
     <main className="flex flex-col min-h-screen bg-bone pb-24">
       <Navbar />
 
-      <div className="bg-midnight pt-8 pb-16 px-6 text-white overflow-hidden relative">
+      <div className="bg-pitch-black pt-8 pb-16 px-6 text-white overflow-hidden relative">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex items-center gap-4 mb-6">
             <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center font-display font-bold text-2xl text-gold">
@@ -61,7 +61,7 @@ export default function ActiveJobTracker() {
                 <div className="grow">
                   <h4 className={cn(
                     "font-bold text-sm",
-                    step.status === 'pending' ? "text-slate" : "text-midnight"
+                    step.status === 'pending' ? "text-slate" : "text-pitch-black"
                   )}>
                     {step.label}
                   </h4>
@@ -76,7 +76,7 @@ export default function ActiveJobTracker() {
         <div className="bg-bone rounded-card p-4 flex items-start gap-4 border border-slate/10">
           <MapPin className="w-5 h-5 text-slate shrink-0" />
           <div>
-            <h4 className="text-xs font-bold text-midnight uppercase tracking-tight">Meeting Point</h4>
+            <h4 className="text-xs font-bold text-pitch-black uppercase tracking-tight">Meeting Point</h4>
             <p className="text-sm text-slate">12, Herbert Macaulay Way, Yaba, Lagos</p>
           </div>
         </div>

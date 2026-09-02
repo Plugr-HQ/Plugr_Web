@@ -1,5 +1,5 @@
 // src/app/ad-minn/_components/AdminShell.tsx
-// The /ad-minn chrome on the /app design system (bone canvas, midnight + gold, Clash Display).
+// The /ad-minn chrome on the /app design system (bone canvas, pitch-black + gold, Clash Display).
 //
 // Sidebar (ChatGPT / Claude style): a persistent icon rail that is ALWAYS visible. A toggle
 // button expands it to the full labelled menu and collapses it back — it never disappears and
@@ -32,7 +32,7 @@ const TITLES: Record<AdminTab, string> = {
 const EXPANDED_KEY = 'plugr-admin-sidebar-expanded';
 
 // The exact brand asset from the repo — geometry/weight untouched, only the colour variant
-// changes: the gold-mark + bold "plugr" light wordmark on the midnight sidebar, or the gold mark
+// changes: the gold-mark + bold "plugr" light wordmark on the pitch-black sidebar, or the gold mark
 // alone when collapsed. (eslint-disable: intentional <img> for the static SVG brand asset.)
 function Brand({ expanded }: { expanded: boolean }) {
   return (
@@ -88,17 +88,17 @@ export function AdminShell({
   };
 
   return (
-    <div className="min-h-screen bg-bone text-midnight">
+    <div className="min-h-screen bg-bone text-pitch-black">
       {/* Scrim — only when the expanded panel is overlaying content on mobile. */}
       <div
-        className={cn('fixed inset-0 z-30 bg-midnight/40 backdrop-blur-[2px] transition-opacity md:hidden', expanded ? 'opacity-100' : 'pointer-events-none opacity-0')}
+        className={cn('fixed inset-0 z-30 bg-pitch-black/40 backdrop-blur-[2px] transition-opacity md:hidden', expanded ? 'opacity-100' : 'pointer-events-none opacity-0')}
         onClick={toggle}
       />
 
       {/* Persistent sidebar — icon rail (w-16) or expanded menu (w-64). Always visible. */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex flex-col bg-midnight text-white transition-[width] duration-300 ease-in-out',
+          'fixed inset-y-0 left-0 z-40 flex flex-col bg-pitch-black text-white transition-[width] duration-300 ease-in-out',
           expanded ? 'w-64' : 'w-16',
         )}
       >
@@ -133,7 +133,7 @@ export function AdminShell({
                   'flex w-full items-center rounded-xl py-3 text-sm font-bold transition-colors',
                   expanded ? 'gap-3 px-3' : 'justify-center px-0',
                   isActive
-                    ? 'bg-gold text-midnight shadow-[0_8px_20px_-10px_rgba(232,160,32,0.8)]'
+                    ? 'bg-gold text-pitch-black shadow-[0_8px_20px_-10px_rgba(232,160,32,0.8)]'
                     : 'text-steel-blue hover:bg-white/5 hover:text-white',
                 )}
               >
@@ -151,9 +151,9 @@ export function AdminShell({
 
       {/* Main column — always clears the rail (ml-16); pushed to ml-64 when expanded on desktop. */}
       <div className={cn('flex min-h-screen flex-col transition-[margin] duration-300 ease-in-out ml-16', expanded && 'md:ml-64')}>
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-midnight/[0.06] bg-bone/80 px-4 backdrop-blur-md sm:px-6 lg:px-8">
-          <h1 className="font-display text-xl text-midnight sm:text-2xl">{TITLES[active]}</h1>
-          <div className="ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold text-xs font-bold text-midnight">AD</div>
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-pitch-black/[0.06] bg-bone/80 px-4 backdrop-blur-md sm:px-6 lg:px-8">
+          <h1 className="font-display text-xl text-pitch-black sm:text-2xl">{TITLES[active]}</h1>
+          <div className="ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold text-xs font-bold text-pitch-black">AD</div>
         </header>
 
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">

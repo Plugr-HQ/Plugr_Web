@@ -142,10 +142,10 @@ export function ClientIntakeForm({
           <div
             className={cn(
               'flex items-stretch rounded-2xl bg-white border transition-colors overflow-hidden',
-              error ? 'border-red-400' : 'border-midnight/10 focus-within:border-gold'
+              error ? 'border-red-400' : 'border-pitch-black/10 focus-within:border-gold'
             )}
           >
-            <span className="grid place-items-center px-4 text-sm font-bold text-slate border-r border-midnight/10 bg-bone/60">
+            <span className="grid place-items-center px-4 text-sm font-bold text-slate border-r border-pitch-black/10 bg-bone/60">
               +234
             </span>
             <input
@@ -153,7 +153,7 @@ export function ClientIntakeForm({
               onChange={(e) => onPhoneChange(e.target.value)}
               inputMode="tel"
               placeholder="801 2345 678"
-              className="flex-1 min-w-0 bg-transparent px-4 py-3.5 text-midnight outline-none placeholder:text-slate/40"
+              className="flex-1 min-w-0 bg-transparent px-4 py-3.5 text-pitch-black outline-none placeholder:text-slate/40"
             />
           </div>
           <p className="mt-2 flex items-center gap-1.5 text-xs text-slate/70">

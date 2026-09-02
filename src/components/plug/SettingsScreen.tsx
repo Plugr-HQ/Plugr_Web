@@ -38,7 +38,7 @@ function Field({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-3 py-3">
       <span className="text-sm text-slate">{label}</span>
-      <span className="min-w-0 truncate text-sm font-semibold text-midnight">{value}</span>
+      <span className="min-w-0 truncate text-sm font-semibold text-pitch-black">{value}</span>
     </div>
   );
 }
@@ -70,7 +70,7 @@ export function SettingsScreen({ base }: { base: string }) {
 
   return (
     <PlugShell base={base} plug={plug}>
-      <h1 className="mb-4 font-display text-2xl text-midnight">Settings</h1>
+      <h1 className="mb-4 font-display text-2xl text-pitch-black">Settings</h1>
 
       {loading ? (
         <SettingsSkeleton />
@@ -82,9 +82,9 @@ export function SettingsScreen({ base }: { base: string }) {
               <SectionLabel>Profile</SectionLabel>
               <Card className="px-4">
                 <Field label="Name" value={plug?.name ?? '—'} />
-                <div className="h-px bg-midnight/[0.06]" />
+                <div className="h-px bg-pitch-black/[0.06]" />
                 <Field label="Phone" value={phone ? maskPlugPhone(phone) : '—'} />
-                <div className="h-px bg-midnight/[0.06]" />
+                <div className="h-px bg-pitch-black/[0.06]" />
                 {/* Optional email — the one identity field a Plug CAN edit here (name/phone/
                     verification are Plugr-managed). Collected optionally at the end of signup. */}
                 <EmailRow
@@ -92,7 +92,7 @@ export function SettingsScreen({ base }: { base: string }) {
                   initial={plug?.email ?? null}
                   onSaved={(email) => setPlug((p: any) => (p ? { ...p, email } : p))}
                 />
-                <div className="h-px bg-midnight/[0.06]" />
+                <div className="h-px bg-pitch-black/[0.06]" />
                 <div className="flex items-center justify-between gap-3 py-3">
                   <span className="text-sm text-slate">Verification</span>
                   <span
@@ -197,12 +197,12 @@ function EmailRow({
       <div className="flex items-center justify-between gap-3 py-3">
         <span className="text-sm text-slate">Email</span>
         <div className="flex min-w-0 items-center gap-2">
-          <span className={cn('min-w-0 truncate text-sm font-semibold', initial ? 'text-midnight' : 'text-slate/60')}>
+          <span className={cn('min-w-0 truncate text-sm font-semibold', initial ? 'text-pitch-black' : 'text-slate/60')}>
             {initial || 'Not added'}
           </span>
           <button
             onClick={() => setEditing(true)}
-            className="shrink-0 rounded-pill border border-midnight/10 px-3 py-1.5 text-[11px] font-bold text-midnight transition-colors hover:bg-bone"
+            className="shrink-0 rounded-pill border border-pitch-black/10 px-3 py-1.5 text-[11px] font-bold text-pitch-black transition-colors hover:bg-bone"
           >
             {initial ? 'Edit' : 'Add'}
           </button>
@@ -226,8 +226,8 @@ function EmailRow({
         placeholder="you@example.com"
         aria-label="Email address"
         className={cn(
-          'w-full rounded-2xl border bg-white px-4 py-3 text-sm text-midnight placeholder:text-slate/50 focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow',
-          err ? 'border-red-400' : 'border-midnight/10 focus:border-gold',
+          'w-full rounded-2xl border bg-white px-4 py-3 text-sm text-pitch-black placeholder:text-slate/50 focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow',
+          err ? 'border-red-400' : 'border-pitch-black/10 focus:border-gold',
         )}
       />
       {err ? (
@@ -239,14 +239,14 @@ function EmailRow({
         <button
           onClick={() => { setEditing(false); setValue(initial ?? ''); setErr(null); }}
           disabled={saving}
-          className="flex-1 rounded-pill px-4 py-2.5 text-sm font-bold text-slate hover:text-midnight disabled:opacity-50"
+          className="flex-1 rounded-pill px-4 py-2.5 text-sm font-bold text-slate hover:text-pitch-black disabled:opacity-50"
         >
           Cancel
         </button>
         <button
           onClick={save}
           disabled={saving}
-          className="flex flex-1 items-center justify-center gap-2 rounded-pill bg-midnight py-2.5 text-sm font-bold text-white transition-colors hover:bg-deep-blue disabled:opacity-60"
+          className="flex flex-1 items-center justify-center gap-2 rounded-pill bg-pitch-black py-2.5 text-sm font-bold text-white transition-colors hover:bg-petrol disabled:opacity-60"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
           {saving ? 'Saving…' : 'Save'}
@@ -335,7 +335,7 @@ function PayoutSection() {
   }
 
   const input =
-    'w-full rounded-2xl border border-midnight/10 bg-white px-4 py-3 text-sm text-midnight placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow';
+    'w-full rounded-2xl border border-pitch-black/10 bg-white px-4 py-3 text-sm text-pitch-black placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow';
 
   if (editing) {
     return (
@@ -368,7 +368,7 @@ function PayoutSection() {
           </div>
         )}
         {!validating && validated && (
-          <div className="flex items-center gap-2 rounded-2xl bg-gold/10 px-4 py-2.5 text-sm font-semibold text-midnight">
+          <div className="flex items-center gap-2 rounded-2xl bg-gold/10 px-4 py-2.5 text-sm font-semibold text-pitch-black">
             <Check className="h-4 w-4 text-gold" /> {validated.accountName}
           </div>
         )}
@@ -377,13 +377,13 @@ function PayoutSection() {
         )}
 
         <div className="flex gap-3 pt-1">
-          <button onClick={() => setEditing(false)} className="flex-1 rounded-pill px-4 py-2.5 text-sm font-bold text-slate hover:text-midnight">
+          <button onClick={() => setEditing(false)} className="flex-1 rounded-pill px-4 py-2.5 text-sm font-bold text-slate hover:text-pitch-black">
             Cancel
           </button>
           <button
             onClick={save}
             disabled={!validated}
-            className="flex flex-1 items-center justify-center gap-2 rounded-pill bg-midnight py-2.5 text-sm font-bold text-white transition-colors hover:bg-deep-blue disabled:opacity-40 disabled:hover:bg-midnight"
+            className="flex flex-1 items-center justify-center gap-2 rounded-pill bg-pitch-black py-2.5 text-sm font-bold text-white transition-colors hover:bg-petrol disabled:opacity-40 disabled:hover:bg-pitch-black"
           >
             <Check className="h-4 w-4" /> Save
           </button>
@@ -396,12 +396,12 @@ function PayoutSection() {
     return (
       <Card className="flex items-center justify-between gap-3 p-4">
         <div className="flex items-center gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-2xl bg-midnight/[0.04] text-slate">
+          <span className="grid h-10 w-10 place-items-center rounded-2xl bg-pitch-black/[0.04] text-slate">
             <Landmark className="h-5 w-5" />
           </span>
           <span className="text-sm text-slate">No payout account yet</span>
         </div>
-        <button onClick={startEdit} className="rounded-pill bg-gold px-4 py-2 text-xs font-bold text-midnight transition-colors hover:bg-gold-light">
+        <button onClick={startEdit} className="rounded-pill bg-gold px-4 py-2 text-xs font-bold text-pitch-black transition-colors hover:bg-gold-light">
           Add
         </button>
       </Card>
@@ -415,13 +415,13 @@ function PayoutSection() {
           <BankLogo url={bank.bankLogoUrl} />
         </span>
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-midnight">{bank.bankName}</p>
+          <p className="truncate text-sm font-bold text-pitch-black">{bank.bankName}</p>
           <p className="text-xs text-slate">
             •••• {bank.accountNumber.slice(-4)} · <span className="capitalize">{bank.accountName}</span>
           </p>
         </div>
       </div>
-      <button onClick={startEdit} className="flex items-center gap-1.5 rounded-pill border border-midnight/10 px-3.5 py-2 text-xs font-bold text-midnight transition-colors hover:bg-bone">
+      <button onClick={startEdit} className="flex items-center gap-1.5 rounded-pill border border-pitch-black/10 px-3.5 py-2 text-xs font-bold text-pitch-black transition-colors hover:bg-bone">
         <Pencil className="h-3.5 w-3.5" /> Edit
       </button>
     </Card>

@@ -163,7 +163,7 @@ export function JobPipeline() {
                   <div className="flex items-center gap-3">
                     <Avatar name={job.client?.name} />
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-bold text-midnight">{job.client?.name ?? 'Unknown'}</p>
+                      <p className="truncate text-sm font-bold text-pitch-black">{job.client?.name ?? 'Unknown'}</p>
                       <p className="truncate text-xs text-slate">{job.client?.phone ?? '—'}</p>
                     </div>
                   </div>
@@ -355,7 +355,7 @@ function OverrideModal({
       }
     >
       <div className="space-y-4">
-        <div className="flex items-center gap-2 rounded-2xl border border-midnight/[0.06] bg-bone/50 px-4 py-3 text-sm">
+        <div className="flex items-center gap-2 rounded-2xl border border-pitch-black/[0.06] bg-bone/50 px-4 py-3 text-sm">
           <span className="text-slate">Current</span>
           <Chip tone={STATUS_TONE[job.status] ?? 'neutral'}>{prettyStatus(job.status)}</Chip>
         </div>
@@ -386,7 +386,7 @@ function OverrideModal({
             onChange={(e) => setReason(e.target.value)}
             rows={2}
             placeholder="Why is this being overridden?"
-            className="w-full resize-none rounded-2xl border border-midnight/10 bg-white px-4 py-3 text-sm text-midnight placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow"
+            className="w-full resize-none rounded-2xl border border-pitch-black/10 bg-white px-4 py-3 text-sm text-pitch-black placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow"
           />
         </div>
 

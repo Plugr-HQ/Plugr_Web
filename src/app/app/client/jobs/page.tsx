@@ -42,7 +42,7 @@ export default function ClientJobsPage() {
       <Navbar />
       
       <div className="px-6 py-8 max-w-7xl mx-auto w-full">
-        <h1 className="text-3xl font-display text-midnight mb-8">My Jobs</h1>
+        <h1 className="text-3xl font-display text-pitch-black mb-8">My Jobs</h1>
 
         {/* Active Jobs Section */}
         <div className="mb-10">
@@ -52,11 +52,11 @@ export default function ClientJobsPage() {
               <div key={job.id} className="bg-white rounded-card p-5 shadow-sm border border-bone relative overflow-hidden group">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-midnight/5 rounded-full flex items-center justify-center font-bold text-midnight">
+                    <div className="w-10 h-10 bg-pitch-black/5 rounded-full flex items-center justify-center font-bold text-pitch-black">
                       {job.plugName[0]}
                     </div>
                     <div>
-                      <h4 className="font-bold text-midnight">{job.plugName}</h4>
+                      <h4 className="font-bold text-pitch-black">{job.plugName}</h4>
                       <p className="text-[10px] text-slate font-medium">{job.trade} • {job.type}</p>
                     </div>
                   </div>
@@ -64,12 +64,12 @@ export default function ClientJobsPage() {
                 </div>
                 
                 <div className="flex items-center justify-between pt-4 border-t border-bone">
-                  <div className="text-sm font-bold text-midnight">{job.amount}</div>
+                  <div className="text-sm font-bold text-pitch-black">{job.amount}</div>
                   <div className="flex gap-2">
                     <button className="p-2 rounded-full bg-bone text-slate hover:text-gold transition-colors">
                       <MessageSquare className="w-5 h-5" />
                     </button>
-                    <Link href={`/client/track/${job.id}`} className="bg-midnight text-white px-4 py-2 rounded-pill text-xs font-bold hover:bg-gold hover:text-midnight transition-colors flex items-center">
+                    <Link href={`/client/track/${job.id}`} className="bg-pitch-black text-white px-4 py-2 rounded-pill text-xs font-bold hover:bg-gold hover:text-pitch-black transition-colors flex items-center">
                       Track Status
                     </Link>
                   </div>
@@ -88,7 +88,7 @@ export default function ClientJobsPage() {
                 <div className="flex items-center gap-4">
                   <CheckCircle2 className="w-5 h-5 text-green-500" />
                   <div>
-                    <h4 className="font-bold text-sm text-midnight">{job.plugName}</h4>
+                    <h4 className="font-bold text-sm text-pitch-black">{job.plugName}</h4>
                     <p className="text-[10px] text-slate">{job.date} • {job.amount}</p>
                   </div>
                 </div>

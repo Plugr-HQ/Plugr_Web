@@ -194,8 +194,8 @@ export function PlugProfileScreen({ base }: { base: string }) {
   return (
     <PlugShell base={base} plug={plug}>
       {/* Cover + identity — the view clients see, owned */}
-      <div className="rounded-3xl overflow-hidden border border-midnight/6 card-shadow bg-white rise">
-        <div className="relative h-24 bg-linear-to-br from-midnight to-deep-blue">
+      <div className="rounded-3xl overflow-hidden border border-pitch-black/6 card-shadow bg-white rise">
+        <div className="relative h-24 bg-linear-to-br from-pitch-black to-petrol">
           <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #E8A020 0, transparent 40%)' }} />
           <div className="absolute top-3 right-3 flex gap-2">
             <button onClick={() => setShowId(true)} className="inline-flex items-center gap-1.5 rounded-pill bg-white/15 hover:bg-white/25 backdrop-blur px-3 py-1.5 text-[12px] font-bold text-white transition-colors">
@@ -213,12 +213,12 @@ export function PlugProfileScreen({ base }: { base: string }) {
             {photo ? (
               <img src={photo} alt="" className="h-20 w-20 rounded-3xl object-cover border-4 border-white" />
             ) : (
-              <span className="grid place-items-center h-20 w-20 rounded-3xl bg-gold text-midnight font-display text-3xl border-4 border-white">
+              <span className="grid place-items-center h-20 w-20 rounded-3xl bg-gold text-pitch-black font-display text-3xl border-4 border-white">
                 {String(plug.name)[0]}
               </span>
             )}
             {editing ? (
-              <button onClick={() => photoRef.current?.click()} className="absolute -bottom-1 -right-1 grid place-items-center h-7 w-7 rounded-full bg-gold text-midnight border-2 border-white" aria-label="Change photo">
+              <button onClick={() => photoRef.current?.click()} className="absolute -bottom-1 -right-1 grid place-items-center h-7 w-7 rounded-full bg-gold text-pitch-black border-2 border-white" aria-label="Change photo">
                 <Camera className="w-3.5 h-3.5" />
               </button>
             ) : (
@@ -232,13 +232,13 @@ export function PlugProfileScreen({ base }: { base: string }) {
           <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) setPhoto(await shrink(f)); }} />
 
           <div className="mt-3 flex items-center gap-2">
-            <h1 className="font-display text-2xl text-midnight">{plug.name}</h1>
+            <h1 className="font-display text-2xl text-pitch-black">{plug.name}</h1>
             <BadgeChip tier={tier} />
           </div>
           <p className="text-sm text-slate">{trade}</p>
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate">
             {jobs > 0 && (
-              <span className="inline-flex items-center gap-1 text-midnight font-semibold">
+              <span className="inline-flex items-center gap-1 text-pitch-black font-semibold">
                 <Star className="w-3.5 h-3.5 fill-gold text-gold" /> {rating.toFixed(1)}
               </span>
             )}
@@ -254,20 +254,20 @@ export function PlugProfileScreen({ base }: { base: string }) {
           `verified` flag, and liveness is gone until an SDK actually verifies something. */}
       <div className="mt-4 rise rise-1">
         {plug.verified ? (
-          <div className="rounded-2xl bg-white border border-midnight/6 p-3 text-center">
+          <div className="rounded-2xl bg-white border border-pitch-black/6 p-3 text-center">
             <ShieldCheck className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
-            <span className="block text-[10.5px] font-bold text-midnight leading-tight">NIN Verified</span>
+            <span className="block text-[10.5px] font-bold text-pitch-black leading-tight">NIN Verified</span>
           </div>
         ) : (
           <div className="flex items-center gap-3 rounded-2xl border border-gold/30 bg-gold/[0.07] p-3">
             <ShieldCheck className="w-4 h-4 text-gold shrink-0" />
             <div className="min-w-0 flex-1">
-              <p className="text-[12px] font-bold text-midnight leading-tight">Identity not verified yet</p>
+              <p className="text-[12px] font-bold text-pitch-black leading-tight">Identity not verified yet</p>
               <p className="text-[11px] text-slate leading-tight mt-0.5">You can&rsquo;t receive jobs until this is done.</p>
             </div>
             <a
               href={`${base}/onboarding/verify`}
-              className="shrink-0 rounded-pill bg-gold px-3 py-1.5 text-[11px] font-bold text-midnight hover:bg-gold-light transition-colors"
+              className="shrink-0 rounded-pill bg-gold px-3 py-1.5 text-[11px] font-bold text-pitch-black hover:bg-gold-light transition-colors"
             >
               Verify
             </a>
@@ -291,10 +291,10 @@ export function PlugProfileScreen({ base }: { base: string }) {
             onChange={(e) => setBio(e.target.value.slice(0, 600))}
             rows={4}
             placeholder="Tell clients what you do and why they should trust you with it."
-            className="w-full rounded-2xl border border-midnight/10 bg-bone/40 px-4 py-3 text-sm text-midnight placeholder:text-slate/50 focus:border-gold focus:outline-none"
+            className="w-full rounded-2xl border border-pitch-black/10 bg-bone/40 px-4 py-3 text-sm text-pitch-black placeholder:text-slate/50 focus:border-gold focus:outline-none"
           />
         ) : (
-          <p className={cn('text-sm leading-relaxed', plug.bio ? 'text-midnight' : 'text-slate')}>
+          <p className={cn('text-sm leading-relaxed', plug.bio ? 'text-pitch-black' : 'text-slate')}>
             {plug.bio || 'Nothing here yet. Tap Edit to tell clients what you do and why they should trust you with it.'}
           </p>
         )}
@@ -310,7 +310,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
               key={sk}
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-pill border px-3 py-1.5 text-[13px] font-medium',
-                editing ? 'bg-white border-gold/40 text-midnight' : 'bg-bone border-midnight/6 text-midnight'
+                editing ? 'bg-white border-gold/40 text-pitch-black' : 'bg-bone border-pitch-black/6 text-pitch-black'
               )}
             >
               {sk}
@@ -318,7 +318,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
                 <button
                   onClick={() => setSkills((prev) => prev.filter((k) => k !== sk))}
                   aria-label={`Remove ${sk}`}
-                  className="grid place-items-center h-4 w-4 rounded-full bg-midnight/10 text-midnight hover:bg-midnight hover:text-white transition-colors"
+                  className="grid place-items-center h-4 w-4 rounded-full bg-pitch-black/10 text-pitch-black hover:bg-pitch-black hover:text-white transition-colors"
                 >
                   <X className="w-2.5 h-2.5" strokeWidth={3} />
                 </button>
@@ -349,7 +349,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
             <button
               onClick={addSkill}
               disabled={!skillDraft.trim() || skills.length >= 20}
-              className="shrink-0 rounded-2xl bg-midnight px-4 text-[13px] font-bold text-white transition-opacity disabled:opacity-40"
+              className="shrink-0 rounded-2xl bg-pitch-black px-4 text-[13px] font-bold text-white transition-opacity disabled:opacity-40"
             >
               Add
             </button>
@@ -372,8 +372,8 @@ export function PlugProfileScreen({ base }: { base: string }) {
         {experience.map((h, i, a) => (
           <div key={h.id} className="flex gap-3">
             <div className="flex flex-col items-center">
-              <span className="grid place-items-center h-9 w-9 rounded-xl bg-midnight/6 text-gold shrink-0"><Briefcase className="w-4 h-4" /></span>
-              {i < a.length - 1 && <span className="w-0.5 flex-1 bg-midnight/10 my-1" />}
+              <span className="grid place-items-center h-9 w-9 rounded-xl bg-pitch-black/6 text-gold shrink-0"><Briefcase className="w-4 h-4" /></span>
+              {i < a.length - 1 && <span className="w-0.5 flex-1 bg-pitch-black/10 my-1" />}
             </div>
 
             {editing ? (
@@ -388,7 +388,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
                   <button
                     onClick={() => setExperience((prev) => prev.filter((x) => x.id !== h.id))}
                     aria-label="Remove this entry"
-                    className="shrink-0 grid place-items-center h-11 w-11 rounded-2xl border border-midnight/10 text-slate hover:border-red-300 hover:text-red-600 transition-colors"
+                    className="shrink-0 grid place-items-center h-11 w-11 rounded-2xl border border-pitch-black/10 text-slate hover:border-red-300 hover:text-red-600 transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -410,12 +410,12 @@ export function PlugProfileScreen({ base }: { base: string }) {
                   onChange={(e) => updateExperience(h.id, { note: e.target.value.slice(0, 300) })}
                   rows={2}
                   placeholder="What the work involved"
-                  className="w-full rounded-2xl border border-midnight/10 bg-bone/40 px-4 py-3 text-sm text-midnight placeholder:text-slate/50 focus:border-gold focus:outline-none"
+                  className="w-full rounded-2xl border border-pitch-black/10 bg-bone/40 px-4 py-3 text-sm text-pitch-black placeholder:text-slate/50 focus:border-gold focus:outline-none"
                 />
               </div>
             ) : (
               <div className="pb-5">
-                <p className="font-bold text-sm text-midnight">{h.title}</p>
+                <p className="font-bold text-sm text-pitch-black">{h.title}</p>
                 {(h.org || h.period) && (
                   <p className="text-xs text-slate">{[h.org, h.period].filter(Boolean).join(' · ')}</p>
                 )}
@@ -429,7 +429,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
           <button
             onClick={addExperience}
             disabled={experience.length >= 10}
-            className="mt-1 inline-flex items-center gap-1.5 rounded-pill border border-dashed border-midnight/20 px-4 py-2 text-[13px] font-bold text-midnight hover:border-gold hover:text-gold transition-colors disabled:opacity-40"
+            className="mt-1 inline-flex items-center gap-1.5 rounded-pill border border-dashed border-pitch-black/20 px-4 py-2 text-[13px] font-bold text-pitch-black hover:border-gold hover:text-gold transition-colors disabled:opacity-40"
           >
             <Plus className="w-3.5 h-3.5" /> Add experience
           </button>
@@ -446,9 +446,9 @@ export function PlugProfileScreen({ base }: { base: string }) {
         <div className="space-y-2.5">
           {UPGRADES.map((u) => (
             <div key={u.label} className="flex items-center gap-3 opacity-70">
-              <span className="grid place-items-center h-6 w-6 rounded-full bg-midnight/6 shrink-0"><Lock className="w-3 h-3 text-slate" /></span>
+              <span className="grid place-items-center h-6 w-6 rounded-full bg-pitch-black/6 shrink-0"><Lock className="w-3 h-3 text-slate" /></span>
               <span className="min-w-0">
-                <span className="block text-sm font-semibold text-midnight">{u.label}</span>
+                <span className="block text-sm font-semibold text-pitch-black">{u.label}</span>
                 <span className="block text-[11px] text-slate">{u.why}</span>
               </span>
               <span className="ml-auto shrink-0 text-[11px] font-bold text-slate">After launch</span>
@@ -461,7 +461,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
       <div className="mt-6 rise rise-4">
         <div className="flex items-center justify-between mb-2.5">
           <Label>Work</Label>
-          <button onClick={() => setComposing((c) => !c)} className="inline-flex items-center gap-1 text-[11px] font-bold text-gold hover:text-midnight transition-colors">
+          <button onClick={() => setComposing((c) => !c)} className="inline-flex items-center gap-1 text-[11px] font-bold text-gold hover:text-pitch-black transition-colors">
             <Plus className="w-3.5 h-3.5" /> Add work post
           </button>
         </div>
@@ -474,13 +474,13 @@ export function PlugProfileScreen({ base }: { base: string }) {
               {postPhotos.map((ph, i) => (
                 <span key={i} className="relative">
                   <img src={ph} alt="" className="h-16 w-16 rounded-xl object-cover" />
-                  <button onClick={() => setPostPhotos((ps) => ps.filter((_, k) => k !== i))} className="absolute -top-1.5 -right-1.5 grid place-items-center h-5 w-5 rounded-full bg-midnight text-white" aria-label="Remove photo">
+                  <button onClick={() => setPostPhotos((ps) => ps.filter((_, k) => k !== i))} className="absolute -top-1.5 -right-1.5 grid place-items-center h-5 w-5 rounded-full bg-pitch-black text-white" aria-label="Remove photo">
                     <X className="w-3 h-3" />
                   </button>
                 </span>
               ))}
               {postPhotos.length < 4 && (
-                <button onClick={() => postRef.current?.click()} className="grid place-items-center h-16 w-16 rounded-xl border-2 border-dashed border-midnight/15 text-slate hover:border-gold hover:text-gold transition-colors" aria-label="Add photo">
+                <button onClick={() => postRef.current?.click()} className="grid place-items-center h-16 w-16 rounded-xl border-2 border-dashed border-pitch-black/15 text-slate hover:border-gold hover:text-gold transition-colors" aria-label="Add photo">
                   <Camera className="w-5 h-5" />
                 </button>
               )}
@@ -508,7 +508,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
           <div className="space-y-3">
             {posts.map((post) => (
               <Card key={post.id} className="p-4">
-                <p className="font-semibold text-midnight">{post.title}</p>
+                <p className="font-semibold text-pitch-black">{post.title}</p>
                 <p className="text-[11px] text-slate mb-3">{new Date(post.createdAt).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                 <div className={cn('grid gap-1.5', post.photos.length === 1 ? 'grid-cols-1' : 'grid-cols-2')}>
                   {post.photos.slice(0, 4).map((src, i) => <img key={i} src={src} alt="" className="h-28 w-full rounded-xl object-cover" />)}
@@ -535,7 +535,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
                     {Array.from({ length: 5 }).map((_, k) => <Star key={k} className="w-3.5 h-3.5 fill-gold text-gold" />)}
                   </div>
                   <Quote className="w-4 h-4 text-gold/60 mb-1" />
-                  <p className="text-sm leading-relaxed text-midnight">{r.text}</p>
+                  <p className="text-sm leading-relaxed text-pitch-black">{r.text}</p>
                   <p className="mt-1 text-xs font-semibold text-slate">— {r.by}</p>
                   {i < reviews.length - 1 && <Divider className="mt-4" />}
                 </div>
@@ -563,7 +563,7 @@ function Stat({ icon, value, label }: { icon: React.ReactNode; value: string; la
   return (
     <Card className="p-3 text-center">
       <span className="text-gold flex justify-center mb-1">{icon}</span>
-      <div className="font-display text-base text-midnight tnum leading-none">{value}</div>
+      <div className="font-display text-base text-pitch-black tnum leading-none">{value}</div>
       <div className="text-[10.5px] text-slate mt-1.5">{label}</div>
     </Card>
   );

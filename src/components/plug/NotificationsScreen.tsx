@@ -49,8 +49,8 @@ export function NotificationsScreen({ base }: { base: string }) {
   return (
     <PlugShell base={base} plug={data?.plug ?? null}>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="font-display text-2xl text-midnight">Notifications</h1>
-        <span className="grid h-9 w-9 place-items-center rounded-full bg-midnight/[0.04] text-midnight">
+        <h1 className="font-display text-2xl text-pitch-black">Notifications</h1>
+        <span className="grid h-9 w-9 place-items-center rounded-full bg-pitch-black/[0.04] text-pitch-black">
           <Bell className="h-[18px] w-[18px]" />
         </span>
       </div>
@@ -84,14 +84,14 @@ export function NotificationsScreen({ base }: { base: string }) {
                   <span
                     className={cn(
                       'grid h-10 w-10 shrink-0 place-items-center rounded-2xl',
-                      unread ? 'bg-gold/15 text-gold' : 'bg-midnight/[0.04] text-slate',
+                      unread ? 'bg-gold/15 text-gold' : 'bg-pitch-black/[0.04] text-slate',
                     )}
                   >
                     <Icon className="h-5 w-5" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="truncate text-sm font-bold text-midnight">{n.title}</p>
+                      <p className="truncate text-sm font-bold text-pitch-black">{n.title}</p>
                       {unread && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-gold" aria-label="unread" />}
                     </div>
                     <p className="mt-0.5 text-[13px] leading-relaxed text-slate">{n.body}</p>

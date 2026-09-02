@@ -31,10 +31,10 @@ export function plugTier(plug: any): Tier {
 export function BadgeChip({ tier, className }: { tier: Tier; className?: string }) {
   const map: Record<Tier, { label: string; cls: string }> = {
     // Note: spec says white text on every chip; on Gold that fails contrast, so verified/pro
-    // use Midnight text instead. Same shape/scale, legible.
+    // use Pitch Black text instead. Same shape/scale, legible.
     basic: { label: 'Basic', cls: 'bg-slate text-white' },
-    verified: { label: 'Verified', cls: 'bg-gold text-midnight' },
-    pro: { label: 'Pro', cls: 'bg-gold text-midnight ring-2 ring-gold/30' },
+    verified: { label: 'Verified', cls: 'bg-gold text-pitch-black' },
+    pro: { label: 'Pro', cls: 'bg-gold text-pitch-black ring-2 ring-gold/30' },
   };
   const { label, cls } = map[tier];
   return (
@@ -77,8 +77,8 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center text-center py-10">
-      <span className="grid place-items-center h-14 w-14 rounded-2xl bg-midnight/[0.04] text-slate mb-4">{icon}</span>
-      <p className="font-bold text-midnight">{title}</p>
+      <span className="grid place-items-center h-14 w-14 rounded-2xl bg-pitch-black/[0.04] text-slate mb-4">{icon}</span>
+      <p className="font-bold text-pitch-black">{title}</p>
       <p className="mt-1.5 max-w-[260px] text-sm text-slate leading-relaxed">{body}</p>
       {action && <div className="mt-5">{action}</div>}
     </div>
@@ -111,18 +111,18 @@ export function PlugShell({
   const tier = plugTier(plug);
 
   return (
-    <div className="min-h-screen bg-bone text-midnight font-body antialiased flex justify-center">
+    <div className="min-h-screen bg-bone text-pitch-black font-body antialiased flex justify-center">
       <div className="relative w-full max-w-[440px] min-h-screen flex flex-col">
         {/* Top nav — sticky, Bone, mark left, bell + badge right */}
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-midnight/[0.06] bg-bone/90 px-5 py-3.5 backdrop-blur">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-pitch-black/[0.06] bg-bone/90 px-5 py-3.5 backdrop-blur">
           <Link href={root} aria-label="Home">
-            <PlugrMark className="w-[22px] h-[22px] text-midnight" />
+            <PlugrMark className="w-[22px] h-[22px] text-pitch-black" />
           </Link>
 
           <div className="flex items-center gap-3">
             {plug && (
               <span className="flex items-center gap-2">
-                <span className="text-sm font-bold text-midnight truncate max-w-[120px]">
+                <span className="text-sm font-bold text-pitch-black truncate max-w-[120px]">
                   {String(plug.name).split(' ')[0]}
                 </span>
                 <BadgeChip tier={tier} />
@@ -131,7 +131,7 @@ export function PlugShell({
             <Link
               href={`${root}/notifications`}
               aria-label="Notifications"
-              className="grid place-items-center h-9 w-9 rounded-full text-midnight hover:bg-midnight/[0.04] transition-colors"
+              className="grid place-items-center h-9 w-9 rounded-full text-pitch-black hover:bg-pitch-black/[0.04] transition-colors"
             >
               <Bell className="w-[18px] h-[18px]" />
             </Link>
@@ -141,7 +141,7 @@ export function PlugShell({
         <main className="flex-1 px-5 pt-5 pb-28">{children}</main>
 
         {/* Bottom tabs */}
-        <nav className="sticky bottom-0 z-30 border-t border-midnight/[0.06] bg-bone/95 backdrop-blur">
+        <nav className="sticky bottom-0 z-30 border-t border-pitch-black/[0.06] bg-bone/95 backdrop-blur">
           <div className="grid grid-cols-4">
             {TABS.map((t) => {
               const href = `${root}${t.path}`;
@@ -153,7 +153,7 @@ export function PlugShell({
                   href={href}
                   className={cn(
                     'flex flex-col items-center gap-1 py-2.5 min-h-[56px] justify-center transition-colors',
-                    active ? 'text-gold' : 'text-slate hover:text-midnight'
+                    active ? 'text-gold' : 'text-slate hover:text-pitch-black'
                   )}
                 >
                   <Icon className="w-5 h-5" />

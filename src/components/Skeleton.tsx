@@ -13,7 +13,7 @@ import { cn } from '@/src/lib/utils';
 
 /** One placeholder block. Pass the same sizing utilities the real element uses. */
 export function Skeleton({ className }: { className?: string }) {
-  return <span className={cn('block animate-pulse rounded-lg bg-midnight/[0.07]', className)} />;
+  return <span className={cn('block animate-pulse rounded-lg bg-pitch-black/[0.07]', className)} />;
 }
 
 /**
@@ -52,7 +52,7 @@ export function SkeletonRegion({
 /** Matches AppBrowseClient's card: avatar, two text lines, meta row, and the request button. */
 export function PlugCardSkeleton() {
   return (
-    <div className="rounded-[22px] border border-midnight/[0.06] bg-white p-4">
+    <div className="rounded-[22px] border border-pitch-black/[0.06] bg-white p-4">
       <div className="flex items-center gap-4">
         <Skeleton className="h-14 w-14 rounded-2xl" />
         <div className="min-w-0 flex-1">
@@ -84,7 +84,7 @@ export function BrowseSkeleton({ count = 4 }: { count?: number }) {
 export function PlugProfileSkeleton() {
   return (
     <SkeletonRegion label="Loading profile">
-      <div className="overflow-hidden rounded-[24px] border border-midnight/[0.06] bg-white">
+      <div className="overflow-hidden rounded-[24px] border border-pitch-black/[0.06] bg-white">
         <Skeleton className="h-24 rounded-none" />
         <div className="-mt-10 px-5 pb-5">
           <Skeleton className="h-20 w-20 rounded-3xl" />
@@ -96,18 +96,18 @@ export function PlugProfileSkeleton() {
 
       <Skeleton className="mt-4 h-11 w-52 rounded-pill" />
 
-      <div className="mt-3 rounded-2xl border border-midnight/[0.06] bg-white p-3">
+      <div className="mt-3 rounded-2xl border border-pitch-black/[0.06] bg-white p-3">
         <Skeleton className="mx-auto h-10 w-24" />
       </div>
 
-      <div className="mt-4 rounded-[22px] border border-midnight/[0.06] bg-white p-5">
+      <div className="mt-4 rounded-[22px] border border-pitch-black/[0.06] bg-white p-5">
         <Skeleton className="h-3 w-16" />
         <Skeleton className="mt-4 h-3 w-full" />
         <Skeleton className="mt-2 h-3 w-11/12" />
         <Skeleton className="mt-2 h-3 w-3/4" />
       </div>
 
-      <div className="mt-4 rounded-[22px] border border-midnight/[0.06] bg-white p-5">
+      <div className="mt-4 rounded-[22px] border border-pitch-black/[0.06] bg-white p-5">
         <Skeleton className="h-3 w-14" />
         <div className="mt-4 flex flex-wrap gap-2">
           <Skeleton className="h-8 w-28 rounded-pill" />
@@ -177,7 +177,7 @@ export function PublicProfileSkeleton() {
         <Skeleton className="mt-5 h-9 w-52 rounded-pill" />
       </div>
 
-      <div className="mt-8 rounded-3xl border border-midnight/[0.06] bg-white p-6">
+      <div className="mt-8 rounded-3xl border border-pitch-black/[0.06] bg-white p-6">
         <Skeleton className="h-3 w-14" />
         <Skeleton className="mt-4 h-3 w-full" />
         <Skeleton className="mt-2 h-3 w-10/12" />
@@ -196,7 +196,7 @@ export function JobDetailSkeleton() {
     <SkeletonRegion label="Loading job">
       <Skeleton className="h-14 rounded-[18px]" />
 
-      <div className="mt-4 rounded-[22px] border border-midnight/[0.06] bg-white p-5">
+      <div className="mt-4 rounded-[22px] border border-pitch-black/[0.06] bg-white p-5">
         <div className="flex items-center gap-3">
           <Skeleton className="h-11 w-11 rounded-2xl" />
           <div className="flex-1">
@@ -208,7 +208,7 @@ export function JobDetailSkeleton() {
         <Skeleton className="mt-2 h-3 w-4/5" />
       </div>
 
-      <div className="mt-4 rounded-[22px] border border-midnight/[0.06] bg-white p-5">
+      <div className="mt-4 rounded-[22px] border border-pitch-black/[0.06] bg-white p-5">
         <Skeleton className="h-3 w-20" />
         <Skeleton className="mt-4 h-3 w-full" />
         <Skeleton className="mt-2 h-3 w-2/3" />

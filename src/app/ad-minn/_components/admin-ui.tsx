@@ -12,7 +12,7 @@ import { cn } from '@/src/lib/utils';
 // A Card whose table scrolls horizontally on small screens instead of breaking the layout.
 export function TableCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-[22px] border border-midnight/[0.06] bg-white card-shadow">
+    <div className="overflow-hidden rounded-[22px] border border-pitch-black/[0.06] bg-white card-shadow">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-left">{children}</table>
       </div>
@@ -23,7 +23,7 @@ export function TableCard({ children }: { children: React.ReactNode }) {
 export function Thead({ cols }: { cols: { label: string; right?: boolean }[] }) {
   return (
     <thead>
-      <tr className="border-b border-midnight/[0.06] bg-bone/40">
+      <tr className="border-b border-pitch-black/[0.06] bg-bone/40">
         {cols.map((c, i) => (
           <th
             key={i}
@@ -40,7 +40,7 @@ export function Thead({ cols }: { cols: { label: string; right?: boolean }[] }) 
   );
 }
 
-export const rowClass = 'border-b border-midnight/[0.05] last:border-0 transition-colors hover:bg-bone/40';
+export const rowClass = 'border-b border-pitch-black/[0.05] last:border-0 transition-colors hover:bg-bone/40';
 export const cellClass = 'px-5 py-4 align-middle';
 
 /* -------------------------------------------------------------------- Chips */
@@ -87,12 +87,12 @@ export function Avatar({
 }: {
   name?: string | null;
   photoUrl?: string | null;
-  tone?: 'bone' | 'midnight' | 'gold';
+  tone?: 'bone' | 'pitch-black' | 'gold';
 }) {
   const styles = {
-    bone: 'bg-midnight/[0.05] text-midnight',
-    midnight: 'bg-midnight text-white',
-    gold: 'bg-gold text-midnight',
+    bone: 'bg-pitch-black/[0.05] text-pitch-black',
+    'pitch-black': 'bg-pitch-black text-white',
+    gold: 'bg-gold text-pitch-black',
   };
 
   if (photoUrl) {
@@ -119,7 +119,7 @@ export function FilterSelect({ className, ...props }: React.SelectHTMLAttributes
   return (
     <select
       className={cn(
-        'rounded-pill border border-midnight/10 bg-white px-4 py-2.5 text-sm font-bold text-midnight',
+        'rounded-pill border border-pitch-black/10 bg-white px-4 py-2.5 text-sm font-bold text-pitch-black',
         'focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow',
         className,
       )}
@@ -133,7 +133,7 @@ export function RefreshButton({ loading, onClick }: { loading?: boolean; onClick
     <button
       onClick={onClick}
       disabled={loading}
-      className="inline-flex items-center gap-2 rounded-pill border border-midnight/10 bg-white px-3.5 py-2 text-xs font-bold text-slate transition-colors hover:text-midnight disabled:opacity-60"
+      className="inline-flex items-center gap-2 rounded-pill border border-pitch-black/10 bg-white px-3.5 py-2 text-xs font-bold text-slate transition-colors hover:text-pitch-black disabled:opacity-60"
     >
       <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} /> Refresh
     </button>
@@ -203,12 +203,12 @@ export function StateRow({
                 {icon}
               </div>
             )}
-            <h3 className={cn('font-bold', variant === 'error' ? 'text-red-600' : 'text-midnight')}>{title}</h3>
+            <h3 className={cn('font-bold', variant === 'error' ? 'text-red-600' : 'text-pitch-black')}>{title}</h3>
             {body && <p className="mt-1 text-sm text-slate">{body}</p>}
             {variant === 'error' && onRetry && (
               <button
                 onClick={onRetry}
-                className="mt-4 rounded-pill bg-midnight px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-deep-blue"
+                className="mt-4 rounded-pill bg-pitch-black px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-petrol"
               >
                 Try again
               </button>
@@ -240,14 +240,14 @@ export function Pager({
         <button
           onClick={onPrev}
           disabled={page <= 1}
-          className="rounded-pill border border-midnight/10 bg-white px-4 py-2 text-xs font-bold text-slate transition-colors hover:text-midnight disabled:opacity-40"
+          className="rounded-pill border border-pitch-black/10 bg-white px-4 py-2 text-xs font-bold text-slate transition-colors hover:text-pitch-black disabled:opacity-40"
         >
           Previous
         </button>
         <button
           onClick={onNext}
           disabled={!hasNext}
-          className="rounded-pill border border-midnight/10 bg-white px-4 py-2 text-xs font-bold text-slate transition-colors hover:text-midnight disabled:opacity-40"
+          className="rounded-pill border border-pitch-black/10 bg-white px-4 py-2 text-xs font-bold text-slate transition-colors hover:text-pitch-black disabled:opacity-40"
         >
           Next
         </button>
@@ -274,24 +274,24 @@ export function Modal({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-end justify-center bg-midnight/50 backdrop-blur-[2px] sm:items-center sm:p-4"
+      className="fixed inset-0 z-[60] flex items-end justify-center bg-pitch-black/50 backdrop-blur-[2px] sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div
         className="flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-[26px] bg-white card-shadow rise sm:max-h-[88vh] sm:max-w-lg sm:rounded-[26px]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between border-b border-midnight/[0.06] px-6 py-4">
+        <div className="flex items-start justify-between border-b border-pitch-black/[0.06] px-6 py-4">
           <div>
-            <h3 className="font-display text-lg text-midnight">{title}</h3>
+            <h3 className="font-display text-lg text-pitch-black">{title}</h3>
             {sub && <p className="text-sm text-slate">{sub}</p>}
           </div>
-          <button onClick={onClose} className="rounded-lg p-1 text-slate transition-colors hover:bg-bone hover:text-midnight">
+          <button onClick={onClose} className="rounded-lg p-1 text-slate transition-colors hover:bg-bone hover:text-pitch-black">
             <X className="h-5 w-5" />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
-        {footer && <div className="flex items-center justify-end gap-3 border-t border-midnight/[0.06] px-6 py-4">{footer}</div>}
+        {footer && <div className="flex items-center justify-end gap-3 border-t border-pitch-black/[0.06] px-6 py-4">{footer}</div>}
       </div>
     </div>
   );
@@ -316,10 +316,10 @@ export function PillButton({
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'gold' | 'ghost' | 'outline'; loading?: boolean }) {
   const styles = {
-    primary: 'bg-midnight text-white hover:bg-deep-blue shadow-[0_10px_24px_-14px_rgba(15,31,61,0.6)]',
-    gold: 'bg-gold text-midnight hover:bg-gold-light shadow-[0_10px_24px_-14px_rgba(232,160,32,0.7)]',
-    ghost: 'text-slate hover:text-midnight',
-    outline: 'border border-midnight/10 bg-white text-midnight hover:bg-bone',
+    primary: 'bg-pitch-black text-white hover:bg-petrol shadow-[0_10px_24px_-14px] shadow-pitch-black/60',
+    gold: 'bg-gold text-pitch-black hover:bg-gold-light shadow-[0_10px_24px_-14px_rgba(232,160,32,0.7)]',
+    ghost: 'text-slate hover:text-pitch-black',
+    outline: 'border border-pitch-black/10 bg-white text-pitch-black hover:bg-bone',
   };
   return (
     <button

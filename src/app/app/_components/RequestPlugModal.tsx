@@ -75,12 +75,12 @@ export function RequestPlugModal({
   }
 
   const field =
-    'w-full rounded-2xl border border-midnight/10 bg-white px-4 py-3 text-sm text-midnight ' +
+    'w-full rounded-2xl border border-pitch-black/10 bg-white px-4 py-3 text-sm text-pitch-black ' +
     'placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow';
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-midnight/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-6"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-pitch-black/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-6"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -91,13 +91,13 @@ export function RequestPlugModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
-          <h2 className="font-display text-xl leading-snug text-midnight">
+          <h2 className="font-display text-xl leading-snug text-pitch-black">
             {done ? 'Got it, we’ll let you know' : 'Booking opens soon'}
           </h2>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="-mr-1 -mt-1 shrink-0 rounded-full p-1.5 text-slate transition-colors hover:bg-midnight/[0.06] hover:text-midnight"
+            className="-mr-1 -mt-1 shrink-0 rounded-full p-1.5 text-slate transition-colors hover:bg-pitch-black/[0.06] hover:text-pitch-black"
           >
             <X className="h-5 w-5" />
           </button>
@@ -110,7 +110,7 @@ export function RequestPlugModal({
             </p>
             <button
               onClick={onClose}
-              className="mt-6 w-full rounded-pill bg-midnight py-3.5 text-sm font-bold text-white transition-colors hover:bg-deep-blue"
+              className="mt-6 w-full rounded-pill bg-pitch-black py-3.5 text-sm font-bold text-white transition-colors hover:bg-petrol"
             >
               Close
             </button>
@@ -118,11 +118,11 @@ export function RequestPlugModal({
         ) : (
           <>
             <p className="mt-3 text-sm leading-relaxed text-slate">
-              <span className="font-semibold text-midnight">{who}</span> is verified and ready.
+              <span className="font-semibold text-pitch-black">{who}</span> is verified and ready.
               Direct booking opens soon — check back shortly.
             </p>
 
-            <p className="mt-5 text-[13px] font-semibold text-midnight">
+            <p className="mt-5 text-[13px] font-semibold text-pitch-black">
               Want to know the moment it opens?
             </p>
 
@@ -161,7 +161,7 @@ export function RequestPlugModal({
             <button
               onClick={submit}
               disabled={!canSubmit}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-pill bg-gold py-3.5 text-sm font-bold text-midnight transition-all hover:bg-gold-light active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-pill bg-gold py-3.5 text-sm font-bold text-pitch-black transition-all hover:bg-gold-light active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
               {saving ? 'Saving…' : 'Notify me'}

@@ -37,8 +37,8 @@ export default function AppWithdraw() {
       {done ? (
         <Card className="p-7 text-center">
           <span className="mx-auto mb-4 grid place-items-center h-16 w-16 rounded-full bg-gold/15"><Clock className="w-8 h-8 text-gold" /></span>
-          <h3 className="font-display text-2xl text-midnight">Withdrawal processing</h3>
-          <p className="mt-2 text-sm text-slate leading-relaxed"><span className="font-bold text-midnight">{naira(amount)}</span> is queued for payout. ALATPay settlements are bank-initiated, so this stays <span className="font-bold text-midnight">pending</span> — we don’t fake a completed transfer.</p>
+          <h3 className="font-display text-2xl text-pitch-black">Withdrawal processing</h3>
+          <p className="mt-2 text-sm text-slate leading-relaxed"><span className="font-bold text-pitch-black">{naira(amount)}</span> is queued for payout. ALATPay settlements are bank-initiated, so this stays <span className="font-bold text-pitch-black">pending</span> — we don’t fake a completed transfer.</p>
           <div className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700"><Check className="w-4 h-4" strokeWidth={3} /> Deducted from available balance</div>
           <div className="mt-6"><PrimaryButton onClick={() => router.push(`/app/wallet/${plugId}`)}>Back to wallet</PrimaryButton></div>
         </Card>

@@ -166,7 +166,7 @@ export default function PlugJobCard() {
       {error && !job && (
         <Card className="p-4 border-red-200">
           <p className="text-sm font-semibold text-red-600">{error}</p>
-          <button onClick={() => { setLoading(true); void load(); }} className="mt-3 text-sm font-bold text-midnight underline underline-offset-4 hover:text-gold">
+          <button onClick={() => { setLoading(true); void load(); }} className="mt-3 text-sm font-bold text-pitch-black underline underline-offset-4 hover:text-gold">
             Try again
           </button>
         </Card>
@@ -193,7 +193,7 @@ export default function PlugJobCard() {
               <StatusBadge status={status} />
             </div>
 
-            <p className="font-display text-xl leading-snug text-midnight">{job.title || 'Service request'}</p>
+            <p className="font-display text-xl leading-snug text-pitch-black">{job.title || 'Service request'}</p>
             {job.description && <p className="mt-2 text-sm leading-relaxed text-slate">{job.description}</p>}
 
             <Divider className="my-5" />
@@ -201,16 +201,16 @@ export default function PlugJobCard() {
             <dl className="space-y-2.5 text-sm">
               <div className="flex items-center justify-between">
                 <dt className="text-slate">Client</dt>
-                <dd className="font-semibold text-midnight">{job.client?.name ?? 'Client'}</dd>
+                <dd className="font-semibold text-pitch-black">{job.client?.name ?? 'Client'}</dd>
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-slate">Category</dt>
-                <dd className="font-semibold capitalize text-midnight">{job.category?.name ?? job.category?.code ?? '—'}</dd>
+                <dd className="font-semibold capitalize text-pitch-black">{job.category?.name ?? job.category?.code ?? '—'}</dd>
               </div>
               {job.address && (
                 <div className="flex items-center justify-between gap-3">
                   <dt className="text-slate">Location</dt>
-                  <dd className="flex items-center gap-1.5 text-right font-semibold text-midnight">
+                  <dd className="flex items-center gap-1.5 text-right font-semibold text-pitch-black">
                     <MapPin className="h-3.5 w-3.5 shrink-0 text-slate/50" /> <span className="line-clamp-1">{job.address}</span>
                   </dd>
                 </div>
@@ -226,9 +226,9 @@ export default function PlugJobCard() {
             {/* Where this job sits on the ladder. Only rendered for on-ladder states — a
                 cancelled or disputed job has no meaningful "step 4 of 9". */}
             {meta.step > 0 && (
-              <div className="mt-5 rounded-2xl border border-midnight/[0.07] bg-white px-4 py-3.5">
+              <div className="mt-5 rounded-2xl border border-pitch-black/[0.07] bg-white px-4 py-3.5">
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="text-sm font-bold text-midnight">{meta.plug}</p>
+                  <p className="text-sm font-bold text-pitch-black">{meta.plug}</p>
                   <p className="shrink-0 text-[11px] font-bold uppercase tracking-[0.1em] text-slate/60">
                     Step {meta.step} of {LADDER_LENGTH}
                   </p>
@@ -237,7 +237,7 @@ export default function PlugJobCard() {
                   {Array.from({ length: LADDER_LENGTH }, (_, i) => (
                     <span
                       key={i}
-                      className={`h-1.5 flex-1 rounded-pill ${i < meta.step ? 'bg-gold' : 'bg-midnight/10'}`}
+                      className={`h-1.5 flex-1 rounded-pill ${i < meta.step ? 'bg-gold' : 'bg-pitch-black/10'}`}
                     />
                   ))}
                 </div>
@@ -256,13 +256,13 @@ export default function PlugJobCard() {
                 It never guesses: see the note in mapsLink.ts about why this uses the typed address
                 and not the job's coordinates. */}
             {canNavigate && (
-              <div className="mt-5 border-t border-midnight/[0.07] pt-5">
+              <div className="mt-5 border-t border-pitch-black/[0.07] pt-5">
                 {directionsHref ? (
                   <a
                     href={directionsHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-pill border border-midnight/15 bg-white px-6 py-3.5 text-sm font-bold text-midnight transition-colors duration-200 hover:border-gold hover:text-gold active:scale-[0.99]"
+                    className="flex w-full items-center justify-center gap-2 rounded-pill border border-pitch-black/15 bg-white px-6 py-3.5 text-sm font-bold text-pitch-black transition-colors duration-200 hover:border-gold hover:text-gold active:scale-[0.99]"
                   >
                     <Navigation className="h-4 w-4" />
                     Get directions
@@ -273,7 +273,7 @@ export default function PlugJobCard() {
                       type="button"
                       disabled
                       aria-describedby="no-address-reason"
-                      className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-pill border border-midnight/10 bg-white px-6 py-3.5 text-sm font-bold text-slate/50"
+                      className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-pill border border-pitch-black/10 bg-white px-6 py-3.5 text-sm font-bold text-slate/50"
                     >
                       <Navigation className="h-4 w-4" />
                       Get directions
@@ -363,7 +363,7 @@ function QuoteForm({ submitting, onSubmit, onCancel }: { submitting: boolean; on
 
   return (
     <Card className="p-5">
-      <p className="mb-4 font-display text-lg text-midnight">Your quote</p>
+      <p className="mb-4 font-display text-lg text-pitch-black">Your quote</p>
       <div className="space-y-3">
         <MoneyInput label="Materials (₦)" value={materials} onChange={setMaterials} />
         <MoneyInput label="Labour (₦)" value={labour} onChange={setLabour} />
@@ -371,7 +371,7 @@ function QuoteForm({ submitting, onSubmit, onCancel }: { submitting: boolean; on
 
       <div className="mt-4 flex items-center justify-between rounded-2xl bg-bone/70 px-4 py-3">
         <span className="text-sm font-semibold text-slate">Total quote</span>
-        <span className="font-display text-xl text-midnight tabular-nums">₦{total.toLocaleString('en-NG')}</span>
+        <span className="font-display text-xl text-pitch-black tabular-nums">₦{total.toLocaleString('en-NG')}</span>
       </div>
 
       {belowFloor && total > 0 && (
@@ -385,7 +385,7 @@ function QuoteForm({ submitting, onSubmit, onCancel }: { submitting: boolean; on
         <button
           onClick={onCancel}
           disabled={submitting}
-          className="flex-1 rounded-pill border border-midnight/15 bg-white py-3 text-sm font-bold text-midnight transition-colors hover:bg-bone disabled:opacity-50"
+          className="flex-1 rounded-pill border border-pitch-black/15 bg-white py-3 text-sm font-bold text-pitch-black transition-colors hover:bg-bone disabled:opacity-50"
         >
           Cancel
         </button>
@@ -406,7 +406,7 @@ function MoneyInput({ label, value, onChange }: { label: string; value: string; 
         onChange={(e) => onChange(e.target.value.replace(/[^\d]/g, ''))}
         inputMode="numeric"
         placeholder="0"
-        className="w-full rounded-2xl border border-midnight/10 bg-white px-4 py-3 text-midnight tabular-nums placeholder:text-slate/40 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow"
+        className="w-full rounded-2xl border border-pitch-black/10 bg-white px-4 py-3 text-pitch-black tabular-nums placeholder:text-slate/40 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow"
       />
     </label>
   );
@@ -430,7 +430,7 @@ function OutlineButton({ children, loading, disabled, onClick }: { children: Rea
     <button
       onClick={onClick}
       disabled={disabled}
-      className="flex w-full items-center justify-center gap-2 rounded-pill border border-midnight/15 bg-white py-3.5 text-sm font-bold text-midnight transition-colors hover:bg-bone disabled:opacity-50"
+      className="flex w-full items-center justify-center gap-2 rounded-pill border border-pitch-black/15 bg-white py-3.5 text-sm font-bold text-pitch-black transition-colors hover:bg-bone disabled:opacity-50"
     >
       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : children}
     </button>

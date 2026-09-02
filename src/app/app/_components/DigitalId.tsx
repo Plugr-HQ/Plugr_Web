@@ -2,7 +2,7 @@
 // A shareable "digital ID" for a Plug: ID number, a scannable QR that opens the profile,
 // share, copy link, and a PNG download. Clients share these, creating a visibility chain.
 //
-// The download composes a real card on a canvas (Midnight/Gold, distinct from the in-app
+// The download composes a real card on a canvas (Pitch Black/Gold, distinct from the in-app
 // view — the "carry this in your pocket" artifact) with the QR drawn in from a hidden
 // QRCodeCanvas, then saves it as a PNG.
 
@@ -14,8 +14,8 @@ import { X, Share2, Copy, Check, BadgeCheck, Star, Download } from 'lucide-react
 import { PlugrWordmark } from '@/src/components/Brand';
 import { plugHandle } from '@/src/lib/plugHandle';
 import { PlugAvatar } from '@/src/components/PlugAvatar';
+import { PITCH_BLACK } from '@/src/lib/palette';
 
-const MIDNIGHT = '#0F1F3D';
 const GOLD = '#E8A020';
 const BONE = '#F5F1EC';
 const STEEL = '#7A9CC8';
@@ -83,7 +83,7 @@ export function DigitalId({
       const ctx = c.getContext('2d')!;
 
       // card
-      ctx.fillStyle = MIDNIGHT;
+      ctx.fillStyle = PITCH_BLACK;
       ctx.fillRect(0, 0, W, H);
       ctx.strokeStyle = GOLD;
       ctx.lineWidth = 6;
@@ -116,7 +116,7 @@ export function DigitalId({
         const size = 320;
         ctx.drawImage(qrCanvas, panel.x + (panel.w - size) / 2, panel.y + 50, size, size);
       }
-      ctx.fillStyle = MIDNIGHT;
+      ctx.fillStyle = PITCH_BLACK;
       ctx.font = '700 18px "Satoshi", system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('SCAN TO VIEW PROFILE', W / 2, panel.y + 34);
@@ -168,10 +168,10 @@ export function DigitalId({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-5 bg-midnight/50 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-5 bg-pitch-black/50 backdrop-blur-sm" onClick={onClose}>
       <div className="w-full max-w-[340px] rounded-[26px] overflow-hidden bg-white shadow-2xl rise" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="relative bg-midnight px-5 pt-5 pb-8">
+        <div className="relative bg-pitch-black px-5 pt-5 pb-8">
           <button onClick={onClose} aria-label="Close" className="absolute top-4 right-4 grid place-items-center h-8 w-8 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors">
             <X className="w-4 h-4" />
           </button>
@@ -187,7 +187,7 @@ export function DigitalId({
               <span className="absolute -bottom-1 -right-1 grid place-items-center h-6 w-6 rounded-full bg-white"><BadgeCheck className="w-5 h-5 text-gold" /></span>
             </div>
             <div className="pb-1 min-w-0">
-              <h3 className="font-display text-lg text-midnight leading-tight truncate">{plug.name}</h3>
+              <h3 className="font-display text-lg text-pitch-black leading-tight truncate">{plug.name}</h3>
               <p className="text-xs text-slate truncate">{headline}</p>
             </div>
           </div>
@@ -195,10 +195,10 @@ export function DigitalId({
           <div className="mt-4 flex items-center justify-between">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate">Plug ID</p>
-              <p className="font-mono text-sm font-bold text-midnight tracking-wide">{id}</p>
+              <p className="font-mono text-sm font-bold text-pitch-black tracking-wide">{id}</p>
             </div>
             {Number(plug.rating) > 0 && (
-              <span className="inline-flex items-center gap-1 text-sm font-bold text-midnight">
+              <span className="inline-flex items-center gap-1 text-sm font-bold text-pitch-black">
                 <Star className="w-4 h-4 fill-gold text-gold" /> {Number(plug.rating).toFixed(1)}
               </span>
             )}
@@ -208,28 +208,28 @@ export function DigitalId({
         {/* QR */}
         <div className="mx-5 mt-4 rounded-2xl bg-bone p-4 flex items-center gap-4">
           <div className="rounded-xl bg-white p-2 shrink-0">
-            <QRCodeSVG value={profileUrl} size={92} fgColor={MIDNIGHT} bgColor="#FFFFFF" level="M" />
+            <QRCodeSVG value={profileUrl} size={92} fgColor={PITCH_BLACK} bgColor="#FFFFFF" level="M" />
           </div>
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-1">Scan to view</p>
-            <p className="text-sm text-midnight leading-snug">Opens {plug.name.split(' ')[0]}’s Plugr profile.</p>
+            <p className="text-sm text-pitch-black leading-snug">Opens {plug.name.split(' ')[0]}’s Plugr profile.</p>
           </div>
         </div>
 
         {/* Actions */}
         <div className="p-5 space-y-2">
           <div className="flex gap-2">
-            <button onClick={share} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-pill bg-midnight text-white font-bold py-3 text-sm hover:bg-deep-blue transition-colors">
+            <button onClick={share} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-pill bg-pitch-black text-white font-bold py-3 text-sm hover:bg-petrol transition-colors">
               <Share2 className="w-4 h-4" /> Share
             </button>
-            <button onClick={copyLink} className="inline-flex items-center justify-center gap-1.5 rounded-pill border border-midnight/15 text-midnight font-bold px-4 py-3 text-sm hover:border-gold hover:text-gold transition-colors">
+            <button onClick={copyLink} className="inline-flex items-center justify-center gap-1.5 rounded-pill border border-pitch-black/15 text-pitch-black font-bold px-4 py-3 text-sm hover:border-gold hover:text-gold transition-colors">
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />} {copied ? 'Copied' : 'Copy'}
             </button>
           </div>
           <button
             onClick={download}
             disabled={saving}
-            className="w-full inline-flex items-center justify-center gap-1.5 rounded-pill bg-gold text-midnight font-bold py-3 text-sm hover:bg-gold-light disabled:opacity-60 transition-colors"
+            className="w-full inline-flex items-center justify-center gap-1.5 rounded-pill bg-gold text-pitch-black font-bold py-3 text-sm hover:bg-gold-light disabled:opacity-60 transition-colors"
           >
             <Download className="w-4 h-4" /> {saving ? 'Saving…' : 'Download ID'}
           </button>
@@ -237,7 +237,7 @@ export function DigitalId({
 
         {/* hidden canvas QR, drawn into the PNG */}
         <div ref={qrRef} className="hidden" aria-hidden>
-          <QRCodeCanvas value={profileUrl} size={320} fgColor={MIDNIGHT} bgColor="#FFFFFF" level="M" />
+          <QRCodeCanvas value={profileUrl} size={320} fgColor={PITCH_BLACK} bgColor="#FFFFFF" level="M" />
         </div>
       </div>
     </div>

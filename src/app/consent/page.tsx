@@ -47,17 +47,17 @@ export default function DataConsentPage() {
   }
 
   return (
-    <main className="min-h-screen bg-bone text-midnight font-body antialiased">
+    <main className="min-h-screen bg-bone text-pitch-black font-body antialiased">
       {/* Nav — matches the landing */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-bone/80 backdrop-blur border-b border-midnight/[0.06]">
+      <nav className="fixed top-0 inset-x-0 z-50 bg-bone/80 backdrop-blur border-b border-pitch-black/[0.06]">
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center">
-            <PlugrWordmark className="h-6 text-midnight" />
+            <PlugrWordmark className="h-6 text-pitch-black" />
           </a>
           <div className="flex items-center gap-4">
             <Link
               href="/app/browse"
-              className="inline-flex items-center gap-1.5 rounded-pill bg-gold text-midnight text-sm font-bold px-4 sm:px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all"
+              className="inline-flex items-center gap-1.5 rounded-pill bg-gold text-pitch-black text-sm font-bold px-4 sm:px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all"
             >
               Use Plugr <ArrowRight className="w-4 h-4" />
             </Link>
@@ -76,7 +76,7 @@ export default function DataConsentPage() {
         <div className="flex flex-col-reverse sm:flex-row sm:items-start sm:justify-between gap-6 mb-12">
           <p className="flex-1 text-[15px] leading-relaxed text-slate">
             This Agreement works alongside our{' '}
-            <Link href="/privacy" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+            <Link href="/privacy" className="text-pitch-black font-semibold underline decoration-gold/40 hover:decoration-gold">
               Privacy Policy
             </Link>
             . Where the Privacy Policy explains, in general terms, how Plugr handles personal data, this
@@ -87,7 +87,7 @@ export default function DataConsentPage() {
           <a
             href="/Plugr_Data_Consent_Agreement.pdf"
             download
-            className="shrink-0 inline-flex items-center justify-center gap-2 rounded-pill border border-midnight/15 bg-white text-midnight text-sm font-bold px-5 py-3 hover:border-gold hover:text-gold transition-colors"
+            className="shrink-0 inline-flex items-center justify-center gap-2 rounded-pill border border-pitch-black/15 bg-white text-pitch-black text-sm font-bold px-5 py-3 hover:border-gold hover:text-gold transition-colors"
           >
             <Download className="w-4 h-4" /> Download PDF
           </a>
@@ -141,7 +141,7 @@ export default function DataConsentPage() {
             You may withdraw consent for any optional item at any time from your account settings. Under
             the NDPA 2023 you also have rights of access, correction, erasure, and complaint to the NDPC —
             see the{' '}
-            <Link href="/privacy" className="text-midnight font-semibold underline decoration-gold/40 hover:decoration-gold">
+            <Link href="/privacy" className="text-pitch-black font-semibold underline decoration-gold/40 hover:decoration-gold">
               Privacy Policy
             </Link>{' '}
             for the full list. Withdrawing consent for a required item (e.g. identity verification, if
@@ -161,7 +161,7 @@ export default function DataConsentPage() {
                 type="button"
                 onClick={() => setRole(r)}
                 className={`rounded-pill px-5 py-2 text-sm font-bold capitalize transition-colors ${
-                  role === r ? 'bg-midnight text-white' : 'bg-white text-midnight border border-midnight/15 hover:border-gold'
+                  role === r ? 'bg-pitch-black text-white' : 'bg-white text-pitch-black border border-pitch-black/15 hover:border-gold'
                 }`}
               >
                 I&rsquo;m a {r === 'plug' ? 'Plug' : 'Client'}
@@ -209,7 +209,7 @@ export default function DataConsentPage() {
               type="button"
               disabled={!requiredComplete}
               onClick={handleSubmit}
-              className="mt-6 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-pill bg-gold text-midnight text-sm font-bold px-6 py-3 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gold-light active:scale-95 transition-all"
+              className="mt-6 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-pill bg-gold text-pitch-black text-sm font-bold px-6 py-3 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gold-light active:scale-95 transition-all"
             >
               Agree and continue <ArrowRight className="w-4 h-4" />
             </button>
@@ -217,7 +217,7 @@ export default function DataConsentPage() {
         </Section>
 
         <Section number="6" title="Contact Us">
-          <div className="rounded-[24px] bg-midnight text-white p-8 mt-2 text-center">
+          <div className="rounded-[24px] bg-pitch-black text-white p-8 mt-2 text-center">
             <span className="mx-auto mb-4 grid place-items-center h-12 w-12 rounded-2xl bg-gold/15">
               <FileCheck2 className="w-6 h-6 text-gold" />
             </span>

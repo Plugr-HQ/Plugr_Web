@@ -57,12 +57,12 @@ export function Label({ children, className }: { children: React.ReactNode; clas
 
 export function Card({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('rounded-[22px] bg-white border border-midnight/[0.06] card-shadow', className)}>{children}</div>
+    <div className={cn('rounded-[22px] bg-white border border-pitch-black/[0.06] card-shadow', className)}>{children}</div>
   );
 }
 
 export function Divider({ className }: { className?: string }) {
-  return <div className={cn('h-px w-full bg-midnight/[0.07]', className)} />;
+  return <div className={cn('h-px w-full bg-pitch-black/[0.07]', className)} />;
 }
 
 /* ------------------------------------------------------------------- Money */
@@ -84,7 +84,7 @@ export function Money({
     xl: 'text-[3.25rem] leading-[1.05]',
   };
   return (
-    <span className={cn('font-display tnum text-midnight inline-flex items-start', sizes[size], className)}>
+    <span className={cn('font-display tnum text-pitch-black inline-flex items-start', sizes[size], className)}>
       <span className="text-gold/90 mr-0.5">₦</span>
       {n}
     </span>
@@ -100,9 +100,9 @@ export function PrimaryButton({ children, className, loading, disabled, ...props
     <button
       disabled={disabled || loading}
       className={cn(
-        'w-full inline-flex items-center justify-center gap-2 rounded-pill bg-midnight text-white font-bold py-4 px-6',
-        'transition-all hover:bg-deep-blue active:scale-[0.99] disabled:opacity-45 disabled:pointer-events-none',
-        'shadow-[0_10px_24px_-12px_rgba(15,31,61,0.55)]',
+        'w-full inline-flex items-center justify-center gap-2 rounded-pill bg-pitch-black text-white font-bold py-4 px-6',
+        'transition-all hover:bg-petrol active:scale-[0.99] disabled:opacity-45 disabled:pointer-events-none',
+        'shadow-[0_10px_24px_-12px] shadow-pitch-black/55',
         className
       )}
       {...props}
@@ -117,7 +117,7 @@ export function GoldButton({ children, className, loading, disabled, ...props }:
     <button
       disabled={disabled || loading}
       className={cn(
-        'w-full inline-flex items-center justify-center gap-2 rounded-pill bg-gold text-midnight font-bold py-4 px-6',
+        'w-full inline-flex items-center justify-center gap-2 rounded-pill bg-gold text-pitch-black font-bold py-4 px-6',
         'transition-all hover:bg-gold-light active:scale-[0.99] disabled:opacity-45 disabled:pointer-events-none',
         'shadow-[0_10px_24px_-12px_rgba(232,160,32,0.7)]',
         className
@@ -132,7 +132,7 @@ export function GoldButton({ children, className, loading, disabled, ...props }:
 export function GhostButton({ children, className, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
-      className={cn('w-full text-center text-sm font-semibold text-slate hover:text-midnight transition-colors py-2', className)}
+      className={cn('w-full text-center text-sm font-semibold text-slate hover:text-pitch-black transition-colors py-2', className)}
       {...props}
     >
       {children}
@@ -146,7 +146,7 @@ export function TextInput({ className, ...props }: React.InputHTMLAttributes<HTM
   return (
     <input
       className={cn(
-        'w-full rounded-2xl bg-white border border-midnight/10 px-4 py-3.5 text-midnight',
+        'w-full rounded-2xl bg-white border border-pitch-black/10 px-4 py-3.5 text-pitch-black',
         'placeholder:text-slate/50 focus:outline-none focus:border-gold focus:ring-4 focus:ring-gold/10 transition-shadow',
         className
       )}
@@ -159,7 +159,7 @@ export function TextArea({ className, ...props }: React.TextareaHTMLAttributes<H
   return (
     <textarea
       className={cn(
-        'w-full rounded-2xl bg-white border border-midnight/10 px-4 py-3.5 text-midnight resize-none',
+        'w-full rounded-2xl bg-white border border-pitch-black/10 px-4 py-3.5 text-pitch-black resize-none',
         'placeholder:text-slate/50 focus:outline-none focus:border-gold focus:ring-4 focus:ring-gold/10 transition-shadow',
         className
       )}
@@ -217,18 +217,18 @@ export function StatusRail({ steps, activeIndex }: { steps: RailStep[]; activeIn
                   'relative z-10 grid place-items-center h-5 w-5 rounded-full border-2 transition-colors',
                   done && 'bg-gold border-gold',
                   active && 'border-gold bg-bone',
-                  !done && !active && 'border-midnight/15 bg-bone'
+                  !done && !active && 'border-pitch-black/15 bg-bone'
                 )}
               >
-                {done && <span className="h-1.5 w-1.5 rounded-full bg-midnight" />}
+                {done && <span className="h-1.5 w-1.5 rounded-full bg-pitch-black" />}
                 {active && <span className="h-2 w-2 rounded-full bg-gold animate-pulse" />}
               </span>
               {i < steps.length - 1 && (
-                <span className={cn('w-0.5 flex-1 -mt-0.5', done ? 'bg-gold/60' : 'bg-midnight/10')} />
+                <span className={cn('w-0.5 flex-1 -mt-0.5', done ? 'bg-gold/60' : 'bg-pitch-black/10')} />
               )}
             </div>
             <div className="-mt-0.5 pb-1">
-              <p className={cn('text-sm font-semibold', done || active ? 'text-midnight' : 'text-slate')}>{s.label}</p>
+              <p className={cn('text-sm font-semibold', done || active ? 'text-pitch-black' : 'text-slate')}>{s.label}</p>
               {s.sub && <p className="text-xs text-slate mt-0.5">{s.sub}</p>}
             </div>
           </li>

@@ -102,17 +102,17 @@ export function BankSelect({
                 onClick={() => setOpen((o) => !o)}
                 disabled={loading}
                 className={cn(
-                    'flex w-full items-center gap-3 rounded-2xl border border-midnight/10 bg-white px-4 py-3 text-left text-sm transition-shadow',
+                    'flex w-full items-center gap-3 rounded-2xl border border-pitch-black/10 bg-white px-4 py-3 text-left text-sm transition-shadow',
                     'focus:outline-none focus:ring-4 focus:ring-gold/10',
                     open && 'ring-4 ring-gold/10 border-gold',
                 )}
             >
                 {selected ? (
                     <>
-                        <span className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full bg-midnight/[0.04]">
+                        <span className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full bg-pitch-black/[0.04]">
                             <BankLogo url={selected.logoUrl} />
                         </span>
-                        <span className="flex-1 truncate font-semibold text-midnight">{selected.name}</span>
+                        <span className="flex-1 truncate font-semibold text-pitch-black">{selected.name}</span>
                     </>
                 ) : (
                     <span className="flex-1 text-slate/60">{loading ? 'Loading banks…' : placeholder}</span>
@@ -127,14 +127,14 @@ export function BankSelect({
                         'bg-white/70 backdrop-blur-xl shadow-[0_12px_40px_-8px_rgba(15,23,42,0.25)]',
                     )}
                 >
-                    <div className="flex items-center gap-2 border-b border-midnight/[0.06] px-4 py-2.5">
+                    <div className="flex items-center gap-2 border-b border-pitch-black/[0.06] px-4 py-2.5">
                         <Search className="h-3.5 w-3.5 shrink-0 text-slate/60" />
                         <input
                             ref={inputRef}
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder="Search bank…"
-                            className="w-full bg-transparent text-sm text-midnight placeholder:text-slate/50 focus:outline-none"
+                            className="w-full bg-transparent text-sm text-pitch-black placeholder:text-slate/50 focus:outline-none"
                         />
                     </div>
 
@@ -151,13 +151,13 @@ export function BankSelect({
                                         onClick={() => pick(b.code)}
                                         className={cn(
                                             'flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors',
-                                            isSelected ? 'bg-blue-900/90 text-white' : 'text-midnight hover:bg-blue-900/10',
+                                            isSelected ? 'bg-blue-900/90 text-white' : 'text-pitch-black hover:bg-blue-900/10',
                                         )}
                                     >
                                         <span
                                             className={cn(
                                                 'grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-full',
-                                                isSelected ? 'bg-white/15' : 'bg-midnight/[0.04]',
+                                                isSelected ? 'bg-white/15' : 'bg-pitch-black/[0.04]',
                                             )}
                                         >
                                             <BankLogo url={b.logoUrl} />
