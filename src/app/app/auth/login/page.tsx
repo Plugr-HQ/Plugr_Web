@@ -280,7 +280,7 @@ export default function AppLoginPage() {
             )}
           >
             <span className="flex items-center gap-2 px-4 border-r border-pitch-black/10 bg-bone/60 select-none">
-              <svg viewBox="0 0 6 3" preserveAspectRatio="none" aria-hidden className="h-3.5 w-6 shrink-0 rounded-[2px] border border-pitch-black/10">
+              <svg viewBox="0 0 6 3" preserveAspectRatio="none" aria-hidden className="h-3.5 w-6 shrink-0 rounded-xs border border-pitch-black/10">
                 <rect width="6" height="3" fill="#fff" />
                 <rect width="2" height="3" fill="#008751" />
                 <rect x="4" width="2" height="3" fill="#008751" />
