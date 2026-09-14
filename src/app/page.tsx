@@ -68,21 +68,21 @@ const STEPS = [
   {
     n: '03',
     title: 'Confirm, and it’s done',
-    body: 'Release payment in one tap, or raise it within 7 days if something’s off.',
+    body: 'Release payment in one tap, or raise it within 24 hours if something’s off.',
   },
 ];
 
 const REASONS = [
   { title: 'Your money is protected', body: "Payments are held securely until you're happy.", icon: <Lock className="h-4 w-4" /> },
   { title: 'Vetted experts only', body: 'Every artisan verifies their NIN before they can take a single job.', icon: <UserCheck className="h-4 w-4" /> },
-  { title: 'Something goes wrong?', body: '7-day dispute window and dedicated ops support.', icon: <LifeBuoy className="h-4 w-4" /> },
+  { title: 'Something goes wrong?', body: '24hr dispute window and dedicated ops support.', icon: <LifeBuoy className="h-4 w-4" /> },
   { title: 'Guaranteed quality', body: 'Every job comes with a 30-day fault guarantee.', icon: <BadgeCheck className="h-4 w-4" /> },
   { title: 'Transparent pricing', body: 'Full quote before work starts. Zero surprises.', icon: <ReceiptText className="h-4 w-4" /> },
 ];
 
 const FAQS = [
   { q: 'How do I pay?', a: 'You pay via bank transfer to a one-time account. Funds are held securely and only released to the Plug once you confirm the job is done.' },
-  { q: "What if I'm not satisfied?", a: 'You don’t release payment until you’re happy — it stays securely held. If something’s wrong, you have 7 days to raise a dispute, and our team reviews it directly. Beyond that, every job carries a 30-day guarantee: if a genuine fault shows up later, we make it right.' },
+  { q: "What if I'm not satisfied?", a: 'You don’t release payment until you’re happy — it stays securely held. If something’s wrong, you have a 24-hour window to raise a dispute, and our team reviews it directly. Beyond that, every job carries a 30-day guarantee: if a genuine fault shows up later, we make it right.' },
   { q: 'How are Plugs verified?', a: 'Every Plug verifies their National Identification Number (NIN) before they’re eligible to take on jobs — so their real identity is confirmed and on record before they ever knock on your door. We’re adding further checks, like facial verification, over the coming weeks as we grow.' },
 ];
 

@@ -80,8 +80,8 @@ export default function DisputeResolutionPage() {
 
         <Section number="2" title="How to Report a Dispute">
           <p className="text-sm text-slate mb-4">
-            A dispute must be reported within seven (7) days of the Job&rsquo;s scheduled completion date,
-            through one of the following channels:
+            A dispute must be reported within twenty-four (24) hours of the Job&rsquo;s scheduled completion
+            date, through one of the following channels:
           </p>
           <BulletList items={[
             'The Plugr WhatsApp bot, using the dispute/support option.',
@@ -90,9 +90,9 @@ export default function DisputeResolutionPage() {
           ]} />
           <p className="text-sm text-slate mt-4">
             When reporting, provide the Job reference, a description of the issue, and any supporting
-            evidence (photos, messages, receipts). Disputes reported after the seven-day window may still
-            be reviewed at Plugr&rsquo;s discretion, but timely reporting materially improves the chances of
-            a fair outcome.
+            evidence (photos, messages, receipts). Disputes reported after the 24-hour window may still be
+            reviewed at Plugr&rsquo;s discretion, but timely reporting materially improves the chances of a
+            fair outcome and of any held payment still being available for reallocation.
           </p>
         </Section>
 
