@@ -74,11 +74,11 @@ export default function AppPayPage() {
       setAlatState(res.alatpay ?? 'unknown');
       setCheckMsg(
         res.alatpay === 'pending'
-          ? 'ALATPay has your transaction but it hasn’t settled yet. We’ll keep checking — this flips on its own.'
+          ? 'Your transfer is on its way but hasn’t settled yet. We’ll keep checking — this flips on its own.'
           : 'No transfer confirmed yet. Bank transfers can take a minute — we’ll keep checking automatically.'
       );
     } catch {
-      setCheckMsg('Couldn’t reach ALATPay just now — we’ll keep retrying.');
+      setCheckMsg('Couldn’t check your payment just now — we’ll keep retrying.');
     } finally { setChecking(false); }
   }
 
@@ -138,7 +138,7 @@ export default function AppPayPage() {
             )}
           </div>
           <p className="mt-2 text-xs text-slate/80">
-            ALATPay is watching this account — the moment your transfer settles this flips automatically, no refresh needed.
+            We’re watching this account — the moment your transfer settles this flips automatically, no refresh needed.
             {waited > 25 ? ' Bank settlement can take a minute or two.' : ''}
             {waited > 0 ? ` (${waited}s)` : ''}
           </p>

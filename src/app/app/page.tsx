@@ -65,7 +65,7 @@ export default function AppRoleSelect() {
           </div>
 
           <p className="mt-auto pt-10 text-xs text-slate/70 text-center rise rise-4">
-            Payments powered by Alatpay.
+            Payments powered by Monnify.
           </p>
         </div>
       </main>

@@ -29,7 +29,7 @@ export default function AppReceiptPage() {
 
   const steps: (RailStep & { done: boolean })[] = [
     { key: 'req', label: 'Job requested', sub: fmt(job.created_at), done: true },
-    { key: 'esc', label: 'Paid and held · ALATPay', sub: collection?.status === 'successful' ? fmt(collection.created_at) : 'Pending', done: collection?.status === 'successful' },
+    { key: 'esc', label: 'Paid and held · Monnify', sub: collection?.status === 'successful' ? fmt(collection.created_at) : 'Pending', done: collection?.status === 'successful' },
     { key: 'cmp', label: 'Marked complete', sub: fmt(job.completed_at) ?? 'Pending', done: !!job.completed_at },
     { key: 'rel', label: 'Payment released', sub: fmt(job.escrow_released_at) ?? 'Pending', done: !!job.escrow_released_at },
     { key: 'wd', label: 'Withdrawal to bank', sub: withdrawal ? `${fmt(withdrawal.created_at)} · ${withdrawal.status}` : 'Not yet', done: !!withdrawal },
@@ -49,7 +49,7 @@ export default function AppReceiptPage() {
             <div><p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-1">Client</p><p className="font-bold text-pitch-black">{job.client_name}</p><p className="text-xs text-slate">{job.client_phone || '—'}</p></div>
           </div>
           <Divider className="my-6" />
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-3">ALATPay reference</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-3">Payment reference</p>
           <div className="space-y-2">
             <RefRow label="Virtual account" value={collection?.alatpay_virtual_account} />
             <RefRow label="Transaction ID" value={collection?.alatpay_transaction_id} />
@@ -63,7 +63,7 @@ export default function AppReceiptPage() {
       <Card className="p-6 mt-4">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-5">Payment trail</p>
         <StatusRail steps={steps} activeIndex={activeIndex === -1 ? steps.length : activeIndex} />
-        <div className="mt-4 flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-gold" /><span className="text-[11px] text-slate">Gold marks real ALATPay money movement.</span></div>
+        <div className="mt-4 flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-gold" /><span className="text-[11px] text-slate">Gold marks real Monnify money movement.</span></div>
       </Card>
 
       <div className="mt-6"><PrimaryButton onClick={() => router.push('/app/browse')}>Book another Plug</PrimaryButton></div>

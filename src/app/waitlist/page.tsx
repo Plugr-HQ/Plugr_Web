@@ -295,7 +295,7 @@ export default function WaitlistPage() {
         </div>
 
         <p className="wl-footer-line">
-          Plugr Technologies &middot; Under Alhazen &middot; Quarter 25, Yabatech Staff Quarters, Yaba, Lagos &middot; getplugr.com
+          Alhazen Technologies Limited, operating Plugr &middot; Quarter 25, Yabatech Staff Quarters, Yaba, Lagos &middot; getplugr.com
         </p>
         <p className="wl-footer-fine">
           Nigeria&rsquo;s first verified artisan identity platform &middot; &copy; 2026
