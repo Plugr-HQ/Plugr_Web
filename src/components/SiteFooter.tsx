@@ -61,6 +61,9 @@ const linkTone =
   'text-bone transition-colors duration-200 hover:text-gold focus-visible:text-gold focus-visible:outline-none';
 const columnLink = `inline-block text-sm ${linkTone}`;
 const columnTitle = 'mb-5 text-[11px] font-bold uppercase tracking-[0.16em] text-bone-muted';
+// The Contact column is the grid's narrowest real estate between md and xl (~123px of text beside
+// the icon), so its items step down to 13px there; at xl the column widens and they return to 14px.
+const contactText = 'text-sm md:text-[13px] xl:text-sm';
 
 export function SiteFooter() {
   return (
@@ -97,21 +100,22 @@ export function SiteFooter() {
             <p className={columnTitle}>Contact us</p>
             <ul className="space-y-3">
               <li>
-                <a href="tel:+2347046282789" className={`flex items-center gap-2 text-sm ${linkTone}`}>
-                  <Phone className="h-4 w-4 shrink-0" /> +234 704 628 2789
+                <a href="tel:+2347046282789" className={`flex items-center gap-2 ${contactText} ${linkTone}`}>
+                  <Phone className="h-4 w-4 shrink-0" /> <span className="whitespace-nowrap">+234 704 628 2789</span>
                 </a>
               </li>
               <li>
-                <a href="mailto:hello@getplugr.com" className={`flex items-center gap-2 text-sm ${linkTone}`}>
+                <a href="mailto:hello@getplugr.com" className={`flex items-center gap-2 ${contactText} ${linkTone}`}>
                   <Mail className="h-4 w-4 shrink-0" /> hello@getplugr.com
                 </a>
               </li>
               <li>
-                <a href="mailto:abdulrasheedbrimah@gmail.com" className={`flex items-center gap-2 text-sm ${linkTone}`}>
-                  <Mail className="h-4 w-4 shrink-0" /> <span className="min-w-0 break-all">abdulrasheedbrimah@gmail.com</span>
+                <a href="mailto:abdulrasheedbrimah@gmail.com" className={`flex items-center gap-2 ${contactText} ${linkTone}`}>
+                  <Mail className="h-4 w-4 shrink-0" />{' '}
+                  <span className="min-w-0 break-words">abdulrasheedbrimah<wbr />@gmail.com</span>
                 </a>
               </li>
-              <li className="flex items-start gap-2 text-sm text-bone">
+              <li className={`flex items-start gap-2 ${contactText} text-bone`}>
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0" /> <span>Quarter 25, Yabatech Staff Quarters, Yaba, Lagos</span>
               </li>
             </ul>
