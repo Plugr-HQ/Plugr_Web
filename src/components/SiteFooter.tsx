@@ -52,7 +52,7 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
     links: [
       { label: 'Privacy Policy', href: '/privacy' },
       { label: 'Terms of Service', href: '/terms' },
-      { label: 'Dispute Policy', href: '/dispute' },
+      { label: 'Dispute Policy', href: '/disputes' },
     ],
   },
 ];
