@@ -13,7 +13,7 @@ export default function AppClientAuthPage() {
       role="client"
       eyebrow="Create your account"
       title="Sign up to continue"
-      subtitle="Quick sign-up to book this Plug and pay safely into escrow."
+      subtitle="Quick sign-up to book this Plug. Your payment is held securely until the job’s done."
       redirectTo={`/app/book/${plugId}`}
       back={`/app/plugs/${plugId}`}
     />

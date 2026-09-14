@@ -73,7 +73,7 @@ const STEPS = [
 ];
 
 const REASONS = [
-  { title: 'Your money is protected', body: "Payments are held in escrow until you're happy.", icon: <Lock className="h-4 w-4" /> },
+  { title: 'Your money is protected', body: "Payments are held securely until you're happy.", icon: <Lock className="h-4 w-4" /> },
   { title: 'Vetted experts only', body: 'Every artisan verifies their NIN before they can take a single job.', icon: <UserCheck className="h-4 w-4" /> },
   { title: 'Something goes wrong?', body: '24hr dispute window and dedicated ops support.', icon: <LifeBuoy className="h-4 w-4" /> },
   { title: 'Guaranteed quality', body: 'Every job comes with a 30-day fault guarantee.', icon: <BadgeCheck className="h-4 w-4" /> },
@@ -81,8 +81,8 @@ const REASONS = [
 ];
 
 const FAQS = [
-  { q: 'How do I pay?', a: 'You pay into escrow via bank transfer to a one-time account. Funds are held securely and only released to the Plug once you confirm the job is done.' },
-  { q: "What if I'm not satisfied?", a: 'You don’t release payment until you’re happy — it stays safely in escrow. If something’s wrong, you have a 24-hour window to raise a dispute, and our team reviews it directly. Beyond that, every job carries a 30-day guarantee: if a genuine fault shows up later, we make it right.' },
+  { q: 'How do I pay?', a: 'You pay via bank transfer to a one-time account. Funds are held securely and only released to the Plug once you confirm the job is done.' },
+  { q: "What if I'm not satisfied?", a: 'You don’t release payment until you’re happy — it stays securely held. If something’s wrong, you have a 24-hour window to raise a dispute, and our team reviews it directly. Beyond that, every job carries a 30-day guarantee: if a genuine fault shows up later, we make it right.' },
   { q: 'How are Plugs verified?', a: 'Every Plug verifies their National Identification Number (NIN) before they’re eligible to take on jobs — so their real identity is confirmed and on record before they ever knock on your door. We’re adding further checks, like facial verification, over the coming weeks as we grow.' },
 ];
 
@@ -172,7 +172,7 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [openReason, setOpenReason] = useState(0);
-  // The escrow card overlaps the hero photo from md up and stacks beneath it below that; the
+  // The payment card overlaps the hero photo from md up and stacks beneath it below that; the
   // float only makes sense in the overlapping state.
   const [floats, setFloats] = useState(false);
   useEffect(() => {
@@ -244,7 +244,7 @@ export default function LandingPage() {
             variants={heroItem}
             className="mx-auto mt-7 max-w-xl text-[17px] leading-relaxed text-slate md:text-[19px]"
           >
-            NIN-verified electricians and plumbers in Yaba. Your money sits in escrow until the
+            NIN-verified electricians and plumbers in Yaba. Your payment is held securely until the
             job&rsquo;s done right — booked on WhatsApp, no app to install.
           </motion.p>
 
@@ -260,7 +260,7 @@ export default function LandingPage() {
           <motion.div variants={heroItem} className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
             {[
               { icon: <UserCheck className="h-4 w-4" />, label: 'NIN Verified' },
-              { icon: <Lock className="h-4 w-4" />, label: 'Escrow Protected' },
+              { icon: <Lock className="h-4 w-4" />, label: 'Payment Protected' },
               { icon: <FaWhatsapp className="h-4 w-4" />, label: 'WhatsApp Native' },
             ].map((b) => (
               <div key={b.label} className="flex items-center gap-2 text-pitch-black">
@@ -271,7 +271,7 @@ export default function LandingPage() {
           </motion.div>
         </motion.div>
 
-        {/* Proof image, full width under the copy, with the escrow card overlapping its edge. */}
+        {/* Proof image, full width under the copy, with the payment card overlapping its edge. */}
         <motion.div
           className="relative mx-auto mt-16 max-w-5xl"
           initial={reduce ? false : { opacity: 0, y: 28 }}
@@ -297,7 +297,7 @@ export default function LandingPage() {
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-pitch-black">
                 <PlugrMark className="h-4 w-4" />
-                <span className="font-display text-base">Escrow</span>
+                <span className="font-display text-base">Payment</span>
               </div>
               <span className="inline-flex items-center gap-1.5 rounded-pill border border-gold/30 px-2.5 py-1 text-10 font-bold uppercase tracking-widest text-[#8a5a08]">
                 <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" /> Held
@@ -400,7 +400,7 @@ export default function LandingPage() {
           <SectionHead
             eyebrow="Why Plugr"
             title={<>Built different. <span className="text-slate">WhatsApp layered.</span></>}
-            aside="Escrow, identity and dispute cover — the parts that decide whether you trust a stranger in your home."
+            aside="Protected payments, identity and dispute cover — the parts that decide whether you trust a stranger in your home."
           />
 
           <Reveal>
@@ -592,9 +592,9 @@ export default function LandingPage() {
             <div className="rounded-3xl border border-pitch-black/[0.09] bg-bone p-8">
               <div className="flex items-center gap-2 text-slate mb-6">
                 <Clock className="w-4 h-4 text-gold" />
-                <span className="text-[11px] font-bold uppercase tracking-[0.14em]">Escrow timeline</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.14em]">Payment timeline</span>
               </div>
-              {['Client pays into escrow', 'Plug completes the job', 'Client confirms', 'Funds released'].map((t, i, a) => (
+              {['Client pays, payment held', 'Plug completes the job', 'Client confirms', 'Funds released'].map((t, i, a) => (
                 <div key={t} className="flex gap-3">
                   <div className="flex flex-col items-center">
                     <span className="grid place-items-center h-5 w-5 rounded-full bg-gold">
@@ -674,7 +674,7 @@ export default function LandingPage() {
               {/* Honest trust row — the three things that are actually true today, stated as
                   facts rather than as a strip of partner logos we do not have. */}
               <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 border-t border-white/10 pt-8">
-                {['NIN-verified Plugs', 'Escrow-held payments', '30-day fault guarantee'].map((t) => (
+                {['NIN-verified Plugs', 'Protected payments', '30-day fault guarantee'].map((t) => (
                   <span key={t} className="flex items-center gap-2 text-[13px] text-bone-muted">
                     <Check className="h-3.5 w-3.5 shrink-0 text-gold" strokeWidth={3} />
                     {t}

@@ -283,6 +283,7 @@ export default function PrivacyPolicyPage() {
             <div className="mt-6 space-y-2 text-sm">
               <p className="text-bone-muted"><span className="text-white font-semibold">Privacy inquiries:</span> privacy@getplugr.com</p>
               <p className="text-bone-muted"><span className="text-white font-semibold">General support:</span> support@getplugr.com</p>
+              <p className="text-bone-muted"><span className="text-white font-semibold">Address:</span> Quarter 25, Yabatech Staff Quarters, Yaba, Lagos</p>
               <p className="text-bone-muted"><span className="text-white font-semibold">Website:</span> getplugr.com</p>
             </div>
 

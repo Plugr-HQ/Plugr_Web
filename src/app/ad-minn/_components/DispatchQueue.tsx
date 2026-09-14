@@ -132,7 +132,7 @@ export function DispatchQueue() {
       </FilterBar>
 
       <TableCard>
-        <Thead cols={[{ label: 'Client' }, { label: 'Category' }, { label: 'Address' }, { label: 'Escrow' }, { label: 'Created' }, { label: 'Action', right: true }]} />
+        <Thead cols={[{ label: 'Client' }, { label: 'Category' }, { label: 'Address' }, { label: 'Amount held' }, { label: 'Created' }, { label: 'Action', right: true }]} />
         <tbody>
           {loading ? (
             <StateRow colSpan={6} variant="loading" title="Loading dispatch queue…" />

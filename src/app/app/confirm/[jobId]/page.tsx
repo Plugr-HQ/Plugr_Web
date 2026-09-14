@@ -72,7 +72,7 @@ export default function AppConfirmPage() {
         <Card className="p-6 mb-6">
           <p className="text-pitch-black font-medium leading-relaxed">{job.job_description || 'Job'}</p>
           <Divider className="my-5" />
-          <div className="flex items-center justify-between"><span className="text-sm text-slate">In escrow</span><Money amount={job.amount} size="md" /></div>
+          <div className="flex items-center justify-between"><span className="text-sm text-slate">Payment held</span><Money amount={job.amount} size="md" /></div>
         </Card>
       )}
 
@@ -104,7 +104,7 @@ export default function AppConfirmPage() {
         <Card className="p-7 text-center">
           <span className="mx-auto mb-4 grid place-items-center h-16 w-16 rounded-full bg-emerald-500/10"><CheckCircle2 className="w-9 h-9 text-emerald-600" /></span>
           <h3 className="font-display text-2xl text-pitch-black">Job complete</h3>
-          <p className="mt-1.5 text-sm text-slate">Escrow released. Thanks for using Plugr.</p>
+          <p className="mt-1.5 text-sm text-slate">Payment released. Thanks for using Plugr.</p>
           <div className="mt-6 space-y-2">
             <PrimaryButtonLink href={`/app/receipt/${jobId}`} router={router} label="View receipt" />
             <GhostButton onClick={() => router.push('/app/browse')}>Book another Plug</GhostButton>

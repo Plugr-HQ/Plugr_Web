@@ -243,7 +243,7 @@ export function WalletScreen({ base }: { base: string }) {
               <EmptyState
                 icon={<WalletIcon className="w-6 h-6" />}
                 title="Nothing here yet"
-                body="Earnings from completed jobs show up here the moment escrow releases."
+                body="Earnings from completed jobs show up here the moment payment is released."
               />
             </Card>
           ) : (

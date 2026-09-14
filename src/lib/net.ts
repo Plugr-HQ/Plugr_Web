@@ -57,7 +57,7 @@ export function getClientIdentity() {
 // Human-friendly labels + accent colors for the job lifecycle.
 export const STATUS_LABEL: Record<string, string> = {
   requested: 'Requested',
-  paid_escrow: 'Paid — In Escrow',
+  paid_escrow: 'Paid — Held',
   accepted: 'Accepted',
   completed: 'Completed',
   released: 'Released',

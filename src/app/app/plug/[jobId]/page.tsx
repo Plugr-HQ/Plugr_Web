@@ -54,13 +54,13 @@ export default function AppPlugJob() {
             <div className="text-center">
               <div className="inline-flex items-center gap-2 text-emerald-700 font-bold mb-5">
                 <span className="grid place-items-center h-6 w-6 rounded-full bg-emerald-500/12"><Check className="w-4 h-4" strokeWidth={3} /></span>
-                {status === 'completed' ? 'Marked complete — waiting for client to confirm' : 'Escrow released'}
+                {status === 'completed' ? 'Marked complete — waiting for client to confirm' : 'Payment released'}
               </div>
               <Link href={`/app/wallet/${job.plug_id}`}><PrimaryButton><Wallet className="w-4 h-4" /> Open my wallet</PrimaryButton></Link>
             </div>
           )}
 
-          {status === 'requested' && <p className="text-sm text-slate text-center">Waiting for the client to pay into escrow…</p>}
+          {status === 'requested' && <p className="text-sm text-slate text-center">Waiting for the client to pay…</p>}
         </>
       )}
     </Shell>

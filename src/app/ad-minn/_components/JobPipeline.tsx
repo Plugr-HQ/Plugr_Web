@@ -46,7 +46,8 @@ type JobRow = {
   plug?: { id?: string | null; user?: { name?: string | null } | null } | null;
 };
 
-const prettyStatus = (s: string) => s.replace(/_/g, ' ');
+// ESCROW_HELD is the backend enum value; it is never printed as-is.
+const prettyStatus = (s: string) => (s === 'ESCROW_HELD' ? 'PAYMENT HELD' : s.replace(/_/g, ' '));
 function formatDate(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '—';
@@ -148,7 +149,7 @@ export function JobPipeline() {
       </FilterBar>
 
       <TableCard>
-        <Thead cols={[{ label: 'Client' }, { label: 'Category' }, { label: 'Plug' }, { label: 'Escrow' }, { label: 'Status' }, { label: 'Created' }, { label: 'Action', right: true }]} />
+        <Thead cols={[{ label: 'Client' }, { label: 'Category' }, { label: 'Plug' }, { label: 'Amount held' }, { label: 'Status' }, { label: 'Created' }, { label: 'Action', right: true }]} />
         <tbody>
           {loading ? (
             <StateRow colSpan={7} variant="loading" title="Loading jobs…" />

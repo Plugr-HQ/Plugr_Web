@@ -85,7 +85,7 @@ export async function POST(
     result = await generateVirtualAccount({
       amount: Number(job.amount),
       orderId: job.id,
-      description: job.job_description || `Plugr escrow for job ${job.id}`,
+      description: job.job_description || `Plugr payment for job ${job.id}`,
       customer: {
         email: 'noreply@getplugr.com',
         phone: job.client_phone || '08000000000',

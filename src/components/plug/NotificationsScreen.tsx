@@ -64,7 +64,7 @@ export function NotificationsScreen({ base }: { base: string }) {
           <EmptyState
             icon={<Bell className="h-6 w-6" />}
             title="Nothing new"
-            body="Job requests, escrow updates, and payouts will land here as they happen."
+            body="Job requests, payment updates, and payouts will land here as they happen."
           />
         </Card>
       ) : (

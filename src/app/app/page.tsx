@@ -49,7 +49,7 @@ export default function AppRoleSelect() {
               href="/app/browse"
               icon={<User className="w-6 h-6" />}
               title="Book a Plug"
-              body="Hire a verified electrician, plumber, or furniture maker and pay safely into escrow."
+              body="Hire a verified electrician, plumber, or furniture maker. Your payment is held securely until the job’s done."
               className="rise rise-2"
             />
             <Tile
@@ -65,7 +65,7 @@ export default function AppRoleSelect() {
           </div>
 
           <p className="mt-auto pt-10 text-xs text-slate/70 text-center rise rise-4">
-            Escrow payments powered by Alatpay.
+            Payments powered by Alatpay.
           </p>
         </div>
       </main>

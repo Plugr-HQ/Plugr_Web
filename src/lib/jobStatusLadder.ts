@@ -99,7 +99,7 @@ const LADDER: Record<string, LadderRung> = {
     step: 6,
     canonical: 'Quote accepted, pay to start',
     plug: 'Payment secured',
-    hint: 'The money is held in escrow. You are clear to start — set off when you are ready.',
+    hint: 'The money is held securely. You are clear to start — set off when you are ready.',
     tone: 'green',
   },
 

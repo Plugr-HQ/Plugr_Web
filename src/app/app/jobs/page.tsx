@@ -36,6 +36,7 @@ const STATUS_META: Record<string, { label: string; cls: string; icon: typeof Clo
   SEARCHING_PLUG: { label: 'Finding a Plug', cls: 'bg-amber-100 text-amber-700', icon: Clock },
   PLUG_ASSIGNED: { label: 'Plug Assigned', cls: 'bg-amber-100 text-amber-700', icon: Clock },
   CLIENT_ACCEPTED: { label: 'Accepted', cls: 'bg-blue-100 text-blue-700', icon: Clock },
+  ESCROW_HELD: { label: 'Payment Held', cls: 'bg-blue-100 text-blue-700', icon: Clock },
   PLUG_ACCEPTED: { label: 'In Progress', cls: 'bg-blue-100 text-blue-700', icon: Clock },
   IN_PROGRESS: { label: 'In Progress', cls: 'bg-blue-100 text-blue-700', icon: Clock },
   COMPLETED: { label: 'Completed', cls: 'bg-green-100 text-green-700', icon: CheckCircle2 },

@@ -53,7 +53,7 @@ export function deriveNotifications(dashboard: { allJobs?: JobRow[]; withdrawals
         out.push({ id: `${j.id}:request`, kind: 'request', title: 'New job request', body: `${who} sent a new request — ${what}.`, at: ms(j.created_at) });
         break;
       case 'paid_escrow':
-        out.push({ id: `${j.id}:funded`, kind: 'funded', title: 'Escrow funded', body: `${who} funded ${amt} in escrow for ${what}. You can start the job.`, at: ms(j.created_at) });
+        out.push({ id: `${j.id}:funded`, kind: 'funded', title: 'Payment secured', body: `${who} paid ${amt} for ${what}, held securely until the job is confirmed. You can start the job.`, at: ms(j.created_at) });
         break;
       case 'accepted':
         out.push({ id: `${j.id}:accepted`, kind: 'accepted', title: 'Job accepted', body: `${what} is confirmed and in progress with ${who}.`, at: ms(j.created_at) });

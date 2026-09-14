@@ -17,7 +17,7 @@
 // accessibility tree or copied text. The footer clips it, which produces the cut-off.
 
 import Link from 'next/link';
-import { Mail, Phone } from 'lucide-react';
+import { Mail, MapPin, Phone } from 'lucide-react';
 import { FaInstagram, FaXTwitter, FaLinkedinIn } from 'react-icons/fa6';
 import { PlugrWordmark } from './Brand';
 
@@ -97,14 +97,22 @@ export function SiteFooter() {
             <p className={columnTitle}>Contact us</p>
             <ul className="space-y-3">
               <li>
-                <a href="tel:+2348180147857" className={`flex items-center gap-2 text-sm ${linkTone}`}>
-                  <Phone className="h-4 w-4 shrink-0" /> +234 818 014 7857
+                <a href="tel:+2347046282789" className={`flex items-center gap-2 text-sm ${linkTone}`}>
+                  <Phone className="h-4 w-4 shrink-0" /> +234 704 628 2789
                 </a>
               </li>
               <li>
                 <a href="mailto:hello@getplugr.com" className={`flex items-center gap-2 text-sm ${linkTone}`}>
                   <Mail className="h-4 w-4 shrink-0" /> hello@getplugr.com
                 </a>
+              </li>
+              <li>
+                <a href="mailto:abdulrasheedbrimah@gmail.com" className={`flex items-center gap-2 text-sm ${linkTone}`}>
+                  <Mail className="h-4 w-4 shrink-0" /> <span className="min-w-0 break-all">abdulrasheedbrimah@gmail.com</span>
+                </a>
+              </li>
+              <li className="flex items-start gap-2 text-sm text-bone">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0" /> <span>Quarter 25, Yabatech Staff Quarters, Yaba, Lagos</span>
               </li>
             </ul>
           </div>

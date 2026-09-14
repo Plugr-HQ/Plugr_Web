@@ -24,7 +24,7 @@ export default function PaymentPage() {
         <div className="bg-gold/10 border border-gold/20 rounded-card p-4 flex gap-3 mb-8">
           <ShieldCheck className="w-6 h-6 text-gold shrink-0" />
           <div className="text-xs text-pitch-black leading-relaxed">
-            <span className="font-bold">Escrow Protected:</span> Funds are held safely and only released when you confirm the job is done.
+            <span className="font-bold">Payment Protected:</span> Funds are held safely and only released when you confirm the job is done.
           </div>
         </div>
 

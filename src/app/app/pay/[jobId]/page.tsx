@@ -92,10 +92,10 @@ export default function AppPayPage() {
   }
 
   return (
-    <Shell eyebrow="Pay" title="Pay into escrow" back="/app/browse">
+    <Shell eyebrow="Pay" title="Pay securely" back="/app/browse">
       <div className="flex items-start gap-3 rounded-2xl bg-white border border-pitch-black/[0.06] p-4 mb-6 card-shadow">
         <span className="grid place-items-center h-9 w-9 rounded-full bg-gold/15 shrink-0"><ShieldCheck className="w-5 h-5 text-gold" /></span>
-        <p className="text-[13px] leading-relaxed text-slate"><span className="font-bold text-pitch-black">Escrow protected.</span> ALATPay holds your transfer until you confirm the job is done.</p>
+        <p className="text-[13px] leading-relaxed text-slate"><span className="font-bold text-pitch-black">Payment protected.</span> Your transfer is held securely until you confirm the job is done.</p>
       </div>
 
       {job && (
@@ -110,7 +110,7 @@ export default function AppPayPage() {
         <Card className="p-7 text-center">
           <span className="mx-auto mb-4 grid place-items-center h-16 w-16 rounded-full bg-emerald-500/10"><CheckCircle2 className="w-9 h-9 text-emerald-600" /></span>
           <h3 className="font-display text-2xl text-pitch-black">Payment confirmed</h3>
-          <p className="mt-1.5 text-sm text-slate">Funds held in escrow. The Plug will accept and complete the job — you’ll confirm when it’s done.</p>
+          <p className="mt-1.5 text-sm text-slate">Funds held securely. The Plug will accept and complete the job — you’ll confirm when it’s done.</p>
           <div className="mt-6 space-y-2">
             <PrimaryButton onClick={() => router.push(`/app/confirm/${jobId}`)}>Track & confirm job <ArrowRight className="w-4 h-4" /></PrimaryButton>
             <GhostButton onClick={() => router.push(`/app/receipt/${jobId}`)}>View receipt</GhostButton>

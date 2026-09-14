@@ -227,7 +227,7 @@ function ResolveModal({
     }
   }
 
-  const money = amount == null ? 'the escrow' : `₦${Number(amount).toLocaleString('en-NG')}`;
+  const money = amount == null ? 'the held payment' : `₦${Number(amount).toLocaleString('en-NG')}`;
 
   const Option = ({ value, icon, title, sub }: { value: Resolution; icon: React.ReactNode; title: string; sub: string }) => {
     const selected = resolution === value;
@@ -254,7 +254,7 @@ function ResolveModal({
   return (
     <Modal
       title="Resolve dispute"
-      sub="Choose where the escrowed funds go."
+      sub="Choose where the held funds go."
       onClose={onClose}
       footer={
         <>
@@ -269,7 +269,7 @@ function ResolveModal({
         {/* Context so the admin decides informed, not blind. */}
         <div className="rounded-2xl border border-pitch-black/[0.06] bg-bone/50 p-4">
           <div className="flex items-center justify-between border-b border-pitch-black/[0.06] pb-3">
-            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate">Escrow amount</span>
+            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate">Amount held</span>
             {amount == null ? <span className="text-sm font-bold text-pitch-black">—</span> : <Money amount={amount} size="sm" />}
           </div>
           <div className="grid grid-cols-2 gap-3 py-3 text-sm">

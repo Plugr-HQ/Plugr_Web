@@ -29,9 +29,9 @@ export default function AppReceiptPage() {
 
   const steps: (RailStep & { done: boolean })[] = [
     { key: 'req', label: 'Job requested', sub: fmt(job.created_at), done: true },
-    { key: 'esc', label: 'Paid into escrow · ALATPay', sub: collection?.status === 'successful' ? fmt(collection.created_at) : 'Pending', done: collection?.status === 'successful' },
+    { key: 'esc', label: 'Paid and held · ALATPay', sub: collection?.status === 'successful' ? fmt(collection.created_at) : 'Pending', done: collection?.status === 'successful' },
     { key: 'cmp', label: 'Marked complete', sub: fmt(job.completed_at) ?? 'Pending', done: !!job.completed_at },
-    { key: 'rel', label: 'Escrow released', sub: fmt(job.escrow_released_at) ?? 'Pending', done: !!job.escrow_released_at },
+    { key: 'rel', label: 'Payment released', sub: fmt(job.escrow_released_at) ?? 'Pending', done: !!job.escrow_released_at },
     { key: 'wd', label: 'Withdrawal to bank', sub: withdrawal ? `${fmt(withdrawal.created_at)} · ${withdrawal.status}` : 'Not yet', done: !!withdrawal },
   ];
   const activeIndex = steps.findIndex((s) => !s.done);
@@ -61,7 +61,7 @@ export default function AppReceiptPage() {
       </div>
 
       <Card className="p-6 mt-4">
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-5">Escrow trail</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-5">Payment trail</p>
         <StatusRail steps={steps} activeIndex={activeIndex === -1 ? steps.length : activeIndex} />
         <div className="mt-4 flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-gold" /><span className="text-[11px] text-slate">Gold marks real ALATPay money movement.</span></div>
       </Card>

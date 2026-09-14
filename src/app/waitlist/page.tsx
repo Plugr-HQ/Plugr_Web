@@ -154,7 +154,7 @@ export default function WaitlistPage() {
               <ol className="wl-steps">
                 <li>Browse verified Plugs by trade &mdash; electricians, plumbers</li>
                 <li>View their verified badge, ratings, and completed job history</li>
-                <li>Book directly. Pay safely through escrow.</li>
+                <li>Book directly. Pay securely through Plugr.</li>
                 <li>Confirm the job is done right before payment releases.</li>
                 <li>Rate your Plug. Build the record.</li>
               </ol>
@@ -295,7 +295,7 @@ export default function WaitlistPage() {
         </div>
 
         <p className="wl-footer-line">
-          Plugr Technologies &middot; Under Alhazen &middot; Yaba, Lagos &middot; getplugr.com
+          Plugr Technologies &middot; Under Alhazen &middot; Quarter 25, Yabatech Staff Quarters, Yaba, Lagos &middot; getplugr.com
         </p>
         <p className="wl-footer-fine">
           Nigeria&rsquo;s first verified artisan identity platform &middot; &copy; 2026

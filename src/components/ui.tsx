@@ -181,6 +181,11 @@ const STATUS_TONE: Record<string, string> = {
   successful: 'bg-emerald-500/12 text-emerald-700',
 };
 
+// Display text where the raw status value is not fit to print as-is.
+const STATUS_TEXT: Record<string, string> = {
+  paid_escrow: 'payment held',
+};
+
 export function StatusChip({ status, className }: { status: string; className?: string }) {
   return (
     <span
@@ -191,7 +196,7 @@ export function StatusChip({ status, className }: { status: string; className?: 
       )}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
-      {status.replace('_', ' ')}
+      {STATUS_TEXT[status] ?? status.replace('_', ' ')}
     </span>
   );
 }

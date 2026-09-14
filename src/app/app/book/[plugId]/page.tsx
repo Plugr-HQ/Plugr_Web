@@ -107,7 +107,7 @@ export default function AppBookPage() {
 
       {amount && (
         <div className="mt-6 flex items-baseline justify-between px-1">
-          <span className="text-sm text-slate">Held in escrow</span>
+          <span className="text-sm text-slate">Held securely</span>
           <Money amount={amount} size="md" />
         </div>
       )}
