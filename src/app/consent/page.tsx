@@ -16,7 +16,7 @@ import { Section, SubSection, BulletList, Note, LegalHeader, ConsentItem } from 
  * item in a single transaction with account creation, per the plan in plugr-whatsapp-onboarding.
  */
 
-const DOC_VERSION = '2026-08-06';
+const DOC_VERSION = '2026-09';
 
 export default function DataConsentPage() {
   const [role, setRole] = useState<'client' | 'plug'>('client');
@@ -69,7 +69,7 @@ export default function DataConsentPage() {
         eyebrow="Legal"
         title="Data Consent &"
         highlight="Processing"
-        version={`Version ${DOC_VERSION} &nbsp;·&nbsp; getplugr.com`}
+        version={`Version ${DOC_VERSION}\u00a0 · \u00a0getplugr.com`}
       />
 
       <div className="max-w-3xl mx-auto px-5 py-12">
@@ -80,7 +80,7 @@ export default function DataConsentPage() {
               Privacy Policy
             </Link>
             . Where the Privacy Policy explains, in general terms, how Plugr handles personal data, this
-            page is where you give &mdash; and can review &mdash; specific, itemized consent for each way
+            page is where you give &mdash; and can review &mdash; specific, itemised consent for each way
             we use your data. Required items are necessary to create an account; optional items you can
             decline without affecting your access to the Platform.
           </p>
@@ -106,7 +106,7 @@ export default function DataConsentPage() {
             <BulletList items={[
               'Full name, phone number, and email address.',
               'Delivery/service address and approximate location for job matching.',
-              'Payment information, processed via Alatpay.',
+              'Payment information, processed via Monnify.',
               'Job requests, messages, and transaction history.',
               'WhatsApp interaction data relevant to bot conversations and support.',
             ]} />
@@ -114,10 +114,13 @@ export default function DataConsentPage() {
           <SubSection title="If you register as a Plug">
             <BulletList items={[
               'Full name, phone number, and email address.',
-              'National Identification Number (NIN) and other government-issued identity documents submitted for verification.',
+              'National Identification Number (NIN) and Bank Verification Number (BVN), submitted for identity verification.',
+              'A liveness check (photo/video capture confirming you are a real, present individual).',
+              'A named guarantor’s details, whose identity is also verified.',
+              'Responses to a trade-specific skills assessment, and background information including years of experience, training, and job history.',
               'Photographs, category/skill selection, and work history or references.',
               'Location data for job matching.',
-              'Verification status and results returned by our identity verification partner.',
+              'Verification status and results returned by our identity verification partner, Prembly.',
               'Job history, ratings, and transaction/payment records.',
             ]} />
           </SubSection>
@@ -125,13 +128,13 @@ export default function DataConsentPage() {
 
         <Section number="3" title="Why We Process It">
           <BulletList items={[
-            'Identity verification of Plugs, to confirm a real, traceable individual is behind each profile.',
-            'Account creation and authentication via WhatsApp OTP.',
+            'Identity verification of Plugs, to confirm a real, traceable individual is behind each profile and that they meet a baseline trade competency.',
+            'Account creation and authentication.',
             'Matching Clients with Plugs by category, location, and availability.',
             'Processing payments and maintaining transaction records.',
             'Providing customer support and resolving disputes.',
             'Platform security, fraud prevention, and abuse monitoring.',
-            'Service communications — booking confirmations, OTPs, status updates.',
+            'Service communications — booking confirmations, verification codes, status updates.',
             'Marketing communications about new features or promotions — optional, opt-in only.',
           ]} />
         </Section>
@@ -183,7 +186,7 @@ export default function DataConsentPage() {
                 checked={identityVerification}
                 onChange={setIdentityVerification}
                 required
-                label="I consent to identity verification, including submission of my NIN and related documents."
+                label="I consent to identity verification, including submission of my NIN, BVN, liveness check, guarantor details, and skills assessment."
               />
             )}
             <ConsentItem
@@ -221,10 +224,11 @@ export default function DataConsentPage() {
             <span className="mx-auto mb-4 grid place-items-center h-12 w-12 rounded-2xl bg-gold/15">
               <FileCheck2 className="w-6 h-6 text-gold" />
             </span>
-            <p className="font-display text-xl text-white">Plugr Technologies Limited</p>
-            <p className="text-bone-muted text-sm mt-1">A subsidiary of Alhazen · Lagos, Nigeria</p>
+            <p className="font-display text-xl text-white">Alhazen Technologies Limited</p>
+            <p className="text-bone-muted text-sm mt-1">Operating Plugr · Lagos, Nigeria</p>
             <div className="mt-6 space-y-2 text-sm">
               <p className="text-bone-muted"><span className="text-white font-semibold">Privacy inquiries:</span> privacy@getplugr.com</p>
+              <p className="text-bone-muted"><span className="text-white font-semibold">Phone:</span> +234 704 628 2789</p>
               <p className="text-bone-muted"><span className="text-white font-semibold">Address:</span> Quarter 25, Yabatech Staff Quarters, Yaba, Lagos</p>
               <p className="text-bone-muted"><span className="text-white font-semibold">Website:</span> getplugr.com</p>
             </div>

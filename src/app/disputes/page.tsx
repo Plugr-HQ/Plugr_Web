@@ -35,7 +35,7 @@ export default function DisputeResolutionPage() {
         eyebrow="Legal"
         title="Dispute Resolution"
         highlight="Policy"
-        version="Version 1.0 &nbsp;·&nbsp; Effective July 2026 &nbsp;·&nbsp; getplugr.com"
+        version="Version 1.1 &nbsp;·&nbsp; Effective September 2026 &nbsp;·&nbsp; getplugr.com"
       />
 
       <div className="max-w-3xl mx-auto px-5 py-12">
@@ -65,7 +65,7 @@ export default function DisputeResolutionPage() {
             'Quality of Services rendered.',
             'Payment amounts, refunds, or cancellation charges.',
             'Misconduct or misrepresentation by a Client or Plug.',
-            'Disagreements about a Plug&rsquo;s verification status or a Client&rsquo;s account status.',
+            'Disagreements about a Plug’s verification status or a Client’s account status.',
           ]} />
           <Note>
             This Policy does not cover criminal conduct (theft, assault, fraud) &mdash; report that to the
@@ -181,10 +181,11 @@ export default function DisputeResolutionPage() {
             <span className="mx-auto mb-4 grid place-items-center h-12 w-12 rounded-2xl bg-gold/15">
               <Gavel className="w-6 h-6 text-gold" />
             </span>
-            <p className="font-display text-xl text-white">Plugr Technologies Limited</p>
-            <p className="text-bone-muted text-sm mt-1">A subsidiary of Alhazen · Lagos, Nigeria</p>
+            <p className="font-display text-xl text-white">Alhazen Technologies Limited</p>
+            <p className="text-bone-muted text-sm mt-1">Operating Plugr · Lagos, Nigeria</p>
             <div className="mt-6 space-y-2 text-sm">
               <p className="text-bone-muted"><span className="text-white font-semibold">Dispute support:</span> support@getplugr.com</p>
+              <p className="text-bone-muted"><span className="text-white font-semibold">Phone:</span> +234 704 628 2789</p>
               <p className="text-bone-muted"><span className="text-white font-semibold">Address:</span> Quarter 25, Yabatech Staff Quarters, Yaba, Lagos</p>
               <p className="text-bone-muted"><span className="text-white font-semibold">Website:</span> getplugr.com</p>
             </div>

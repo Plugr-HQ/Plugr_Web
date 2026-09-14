@@ -8,7 +8,7 @@ import { Section, SubSection, BulletList, Note, LegalHeader } from '@/src/compon
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Plugr',
-  description: 'Learn how Plugr Technologies Limited collects, uses, and protects your personal information.',
+  description: 'Learn how Alhazen Technologies Limited, operating Plugr, collects, uses, and protects your personal information.',
 };
 
 export default function PrivacyPolicyPage() {
@@ -35,13 +35,13 @@ export default function PrivacyPolicyPage() {
         eyebrow="Legal"
         title="Privacy"
         highlight="Policy"
-        version="Version 1.0 &nbsp;·&nbsp; Effective July 2026 &nbsp;·&nbsp; getplugr.com"
+        version="Version 1.1 &nbsp;·&nbsp; Effective September 2026 &nbsp;·&nbsp; getplugr.com"
       />
 
       <div className="max-w-3xl mx-auto px-5 py-12">
         <div className="flex flex-col-reverse sm:flex-row sm:items-start sm:justify-between gap-6 mb-12">
           <p className="flex-1 text-[15px] leading-relaxed text-slate">
-            Plugr Technologies Limited (&ldquo;Plugr,&rdquo; &ldquo;we,&rdquo; &ldquo;our,&rdquo; or
+            Alhazen Technologies Limited (&ldquo;Plugr,&rdquo; &ldquo;we,&rdquo; &ldquo;our,&rdquo; or
             &ldquo;us&rdquo;) is committed to protecting your personal information. This Privacy Policy
             explains how we collect, use, share, and safeguard your data when you use the Plugr platform —
             including our website at <strong className="text-pitch-black font-semibold">getplugr.com</strong>,
@@ -61,11 +61,11 @@ export default function PrivacyPolicyPage() {
           <SubSection title="1.1 Information You Provide Directly">
             <p className="text-sm text-slate">When you register or use Plugr, we collect information you provide to us, including:</p>
             <BulletList items={[
-              <><strong className="text-pitch-black font-semibold">Identity Information:</strong> Full name, National Identity Number (NIN), profile photograph.</>,
+              <><strong className="text-pitch-black font-semibold">Identity Information:</strong> Full name, National Identity Number (NIN), Bank Verification Number (BVN, Plugs only), guarantor details (Plugs only), profile photograph.</>,
               <><strong className="text-pitch-black font-semibold">Contact Information:</strong> Phone number, email address, WhatsApp number.</>,
               <><strong className="text-pitch-black font-semibold">Location Information:</strong> City and state of residence or service area.</>,
-              <><strong className="text-pitch-black font-semibold">Professional Information (Plugs only):</strong> Trade/skill category (e.g., electrician, plumber), work history, certifications.</>,
-              <><strong className="text-pitch-black font-semibold">Account Credentials:</strong> Authentication tokens and session data.</>,
+              <><strong className="text-pitch-black font-semibold">Professional Information (Plugs only):</strong> Trade/skill category (e.g., electrician, plumber), skills assessment responses, work history, years of experience, training background, certifications.</>,
+              <><strong className="text-pitch-black font-semibold">Account Credentials:</strong> Password and authentication tokens, session data.</>,
               <><strong className="text-pitch-black font-semibold">Communications:</strong> Messages sent through our WhatsApp interface or in-app chat.</>,
             ]} />
           </SubSection>
@@ -84,15 +84,16 @@ export default function PrivacyPolicyPage() {
           <SubSection title="1.3 Information from Third Parties">
             <p className="text-sm text-slate">We may receive information about you from:</p>
             <BulletList items={[
-              <><strong className="text-pitch-black font-semibold">NIMC:</strong> To verify your NIN during onboarding.</>,
+              <><strong className="text-pitch-black font-semibold">NIMC (National Identity Management Commission):</strong> To verify your NIN during onboarding.</>,
+              <><strong className="text-pitch-black font-semibold">Prembly:</strong> Our identity verification partner, for NIN, BVN, liveness, and guarantor verification.</>,
               <><strong className="text-pitch-black font-semibold">Meta Platforms:</strong> When you interact with us via WhatsApp Business API.</>,
-              <><strong className="text-pitch-black font-semibold">Alatpay:</strong> Transaction status and confirmation data (we do not store full card details).</>,
+              <><strong className="text-pitch-black font-semibold">Monnify:</strong> Transaction status and confirmation data (we do not store full card details).</>,
             ]} />
           </SubSection>
 
           <Note>
-            We collect your NIN solely for identity verification purposes. Your NIN is processed securely
-            and is never shared with third parties beyond verification service providers.
+            We collect your NIN and BVN solely for identity verification purposes. This data is processed
+            securely and is never shared with third parties beyond verification service providers.
           </Note>
         </Section>
 
@@ -100,7 +101,7 @@ export default function PrivacyPolicyPage() {
           <p className="text-sm text-slate mb-4">Plugr uses your personal information for the following purposes:</p>
           <BulletList items={[
             <><strong className="text-pitch-black font-semibold">Account Creation and Management:</strong> To register, authenticate, and manage your Plugr account.</>,
-            <><strong className="text-pitch-black font-semibold">Identity Verification:</strong> To verify the identity of Plugs using government-issued NIN.</>,
+            <><strong className="text-pitch-black font-semibold">Identity Verification:</strong> To verify the identity of Plugs using government-issued NIN, BVN, liveness checks, guarantor confirmation, and a trade skills assessment.</>,
             <><strong className="text-pitch-black font-semibold">Service Matching:</strong> To connect Clients with verified Plugs based on location, trade, and availability.</>,
             <><strong className="text-pitch-black font-semibold">WhatsApp Communication:</strong> To send service notifications, onboarding flows, job updates, and support messages.</>,
             <><strong className="text-pitch-black font-semibold">Payment Processing:</strong> To facilitate secure transactions between Clients and Plugs.</>,
@@ -129,7 +130,7 @@ export default function PrivacyPolicyPage() {
               <Link href="/consent" className="text-pitch-black font-semibold underline decoration-gold/40 hover:decoration-gold">
                 Data Consent &amp; Processing Agreement
               </Link>{' '}
-              for the itemized record of what you&rsquo;ve agreed to.</>,
+              for the itemised record of what you&rsquo;ve agreed to.</>,
           ]} />
         </Section>
 
@@ -138,15 +139,15 @@ export default function PrivacyPolicyPage() {
             <BulletList items={[
               "Clients can view a Plug's name, trade, rating, city, and verification status.",
               "Plugs can view a Client's name, job description, and location when matched.",
-              "Neither party receives the other's NIN, email address, or full contact details without explicit consent.",
+              "Neither party receives the other's NIN, BVN, email address, or full contact details without explicit consent.",
             ]} />
           </SubSection>
           <SubSection title="4.2 With Service Providers">
             <BulletList items={[
               <><strong className="text-pitch-black font-semibold">Cloud Infrastructure:</strong> Render (hosting), Neon (database), Upstash (caching).</>,
               <><strong className="text-pitch-black font-semibold">AI Services:</strong> Google Gemini for conversational AI features.</>,
-              <><strong className="text-pitch-black font-semibold">Identity Verification:</strong> NIMC-accredited NIN verification providers.</>,
-              <><strong className="text-pitch-black font-semibold">Payment Processing:</strong> Alatpay for secure payment handling. Plugr may change its payment processing partner from time to time; the current partner is always disclosed here.</>,
+              <><strong className="text-pitch-black font-semibold">Identity Verification:</strong> Prembly and NIMC-accredited providers, for NIN, BVN, liveness, and guarantor verification.</>,
+              <><strong className="text-pitch-black font-semibold">Payment Processing:</strong> Monnify for secure payment handling. Plugr may change its payment processing partner from time to time; the current partner is always disclosed here.</>,
               <><strong className="text-pitch-black font-semibold">Messaging:</strong> Meta Platforms for WhatsApp Business API services.</>,
             ]} />
           </SubSection>
@@ -166,9 +167,9 @@ export default function PrivacyPolicyPage() {
 
         <Section number="5" title="Data Retention">
           <BulletList items={[
-            <><strong className="text-pitch-black font-semibold">Active Account Data:</strong> Retained for the duration of your account and for 2 years after closure.</>,
+            <><strong className="text-pitch-black font-semibold">Active Account Data:</strong> Retained for the duration of your account and for 2 years after account closure.</>,
             <><strong className="text-pitch-black font-semibold">Transaction Records:</strong> Retained for 7 years in compliance with Nigerian financial regulations.</>,
-            <><strong className="text-pitch-black font-semibold">NIN Verification Records:</strong> Retained for the period required by NIMC guidelines.</>,
+            <><strong className="text-pitch-black font-semibold">Identity Verification Records (NIN, BVN, guarantor):</strong> Retained for the period required by NIMC and applicable financial regulations.</>,
             <><strong className="text-pitch-black font-semibold">Communication Logs:</strong> Retained for 1 year for dispute resolution and safety purposes.</>,
             <><strong className="text-pitch-black font-semibold">Marketing Data:</strong> Retained until you withdraw consent or request deletion.</>,
           ]} />
@@ -179,50 +180,51 @@ export default function PrivacyPolicyPage() {
 
         <Section number="6" title="Data Security">
           <BulletList items={[
-            <><strong className="text-pitch-black font-semibold">Encryption in Transit:</strong> All data transmitted is encrypted using TLS 1.3.</>,
+            <><strong className="text-pitch-black font-semibold">Encryption in Transit:</strong> All data transmitted between your device and our servers is encrypted using TLS 1.3.</>,
             <><strong className="text-pitch-black font-semibold">Encryption at Rest:</strong> Sensitive data stored in our databases is encrypted at rest.</>,
             <><strong className="text-pitch-black font-semibold">WhatsApp Flow Encryption:</strong> All data exchanged through WhatsApp Flows is end-to-end encrypted using RSA-2048 and AES-128.</>,
             <><strong className="text-pitch-black font-semibold">Access Controls:</strong> Role-based access controls limit data access to authorised personnel only.</>,
-            <><strong className="text-pitch-black font-semibold">Authentication:</strong> JWT-based authentication with token refresh mechanisms.</>,
+            <><strong className="text-pitch-black font-semibold">Authentication:</strong> Password-based authentication with token refresh mechanisms.</>,
             <><strong className="text-pitch-black font-semibold">Rate Limiting:</strong> API rate limiting to prevent abuse and brute-force attacks.</>,
             <><strong className="text-pitch-black font-semibold">Regular Audits:</strong> Periodic security assessments and vulnerability testing.</>,
           ]} />
           <Note>
-            While we employ industry-standard security measures, no system is completely secure.
-            Report any suspicious activity to privacy@getplugr.com.
+            While we employ industry-standard security measures, no system is completely secure. We
+            encourage you to use a strong, unique password and report any suspicious activity to
+            privacy@getplugr.com.
           </Note>
         </Section>
 
         <Section number="7" title="Your Privacy Rights">
           <p className="text-sm text-slate mb-4">
-            Under the Nigeria Data Protection Act (NDPA) 2023, you have the following rights:
+            Under the Nigeria Data Protection Act (NDPA) 2023 and applicable law, you have the following rights:
           </p>
           <BulletList items={[
             <><strong className="text-pitch-black font-semibold">Right of Access:</strong> Request a copy of the personal data we hold about you.</>,
-            <><strong className="text-pitch-black font-semibold">Right to Rectification:</strong> Request correction of inaccurate or incomplete data.</>,
-            <><strong className="text-pitch-black font-semibold">Right to Erasure:</strong> Request deletion of your data where we have no legitimate reason to continue processing it.</>,
-            <><strong className="text-pitch-black font-semibold">Right to Restriction:</strong> Request that we restrict processing in certain circumstances.</>,
+            <><strong className="text-pitch-black font-semibold">Right to Rectification:</strong> Request correction of inaccurate or incomplete personal data.</>,
+            <><strong className="text-pitch-black font-semibold">Right to Erasure:</strong> Request deletion of your personal data where we have no legitimate reason to continue processing it.</>,
+            <><strong className="text-pitch-black font-semibold">Right to Restriction:</strong> Request that we restrict processing of your personal data in certain circumstances.</>,
             <><strong className="text-pitch-black font-semibold">Right to Data Portability:</strong> Receive your data in a structured, machine-readable format.</>,
-            <><strong className="text-pitch-black font-semibold">Right to Object:</strong> Object to processing based on legitimate interests or for marketing purposes.</>,
-            <><strong className="text-pitch-black font-semibold">Right to Withdraw Consent:</strong> Withdraw consent at any time where processing is consent-based.</>,
+            <><strong className="text-pitch-black font-semibold">Right to Object:</strong> Object to processing of your data based on legitimate interests or for marketing purposes.</>,
+            <><strong className="text-pitch-black font-semibold">Right to Withdraw Consent:</strong> Withdraw consent at any time where processing is based on consent.</>,
             <><strong className="text-pitch-black font-semibold">Right to Lodge a Complaint:</strong> File a complaint with the Nigeria Data Protection Commission (NDPC).</>,
           ]} />
           <p className="text-sm text-slate mt-4">
             To exercise any of these rights, contact us at{' '}
-            <strong className="text-pitch-black font-semibold">privacy@getplugr.com</strong>. We will respond within 30 days.
+            <strong className="text-pitch-black font-semibold">privacy@getplugr.com</strong>. We will respond within 30 days of receiving your request.
           </p>
         </Section>
 
         <Section number="8" title="WhatsApp and Third-Party Services">
           <BulletList items={[
             'Your WhatsApp phone number and messages are processed by Meta in accordance with their Privacy Policy.',
-            'Data submitted through WhatsApp Flows is encrypted and transmitted securely to Plugr servers.',
+            'Data you submit through WhatsApp Flows is encrypted and transmitted securely to Plugr’s servers.',
             'We do not share your WhatsApp data with third parties beyond what is necessary to provide the service.',
             'You can opt out of WhatsApp communications at any time by replying STOP to any Plugr message.',
           ]} />
           <p className="text-sm text-slate mt-4">
             Plugr is not responsible for the privacy practices of third-party platforms. We encourage you
-            to review the privacy policies of Meta, Alatpay, and other service providers you interact with.
+            to review the privacy policies of Meta, Monnify, Prembly, and other service providers you interact with.
           </p>
         </Section>
 
@@ -233,42 +235,41 @@ export default function PrivacyPolicyPage() {
           </p>
           <p className="text-sm text-slate">
             If you believe we have inadvertently collected information from a minor, please contact us
-            immediately at <strong className="text-pitch-black font-semibold">privacy@getplugr.com</strong> and we will delete such information promptly.
+            immediately at <strong className="text-pitch-black font-semibold">privacy@getplugr.com</strong> and we will take steps to delete such information promptly.
           </p>
         </Section>
 
         <Section number="10" title="Cookies and Tracking Technologies">
           <BulletList items={[
             <><strong className="text-pitch-black font-semibold">Essential Cookies:</strong> Required for the platform to function correctly (authentication, session management).</>,
-            <><strong className="text-pitch-black font-semibold">Analytics Cookies:</strong> Help us understand how users interact with our platform.</>,
+            <><strong className="text-pitch-black font-semibold">Analytics Cookies:</strong> Help us understand how users interact with our platform (e.g., page views, feature usage).</>,
             <><strong className="text-pitch-black font-semibold">Preference Cookies:</strong> Remember your settings and preferences.</>,
           ]} />
           <p className="text-sm text-slate mt-4">
-            You can control cookies through your browser settings. We do not use cookies for
-            cross-site advertising or tracking.
+            You can control cookies through your browser settings. Disabling certain cookies may affect the
+            functionality of the Plugr platform. We do not use cookies for cross-site advertising or tracking.
           </p>
         </Section>
 
         <Section number="11" title="International Data Transfers">
-          <p className="text-sm text-slate mb-4">
-            Plugr is incorporated in Nigeria and primarily processes data within Nigeria. However, some
-            third-party providers may process data outside Nigeria, including in the United States and EU.
-          </p>
           <p className="text-sm text-slate">
-            Where data is transferred internationally, we ensure appropriate safeguards are in place in
-            accordance with the NDPA 2023.
+            Plugr is incorporated in Nigeria and primarily processes data within Nigeria. However, some of
+            our third-party service providers may process data outside Nigeria, including in the United
+            States and European Union. Where data is transferred internationally, we ensure appropriate
+            safeguards are in place, including standard contractual clauses and data processing agreements,
+            in accordance with the NDPA 2023.
           </p>
         </Section>
 
         <Section number="12" title="Changes to This Privacy Policy">
           <BulletList items={[
-            'We will update the Effective Date at the top of this document.',
+            'We will update the “Effective Date” at the top of this document.',
             'We will notify registered users via email or WhatsApp message.',
             'For material changes, we may request renewed consent where required by law.',
           ]} />
           <p className="text-sm text-slate mt-4">
-            Your continued use of the Plugr platform after the effective date constitutes acceptance
-            of the updated policy.
+            Your continued use of the Plugr platform after the effective date of any changes constitutes
+            your acceptance of the updated policy. We encourage you to review this policy periodically.
           </p>
         </Section>
 
@@ -277,18 +278,19 @@ export default function PrivacyPolicyPage() {
             <span className="mx-auto mb-4 grid place-items-center h-12 w-12 rounded-2xl bg-gold/15">
               <ShieldCheck className="w-6 h-6 text-gold" />
             </span>
-            <p className="font-display text-xl text-white">Plugr Technologies Limited</p>
-            <p className="text-bone-muted text-sm mt-1">A subsidiary of Alhazen · Lagos, Nigeria</p>
+            <p className="font-display text-xl text-white">Alhazen Technologies Limited</p>
+            <p className="text-bone-muted text-sm mt-1">Operating Plugr · Lagos, Nigeria</p>
 
             <div className="mt-6 space-y-2 text-sm">
               <p className="text-bone-muted"><span className="text-white font-semibold">Privacy inquiries:</span> privacy@getplugr.com</p>
               <p className="text-bone-muted"><span className="text-white font-semibold">General support:</span> support@getplugr.com</p>
+              <p className="text-bone-muted"><span className="text-white font-semibold">Phone:</span> +234 704 628 2789</p>
               <p className="text-bone-muted"><span className="text-white font-semibold">Address:</span> Quarter 25, Yabatech Staff Quarters, Yaba, Lagos</p>
               <p className="text-bone-muted"><span className="text-white font-semibold">Website:</span> getplugr.com</p>
             </div>
 
             <div className="mt-6 pt-6 border-t border-white/10">
-              <p className="text-bone-muted text-[13px]">For regulatory complaints</p>
+              <p className="text-bone-muted text-[13px]">For complaints to the regulatory authority</p>
               <p className="text-white font-semibold text-sm mt-0.5">Nigeria Data Protection Commission (NDPC)</p>
               <p className="text-bone-muted text-[13px]">www.ndpc.gov.ng</p>
             </div>

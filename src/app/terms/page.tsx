@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArrowRight, Download, Scale } from 'lucide-react';
 import { PlugrWordmark } from '@/src/components/Brand';
 import { SiteFooter } from '@/src/components/SiteFooter';
-import { Section, SubSection, BulletList, Note, LegalHeader } from '@/src/components/legal/LegalPageParts';
+import { Section, SubSection, BulletList, LegalHeader } from '@/src/components/legal/LegalPageParts';
 
 export const metadata: Metadata = {
   title: 'Terms of Service | Plugr',
@@ -35,7 +35,7 @@ export default function TermsOfServicePage() {
         eyebrow="Legal"
         title="Terms of"
         highlight="Service"
-        version="Version 1.0 &nbsp;·&nbsp; Effective July 2026 &nbsp;·&nbsp; getplugr.com"
+        version="Version 1.1 &nbsp;·&nbsp; Effective September 2026 &nbsp;·&nbsp; getplugr.com"
       />
 
       <div className="max-w-3xl mx-auto px-5 py-12">
@@ -61,7 +61,7 @@ export default function TermsOfServicePage() {
 
         <Section number="1" title="Definitions">
           <BulletList items={[
-            <><strong className="text-pitch-black font-semibold">Plugr / Platform:</strong> the service operated by Plugr Technologies Limited connecting Clients with verified service providers.</>,
+            <><strong className="text-pitch-black font-semibold">Plugr / Platform:</strong> the service operated by Alhazen Technologies Limited connecting Clients with verified service providers.</>,
             <><strong className="text-pitch-black font-semibold">Plug:</strong> a verified service provider offering services through the Platform.</>,
             <><strong className="text-pitch-black font-semibold">Client:</strong> a user who requests or books services through the Platform.</>,
             <><strong className="text-pitch-black font-semibold">Job:</strong> a specific service engagement arranged between a Client and a Plug through the Platform.</>,
@@ -72,11 +72,12 @@ export default function TermsOfServicePage() {
         <Section number="2" title="Eligibility and Registration">
           <p className="text-sm text-slate">
             You must be at least 18 years old and capable of forming a binding contract under Nigerian law
-            to use the Platform. Registration is completed via WhatsApp OTP verification tied to a valid,
-            active phone number. You are responsible for keeping your phone number and account access
-            secure, and for all activity that occurs under your account. Plugs must additionally complete
-            identity verification, including submission of a valid NIN, before their profile is made
-            visible to Clients.
+            to use the Platform. Plug registration is completed in person, with a password set at the time
+            of onboarding; SMS or WhatsApp verification codes may additionally be used as a background
+            security check, but are not the primary method of authentication. You are responsible for
+            keeping your account credentials and access secure, and for all activity that occurs under
+            your account. Plugs must additionally complete identity verification before their profile is
+            made visible to Clients.
           </p>
         </Section>
 
@@ -91,29 +92,32 @@ export default function TermsOfServicePage() {
         </Section>
 
         <Section number="4" title="Verification and Its Limits">
-          <p className="text-sm text-slate">
-            Plugr verifies each Plug&rsquo;s identity using their NIN, via NIMC-accredited verification
-            providers, before allowing that Plug&rsquo;s profile to appear on the Platform. This
-            verification confirms that a real, traceable individual is behind a profile. It is not a
-            guarantee of a Plug&rsquo;s skill, workmanship, reliability, or the outcome of any Job. Clients
-            are responsible for satisfying themselves that a Plug is suitable for a given Job, including by
-            reviewing ratings and history where available.
+          <p className="text-sm text-slate mb-4">
+            Before a Plug&rsquo;s profile appears on the Platform, Plugr verifies their identity using their
+            National Identity Number (NIN) and Bank Verification Number (BVN), a liveness check, and a
+            named guarantor whose identity is also verified, through Prembly and other accredited
+            verification providers. Plugs also complete a scored, trade-specific skills assessment and
+            provide background information (including years of experience and prior training) as part of
+            the verification process, which is reviewed before a Plug is granted Verified status.
           </p>
-          <Note>
-            Verification confirms identity, not quality of work. Review ratings, history, and job scope
-            before confirming a booking.
-          </Note>
+          <p className="text-sm text-slate">
+            This verification confirms that a real, traceable individual is behind a profile and that the
+            Plug has met a baseline competency threshold for their trade. It is not a guarantee of
+            workmanship, reliability, or the outcome of any specific Job. Clients are responsible for
+            satisfying themselves that a Plug is suitable for a given Job, including by reviewing ratings
+            and history where available.
+          </p>
         </Section>
 
         <Section number="5" title="Fees and Payments">
           <p className="text-sm text-slate">
             Fees payable for a Job, and any platform service fee retained by Plugr, are disclosed to both
             parties before a Job is confirmed. Payments are processed through our payment partner,
-            Alatpay. Plugr does not store full payment card details; payment data is handled per our{' '}
+            Monnify. Plugr does not store full payment card details; payment data is handled per our{' '}
             <Link href="/privacy" className="text-pitch-black font-semibold underline decoration-gold/40 hover:decoration-gold">
               Privacy Policy
             </Link>{' '}
-            and Alatpay&rsquo;s own terms. Plugr may change its payment processing partner from time to
+            and Monnify&rsquo;s own terms. Plugr may change its payment processing partner from time to
             time; the current partner is always disclosed here and in the Privacy Policy. Plugs are
             responsible for their own tax obligations arising from income earned through the Platform.
           </p>
@@ -122,11 +126,11 @@ export default function TermsOfServicePage() {
         <Section number="6" title="User Conduct">
           <p className="text-sm text-slate mb-2">You agree not to:</p>
           <BulletList items={[
-            'Provide false, misleading, or another person&rsquo;s identity information during registration or verification.',
+            'Provide false, misleading, or another person’s identity information during registration or verification.',
             'Use the Platform to arrange payment or communication outside the Platform for the purpose of avoiding fees, where this undermines dispute protections.',
             'Harass, threaten, defraud, or discriminate against another user.',
             'Use the Platform for any unlawful purpose.',
-            'Attempt to interfere with, reverse-engineer, or disrupt the Platform&rsquo;s operation or security.',
+            'Attempt to interfere with, reverse-engineer, or disrupt the Platform’s operation or security.',
           ]} />
           <p className="text-sm text-slate mt-4">
             Plugr may suspend or terminate accounts that violate these Terms, at its reasonable discretion,
@@ -149,7 +153,7 @@ export default function TermsOfServicePage() {
         <Section number="8" title="Intellectual Property">
           <p className="text-sm text-slate">
             The Platform, including its software, branding, and content (excluding user-submitted content
-            and third-party content), is owned by Plugr Technologies Limited / Alhazen and protected by
+            and third-party content), is owned by Alhazen Technologies Limited and protected by
             applicable intellectual property laws. You are granted a limited, non-exclusive,
             non-transferable license to use the Platform for its intended purpose. You may not copy,
             modify, or distribute any part of the Platform without our written consent.
@@ -178,8 +182,8 @@ export default function TermsOfServicePage() {
 
         <Section number="11" title="Indemnification">
           <p className="text-sm text-slate">
-            You agree to indemnify and hold Plugr, Alhazen, and their officers and employees harmless from
-            any claim, loss, or liability arising from your breach of these Terms, your misuse of the
+            You agree to indemnify and hold Alhazen Technologies Limited, operating Plugr, and its officers
+            and employees harmless from any claim, loss, or liability arising from your breach of these Terms, your misuse of the
             Platform, or your conduct in connection with a Job.
           </p>
         </Section>
@@ -219,11 +223,12 @@ export default function TermsOfServicePage() {
             <span className="mx-auto mb-4 grid place-items-center h-12 w-12 rounded-2xl bg-gold/15">
               <Scale className="w-6 h-6 text-gold" />
             </span>
-            <p className="font-display text-xl text-white">Plugr Technologies Limited</p>
-            <p className="text-bone-muted text-sm mt-1">A subsidiary of Alhazen · Lagos, Nigeria</p>
+            <p className="font-display text-xl text-white">Alhazen Technologies Limited</p>
+            <p className="text-bone-muted text-sm mt-1">Operating Plugr · Lagos, Nigeria</p>
             <div className="mt-6 space-y-2 text-sm">
               <p className="text-bone-muted"><span className="text-white font-semibold">Legal inquiries:</span> legal@getplugr.com</p>
               <p className="text-bone-muted"><span className="text-white font-semibold">General support:</span> support@getplugr.com</p>
+              <p className="text-bone-muted"><span className="text-white font-semibold">Phone:</span> +234 704 628 2789</p>
               <p className="text-bone-muted"><span className="text-white font-semibold">Address:</span> Quarter 25, Yabatech Staff Quarters, Yaba, Lagos</p>
               <p className="text-bone-muted"><span className="text-white font-semibold">Website:</span> getplugr.com</p>
             </div>
