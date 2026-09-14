@@ -120,9 +120,14 @@ export function SiteFooter() {
 
         {/* --- rule: copyright + socials ---------------------------------------------- */}
         <div className="mt-12 flex flex-col items-start gap-5 border-t border-white/10 pt-7 md:mt-16 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[11px] uppercase tracking-[0.14em] text-bone-muted">
-            © 2026 Alhazen. All rights reserved.
-          </p>
+          {/* The operating-entity disclosure payment providers ask for — stated plainly, on every
+              page that carries this footer, not only inside the legal documents. */}
+          <div>
+            <p className="text-sm text-bone">Plugr is powered by Alhazen Technologies Limited.</p>
+            <p className="mt-1.5 text-[11px] uppercase tracking-[0.14em] text-bone-muted">
+              © 2026 Alhazen Technologies Limited. All rights reserved.
+            </p>
+          </div>
           <div className="flex flex-wrap items-center gap-x-7 gap-y-3">
             {SOCIALS.map((s) => (
               <a
