@@ -581,7 +581,7 @@ function SupportRow() {
         <span className="font-bold text-pitch-black">Stuck?</span> Our team can verify you manually.
       </p>
       <a
-        href="mailto:hello@getplugr.com?subject=Verification%20help"
+        href="mailto:support@getplugr.com?subject=Verification%20help"
         className="shrink-0 inline-flex items-center gap-1.5 rounded-pill bg-pitch-black px-4 py-2 text-[13px] font-bold text-white hover:bg-petrol transition-colors"
       >
         <LifeBuoy className="w-4 h-4" /> Contact support
