@@ -25,6 +25,7 @@ import { DashboardSkeleton } from '@/src/components/Skeleton';
 import { withSource } from '@/src/lib/apiSource';
 import { authHeaders } from '@/src/lib/api';
 import { plugStatusLabel } from '@/src/lib/jobStatusLadder';
+import { loadItemStates, summarize, type HubSummary } from '@/src/app/app/_lib/verificationHub';
 
 function hhmm(total: number) {
   const h = Math.floor(total / 3600);
@@ -76,9 +77,12 @@ export function DashboardScreen({ base }: { base: string }) {
   // Seeded from sessionStorage on mount (not in the initializer) so server and first client
   // render agree — reading storage during render is a hydration mismatch.
   const [promptDismissed, setPromptDismissed] = useState(true);
+  // Verification Hub progress for the entry card — per-device state, read after mount.
+  const [hub, setHub] = useState<HubSummary | null>(null);
 
   useEffect(() => {
     setPromptDismissed(profilePromptDismissed());
+    setHub(summarize(loadItemStates(getPlugId() ?? '')));
   }, []);
   const unlocked = useRef(false);
 
@@ -264,6 +268,28 @@ export function DashboardScreen({ base }: { base: string }) {
             </div>
           </div>
         </Card>
+      )}
+
+      {/* Verification Hub entry — the six-item checklist. */}
+      {hub && (
+        <Link href={`${base}/plug/verification`} className="mt-4 block rise rise-1">
+          <Card className="p-4 transition-colors hover:border-gold/60">
+            <div className="flex items-center gap-3">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-pitch-black text-gold">
+                <ShieldCheck className="h-5 w-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="font-bold text-pitch-black">Verification</p>
+                <p className="mt-0.5 text-[13px] text-slate">
+                  {hub.status === 'under_review'
+                    ? 'All items complete — under review'
+                    : `${hub.requiredVerified} of ${hub.requiredTotal} required items verified`}
+                </p>
+              </div>
+              <ArrowRight className="h-4 w-4 shrink-0 text-pitch-black" />
+            </div>
+          </Card>
+        </Link>
       )}
 
       {/* Earnings — most prominent after the hero */}
