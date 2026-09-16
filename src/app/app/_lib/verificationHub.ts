@@ -5,10 +5,11 @@
 // Six items, each independently completable in any order. None blocks another, and none blocks
 // the account: verification happens after signup, from the Plug's own dashboard.
 //
-//   nin_liveness  NIN + liveness      (Didit — not integrated yet)
+//   nin_liveness  NIN + liveness      (Didit — live; status comes from the backend, see below)
 //   bvn           BVN                 (vendor pending confirmation)
 //   guarantor     Guarantor           (a human on the other end → pending review)
 //   skills        Skills assessment   (a human on the other end → pending review)
+//   (nin_liveness can also sit in pending review: Didit may send a check to manual review)
 //   background    Background info
 //   certificates  Certificates        (OPTIONAL — never blocks the overall status)
 //
@@ -16,9 +17,10 @@
 // That is a Plug-facing status only: nothing here grants eligibility. Dispatch eligibility is
 // enforced server-side (Plugr_Backend plug-eligibility.ts) and an ops review decides it.
 //
-// STORAGE SEAM: item state lives in localStorage, per Plug id, because no backend model for these
-// items exists yet. It is per-device and not authoritative. When the backend lands, replace
-// `loadItemStates` / `saveItemStates` with API calls — the screens only use this module's exports.
+// STORAGE SEAM: item state lives in localStorage, per Plug id, because no backend model exists for
+// most items yet. It is per-device and not authoritative. The exception is nin_liveness: its truth is
+// the backend (Didit's signed webhook → PlugProfile.identityStatus). The Hub fetches it and caches it
+// here with `saveServerItemState`, so the dashboard card and an offline Hub show the last known value.
 
 export type VerificationItemKey =
   | 'nin_liveness'
@@ -49,9 +51,10 @@ export const VERIFICATION_ITEMS: VerificationItem[] = [
     key: 'nin_liveness',
     slug: 'identity',
     title: 'NIN + face scan',
-    summary: 'Confirm your National Identification Number and take a quick face scan.',
+    summary: 'Photograph your ID and take a quick face scan.',
     required: true,
-    needsHumanReview: false,
+    // Didit can route a check to manual review before deciding.
+    needsHumanReview: true,
   },
   {
     key: 'bvn',
@@ -215,6 +218,54 @@ export function saveItemStates(plugId: string, states: ItemStates): void {
   } catch {
     // Storage full or blocked — the in-memory state still drives the current screen.
   }
+}
+
+// ─── Identity (Didit) status from the backend ───────────────────────────────────────────────
+
+/** PlugProfile.identityStatus, as returned by GET /api/plug/verification/identity. */
+export type IdentityServerStatus =
+  | 'NOT_STARTED'
+  | 'IN_PROGRESS'
+  | 'IN_REVIEW'
+  | 'APPROVED'
+  | 'DECLINED'
+  | 'RESUBMIT_REQUESTED'
+  | 'ABANDONED'
+  | 'EXPIRED'
+  | 'KYC_EXPIRED';
+
+/**
+ * The Hub state for the identity item. Anything the Plug can act on again — declined, expired,
+ * abandoned, a resubmission request — is in_progress, so the item stays tappable and its screen
+ * explains why.
+ */
+export function identityItemState(status: IdentityServerStatus | string | null | undefined): ItemState {
+  switch (status) {
+    case 'APPROVED':
+      return 'verified';
+    case 'IN_REVIEW':
+      return 'pending_review';
+    case 'IN_PROGRESS':
+    case 'DECLINED':
+    case 'RESUBMIT_REQUESTED':
+    case 'ABANDONED':
+    case 'EXPIRED':
+    case 'KYC_EXPIRED':
+      return 'in_progress';
+    default:
+      return 'not_started';
+  }
+}
+
+/**
+ * Cache a state that came from the server. Unlike `transition`, this does not check the local state
+ * machine: the server is authoritative and can legitimately jump (e.g. not_started → verified when a
+ * decision lands for a session started on another device).
+ */
+export function saveServerItemState(plugId: string, key: VerificationItemKey, state: ItemState): ItemStates {
+  const next = { ...loadItemStates(plugId), [key]: state };
+  saveItemStates(plugId, next);
+  return next;
 }
 
 // ─── Test seeds (non-production only) ───────────────────────────────────────────────────────

@@ -34,13 +34,16 @@ import {
 import { Shell } from '@/src/components/Shell';
 import { cn } from '@/src/lib/utils';
 import { getPlugId } from '@/src/app/app/_lib/plugAuth';
+import { apiFetch } from '@/src/lib/api-client';
 import {
   VERIFICATION_ITEMS,
   SEEDS,
   seedsEnabled,
+  identityItemState,
   isActionable,
   loadItemStates,
   saveItemStates,
+  saveServerItemState,
   summarize,
   type ItemState,
   type ItemStates,
@@ -65,12 +68,24 @@ export function VerificationHubScreen({ base }: { base: string }) {
     const plugId = getPlugId() ?? '';
 
     // Non-production test seeds: /app/plug/verification?seed=none|partial|review|all
+    let seeded = false;
     if (seedsEnabled) {
       const seed = new URLSearchParams(window.location.search).get('seed');
-      if (seed && SEEDS[seed]) saveItemStates(plugId, SEEDS[seed]);
+      if (seed && SEEDS[seed]) {
+        saveItemStates(plugId, SEEDS[seed]);
+        seeded = true;
+      }
     }
 
     setStates(loadItemStates(plugId));
+
+    // NIN + face scan is decided server-side (Didit's signed webhook), so its state comes from the
+    // backend. Skipped while a test seed is loaded; on failure the last cached value stays on screen.
+    if (!seeded) {
+      apiFetch('/api/plug/verification/identity', { cache: 'no-store' }, { skipAuthRedirect: true })
+        .then((body) => setStates(saveServerItemState(plugId, 'nin_liveness', identityItemState(body?.status))))
+        .catch(() => {});
+    }
   }, []);
 
   return (
@@ -222,7 +237,9 @@ function ItemRow({ base, item, state }: { base: string; item: VerificationItem; 
           {pending
             ? item.key === 'guarantor'
               ? 'Waiting for your guarantor to respond and our team to confirm. This can take a few days.'
-              : 'Waiting on your skills call to be reviewed. This can take a few days.'
+              : item.key === 'nin_liveness'
+                ? 'Your ID check is with a reviewer. We’ll update this when there’s a decision.'
+                : 'Waiting on your skills call to be reviewed. This can take a few days.'
             : item.summary}
         </p>
       </div>

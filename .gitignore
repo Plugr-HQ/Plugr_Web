@@ -7,3 +7,6 @@ node_modules/
 .devlog.txt
 .buildlog.txt
 .install.log
+
+# local secrets (e.g. DIDIT_API_KEY, DIDIT_WEBHOOK_SECRET) — never commit
+.env*.local
