@@ -4,17 +4,16 @@
 //
 // Signup no longer collects NIN, so a brand-new Plug has a working account, a dashboard, and a
 // profile, but cannot be dispatched to anyone. This is what tells them so, and points at where
-// verification actually happens (/onboarding/verify).
+// verification actually happens: the Verification Hub (/app/plug/verification). The old standalone
+// NIN screen (/onboarding/verify) is retired — its code remains, but nothing links to it.
 //
 // IMPORTANT — this is a NUDGE, not a gate. It can be dismissed, and dismissing it is fine: the
 // real enforcement is server-side (Plugr_Backend: plug-eligibility.ts), where an unverified Plug
 // is excluded from dispatch and refused on job acceptance regardless of anything the UI shows.
 // Never treat this dialog as the thing that stops unverified work.
 //
-// STRUCTURE FOR LIVENESS: the body is a step LIST, not a single NIN paragraph. Liveness is
-// already listed as the second step with `pending` styling and no link of its own, because it
-// happens on the same /onboarding/verify screen right after the NIN step. When the liveness SDK
-// is wired, that step gets its own state here and nothing else in this component changes.
+// The step list previews the Hub's identity item: the NIN check at NIMC and the selfie matched to the
+// NIN photo run as one check, so the selfie step has no link of its own.
 
 'use client';
 
@@ -40,14 +39,14 @@ const STEPS: Step[] = [
     key: 'nin',
     icon: <ShieldCheck className="h-4 w-4" />,
     label: 'Verify your NIN',
-    body: 'Checked against the national register. Never shown on your profile.',
+    body: 'Checked against the national register (NIMC). Never shown on your profile.',
     state: 'now',
   },
   {
     key: 'liveness',
     icon: <ScanFace className="h-4 w-4" />,
-    label: 'Face scan',
-    body: 'A quick liveness check, right after your NIN — same screen.',
+    label: 'Selfie',
+    body: 'Matched to your NIN photo, in the same check.',
     state: 'next',
   },
 ];
@@ -149,7 +148,7 @@ export function CompleteProfileDialog({ base, onClose }: { base: string; onClose
         </ul>
 
         <Link
-          href={`${base}/onboarding/verify`}
+          href={`${base}/plug/verification`}
           onClick={dismiss}
           className="mt-6 flex w-full items-center justify-center gap-2 rounded-pill bg-gold px-6 py-4 font-bold text-pitch-black transition-all hover:bg-gold-light active:scale-[0.98]"
         >

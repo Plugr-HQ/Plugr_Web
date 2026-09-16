@@ -259,7 +259,7 @@ export function DashboardScreen({ base }: { base: string }) {
               </p>
               {needsIdentity && (
                 <Link
-                  href={`${base}/onboarding/verify`}
+                  href={`${base}/plug/verification`}
                   className="mt-3 inline-flex items-center gap-1.5 rounded-pill bg-gold px-4 py-2 text-[13px] font-bold text-pitch-black transition-all hover:bg-gold-light active:scale-[0.98]"
                 >
                   Verify my identity <ArrowRight className="w-3.5 h-3.5" />

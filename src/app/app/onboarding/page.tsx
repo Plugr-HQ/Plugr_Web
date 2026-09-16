@@ -10,8 +10,8 @@
 // bookmarks, and in any message where someone shared "the signup link". A 404 for those people
 // is a worse outcome than a hop to the form that replaced it.
 //
-// /app/onboarding/verify is NOT retired — that is the live NIN verification screen, reached
-// from the "complete your profile" prompt on the dashboard.
+// /app/onboarding/verify (the old standalone NIN screen) is also retired: its code remains, but
+// nothing links to it. Identity verification now starts from the Verification Hub (/app/plug/verification).
 
 'use client';
 

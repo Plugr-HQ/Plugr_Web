@@ -1,5 +1,6 @@
 // src/components/plug/IdentityVerificationScreen.tsx
-// Verification Hub item: NIN + face scan, run through Didit (ID document + liveness + face match).
+// Verification Hub item: NIN + face scan, run through Didit's Nigeria lookup — the Plug enters their NIN,
+// Didit checks it against NIMC and face-matches a live selfie to the photo NIMC holds for that NIN.
 //
 // Flow: consent disclosure → backend creates a Didit session (the API key never reaches the browser)
 // → the Didit web SDK opens the hosted flow in a modal → Didit posts a signed webhook to the backend,
@@ -22,6 +23,7 @@ import { getPlugId } from '@/src/app/app/_lib/plugAuth';
 import {
   identityItemState,
   saveServerItemState,
+  type IdentityFailureReason,
   type IdentityServerStatus,
 } from '@/src/app/app/_lib/verificationHub';
 
@@ -46,10 +48,67 @@ function friendly(e: any, fallback: string): string {
 
 type Copy = { title: string; body: string; tone: 'neutral' | 'warn' | 'review' | 'done'; canStart: boolean; cta?: string };
 
-function copyFor(status: IdentityServerStatus): Copy {
+/** A decline tells the Plug the specific problem, so they can fix the right thing. */
+function declinedCopy(reason: IdentityFailureReason | null): Copy {
+  const retry = (title: string, body: string, cta = 'Try again'): Copy => ({ title, body, tone: 'warn', canStart: true, cta });
+  switch (reason) {
+    case 'NIN_NOT_FOUND':
+      return retry(
+        'We couldn’t find that NIN',
+        'The national identity register (NIMC) has no record matching the NIN you entered. Check the 11 digits on your NIN slip or in the NIMC app, then try again.',
+        'Re-enter my NIN',
+      );
+    case 'NIN_DETAILS_MISMATCH':
+      return retry(
+        'Your name doesn’t match your NIN record',
+        'We found your NIN, but the name you entered doesn’t match the one NIMC holds. Enter your first and last name exactly as they appear on your NIN record.',
+      );
+    case 'NIN_REGISTRY_UNAVAILABLE':
+      return retry(
+        'The national register didn’t respond',
+        'NIMC couldn’t be reached, so your NIN wasn’t checked. This isn’t a problem with your details — please try again in a little while.',
+        'Try again later',
+      );
+    case 'FACE_MISMATCH':
+      return retry(
+        'Your selfie didn’t match your NIN photo',
+        'Your NIN was found, but your selfie didn’t match the photo NIMC holds for it. Retake it in good, even light with your face uncovered and no glasses.',
+        'Retake my selfie',
+      );
+    case 'LIVENESS_FAILED':
+      return retry(
+        'We couldn’t confirm a live selfie',
+        'The selfie has to be taken live, by you, on your phone’s camera — not a photo of a photo or a screen. Find good light and try again.',
+        'Retake my selfie',
+      );
+    case 'BVN_USED':
+      return retry(
+        'Use your NIN for this step',
+        'You chose BVN, but this step checks your NIN. Start again and pick NIN as the ID type. Your BVN is verified separately.',
+        'Use my NIN',
+      );
+    case 'NIN_NOT_CHECKED':
+      return retry(
+        'We couldn’t check your NIN this time',
+        'Your check finished without your NIN being confirmed against the national register. Please run it again.',
+      );
+    default:
+      return retry(
+        'We couldn’t verify you',
+        'The check didn’t go through. Try again with your correct NIN and a clear, live selfie.',
+      );
+  }
+}
+
+function copyFor(status: IdentityServerStatus, reason: IdentityFailureReason | null): Copy {
   switch (status) {
     case 'APPROVED':
-      return { title: 'Identity verified', body: 'Your ID and face scan have been confirmed. Nothing else to do here.', tone: 'done', canStart: false };
+      return {
+        title: 'Identity verified',
+        body: 'Your NIN was confirmed with the national register and your selfie matched your NIN photo. Nothing else to do here.',
+        tone: 'done',
+        canStart: false,
+      };
     case 'IN_REVIEW':
       return {
         title: 'Being reviewed',
@@ -58,13 +117,7 @@ function copyFor(status: IdentityServerStatus): Copy {
         canStart: false,
       };
     case 'DECLINED':
-      return {
-        title: 'We couldn’t verify you',
-        body: 'The check didn’t go through. Try again with a valid, unexpired ID in good light, and make sure your face is clearly visible.',
-        tone: 'warn',
-        canStart: true,
-        cta: 'Try again',
-      };
+      return declinedCopy(reason);
     case 'RESUBMIT_REQUESTED':
       return { title: 'Part of your check needs redoing', body: 'A reviewer asked you to redo a step. Start again and follow the prompts.', tone: 'warn', canStart: true, cta: 'Redo the check' };
     case 'KYC_EXPIRED':
@@ -78,7 +131,7 @@ function copyFor(status: IdentityServerStatus): Copy {
     default:
       return {
         title: 'Verify your identity',
-        body: 'You’ll photograph a government ID and take a quick face scan. It takes a few minutes.',
+        body: 'Enter your NIN and take a quick selfie. We check your NIN with the national register and match your selfie to your NIN photo. No ID card needed.',
         tone: 'neutral',
         canStart: true,
         cta: 'Start verification',
@@ -88,6 +141,7 @@ function copyFor(status: IdentityServerStatus): Copy {
 
 export function IdentityVerificationScreen() {
   const [status, setStatus] = useState<IdentityServerStatus | null>(null);
+  const [failureReason, setFailureReason] = useState<IdentityFailureReason | null>(null);
   const [phase, setPhase] = useState<Phase>('loading');
   const [consented, setConsented] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -98,6 +152,7 @@ export function IdentityVerificationScreen() {
       const body = await apiFetch(STATUS_URL, { cache: 'no-store' }, { redirectTo: '/app/auth/login' });
       const next = (body?.status ?? 'NOT_STARTED') as IdentityServerStatus;
       setStatus(next);
+      setFailureReason(next === 'DECLINED' ? ((body?.failureReason ?? null) as IdentityFailureReason | null) : null);
       // Keep the Hub and dashboard card in step with the server.
       saveServerItemState(getPlugId() ?? '', 'nin_liveness', identityItemState(next));
       return next;
@@ -182,10 +237,10 @@ export function IdentityVerificationScreen() {
     }
   }
 
-  const copy = status ? copyFor(status) : null;
+  const copy = status ? copyFor(status, failureReason) : null;
 
   return (
-    <Shell eyebrow="Verification" title="NIN + face scan" subtitle="Confirm you are who your ID says you are." back={HUB}>
+    <Shell eyebrow="Verification" title="NIN + face scan" subtitle="Confirm your NIN and that it’s really you." back={HUB}>
       {phase === 'error' && !copy ? (
         // The status could not be loaded at all — say so and offer a retry, never an endless spinner.
         <div className="rise rounded-[22px] border border-pitch-black/[0.08] bg-white p-5" role="alert">
@@ -227,8 +282,9 @@ export function IdentityVerificationScreen() {
                   </span>
                   <p className="text-[13px] leading-relaxed text-slate">
                     Plugr uses <span className="font-bold text-pitch-black">Didit</span>, an identity verification provider,
-                    to check your ID document and match it to a face scan. Didit processes your ID photo and face scan on
-                    our behalf. Your ID number is never shown on your profile, and nothing is shared with clients.
+                    to check your NIN with the national identity register (NIMC) and compare a live selfie with the photo
+                    NIMC holds for your NIN, using facial recognition. Didit processes your NIN and selfie on our behalf.
+                    Your NIN is never shown on your profile, and nothing is shared with clients.
                   </p>
                 </div>
 
@@ -244,7 +300,7 @@ export function IdentityVerificationScreen() {
                     className="mt-0.5 h-4 w-4 shrink-0 rounded border-pitch-black/30 text-gold focus:ring-gold"
                   />
                   <span className="text-sm font-medium text-pitch-black">
-                    I agree to Plugr and Didit verifying my identity and processing my ID and face scan for that purpose.
+                    I agree to Plugr and Didit checking my NIN with NIMC and comparing my selfie with my NIN photo to verify my identity.
                   </span>
                 </label>
 

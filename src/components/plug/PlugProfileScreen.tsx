@@ -266,7 +266,7 @@ export function PlugProfileScreen({ base }: { base: string }) {
               <p className="text-[11px] text-slate leading-tight mt-0.5">You can&rsquo;t receive jobs until this is done.</p>
             </div>
             <a
-              href={`${base}/onboarding/verify`}
+              href={`${base}/plug/verification`}
               className="shrink-0 rounded-pill bg-gold px-3 py-1.5 text-[11px] font-bold text-pitch-black hover:bg-gold-light transition-colors"
             >
               Verify

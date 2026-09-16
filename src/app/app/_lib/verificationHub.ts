@@ -51,7 +51,7 @@ export const VERIFICATION_ITEMS: VerificationItem[] = [
     key: 'nin_liveness',
     slug: 'identity',
     title: 'NIN + face scan',
-    summary: 'Photograph your ID and take a quick face scan.',
+    summary: 'Enter your NIN and take a selfie matched to your NIN photo.',
     required: true,
     // Didit can route a check to manual review before deciding.
     needsHumanReview: true,
@@ -221,6 +221,17 @@ export function saveItemStates(plugId: string, states: ItemStates): void {
 }
 
 // ─── Identity (Didit) status from the backend ───────────────────────────────────────────────
+
+/** Why a DECLINED identity check failed (PlugProfile.identityFailureReason). */
+export type IdentityFailureReason =
+  | 'NIN_NOT_FOUND'
+  | 'NIN_DETAILS_MISMATCH'
+  | 'NIN_REGISTRY_UNAVAILABLE'
+  | 'FACE_MISMATCH'
+  | 'LIVENESS_FAILED'
+  | 'BVN_USED'
+  | 'NIN_NOT_CHECKED'
+  | 'OTHER';
 
 /** PlugProfile.identityStatus, as returned by GET /api/plug/verification/identity. */
 export type IdentityServerStatus =
