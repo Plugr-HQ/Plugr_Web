@@ -138,7 +138,7 @@ export function JobPipeline() {
       <FilterBar>
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate">Status</span>
-          <FilterSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as 'ALL' | JobStatus)}>
+          <FilterSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as 'ALL' | JobStatus)} className=''>
             <option value="ALL">All statuses</option>
             {STATUSES.map((s) => (
               <option key={s} value={s}>{prettyStatus(s)}</option>
@@ -179,7 +179,7 @@ export function JobPipeline() {
                     {(!job.plug?.user?.name || job.status === 'PENDING' || job.status === 'SEARCHING_PLUG') && (
                       <PillButton
                         variant="primary"
-                        className="px-3 py-1.5 text-xs"
+                        className="px-6 py-1.5 text-xs"
                         onClick={() => setAssignJob(job)}
                       >
                         Assign Plug

@@ -4,7 +4,8 @@
 // /ad-minn data view so the surface reads as one system, and responsive by default.
 'use client';
 
-import { Loader2, X, RefreshCw } from 'lucide-react';
+import { Children, isValidElement, useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
+import { Loader2, X, RefreshCw, ChevronDown } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 
 /* ------------------------------------------------------------- Table surface */
@@ -115,16 +116,78 @@ export function Avatar({
 
 /* ---------------------------------------------------------------- Controls */
 
-export function FilterSelect({ className, ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) {
+// Custom listbox rather than a native <select> — browsers don't give consistent (or any)
+// control over the native option-list panel's corner radius or highlight color across
+// Chrome/Firefox/Safari, so a "beautified" dropdown has to be built, not styled.
+interface FilterSelectProps {
+  id?: string;
+  className?: string;
+  value: string;
+  disabled?: boolean;
+  onChange: (e: { target: { value: string } }) => void;
+  children: ReactNode;
+}
+
+export function FilterSelect({ id, className, value, disabled, onChange, children }: FilterSelectProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const options = Children.toArray(children)
+    .filter((c): c is ReactElement<{ value: string; children: ReactNode }> => isValidElement(c))
+    .map((c) => ({ value: c.props.value, label: c.props.children }));
+
+  const selected = options.find((o) => o.value === value);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
   return (
-    <select
-      className={cn(
-        'rounded-pill border border-pitch-black/10 bg-white px-4 py-2.5 text-sm font-bold text-pitch-black',
-        'focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow',
-        className,
+    <div ref={ref} className={cn('relative inline-block', className)}>
+      <button
+        id={id}
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((o) => !o)}
+        className={cn(
+          'flex w-full items-center justify-between gap-2 rounded-pill border border-pitch-black/10 bg-white px-4 py-2.5 text-sm font-bold text-pitch-black',
+          'focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow',
+          disabled && 'opacity-50 pointer-events-none',
+        )}
+      >
+        <span className="truncate">{selected?.label ?? 'Select'}</span>
+        <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 text-slate transition-transform', open && 'rotate-180')} />
+      </button>
+
+      {open && (
+        <ul className="absolute z-20 mt-2 w-full min-w-[11rem] overflow-hidden rounded-[18px] border border-pitch-black/[0.06] bg-white p-1.5 card-shadow">
+          {options.map((opt) => {
+            const isSelected = opt.value === value;
+            return (
+              <li key={opt.value}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange({ target: { value: opt.value } });
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    'w-full rounded-xl px-3 py-2 text-left text-sm font-semibold transition-colors',
+                    isSelected ? 'bg-blue-700 text-white' : 'text-pitch-black hover:bg-blue-700 hover:text-white',
+                  )}
+                >
+                  {opt.label}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       )}
-      {...props}
-    />
+    </div>
   );
 }
 
