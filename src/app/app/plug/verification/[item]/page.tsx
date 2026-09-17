@@ -11,9 +11,9 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Hammer } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
 import { StateChip } from '@/src/components/plug/VerificationHubScreen';
+import { VerificationItemUnavailable } from '@/src/components/plug/VerificationItemUnavailable';
 import { getPlugId } from '@/src/app/app/_lib/plugAuth';
 import {
   allowedNext,
@@ -70,15 +70,7 @@ export default function VerificationItemPlaceholder() {
         )}
       </div>
 
-      <div className="rise rise-1 mt-5 flex flex-col items-center rounded-[22px] border border-pitch-black/[0.08] bg-white px-6 py-10 text-center">
-        <span className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-pitch-black/[0.04] text-slate">
-          <Hammer className="h-6 w-6" />
-        </span>
-        <p className="font-bold text-pitch-black">This step isn&rsquo;t available yet</p>
-        <p className="mt-1.5 max-w-[280px] text-sm leading-relaxed text-slate">
-          We&rsquo;re still building it. Your other items aren&rsquo;t affected — you can do them in any order.
-        </p>
-      </div>
+      <VerificationItemUnavailable />
 
       {seedsEnabled && (
         <div className="mt-6 rounded-[18px] border border-dashed border-pitch-black/20 p-4">

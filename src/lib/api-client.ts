@@ -56,7 +56,10 @@ export async function apiFetch(
     const body = await res.json().catch(() => ({} as any));
 
     if (!res.ok) {
-      throw new Error((body && (body.error || body.detail)) || `Request failed: ${res.status}`);
+      // `status` lets a caller react to a specific refusal (e.g. 403) without matching message text.
+      throw Object.assign(new Error((body && (body.error || body.detail)) || `Request failed: ${res.status}`), {
+        status: res.status,
+      });
     }
 
     return body;

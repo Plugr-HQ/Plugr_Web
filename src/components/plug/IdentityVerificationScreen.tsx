@@ -9,6 +9,11 @@
 // The SDK's onComplete result is only a UI hint. Whether the Plug is verified is whatever the backend
 // says, which only Didit's signed webhook can change. So after the modal closes this screen polls the
 // status for a short while instead of trusting "completed".
+//
+// PILOT GATE: while the Didit key is a sandbox key, only the team numbers in the backend's
+// identity-pilot.ts may start a check. For everyone else the backend reports `available: false` (and
+// refuses the session call with 403), and this screen shows the same "not available yet" placeholder as
+// the Hub items that aren't built — not an error.
 
 'use client';
 
@@ -17,11 +22,14 @@ import Link from 'next/link';
 import { AlertTriangle, Check, ExternalLink, Hourglass, Loader2, ScanFace, ShieldCheck } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
 import { GoldButton } from '@/src/components/ui';
+import { StateChip } from '@/src/components/plug/VerificationHubScreen';
+import { VerificationItemUnavailable } from '@/src/components/plug/VerificationItemUnavailable';
 import { apiFetch } from '@/src/lib/api-client';
 import { cn } from '@/src/lib/utils';
 import { getPlugId } from '@/src/app/app/_lib/plugAuth';
 import {
   identityItemState,
+  itemByKey,
   saveServerItemState,
   type IdentityFailureReason,
   type IdentityServerStatus,
@@ -142,6 +150,8 @@ function copyFor(status: IdentityServerStatus, reason: IdentityFailureReason | n
 export function IdentityVerificationScreen() {
   const [status, setStatus] = useState<IdentityServerStatus | null>(null);
   const [failureReason, setFailureReason] = useState<IdentityFailureReason | null>(null);
+  /** Whether this Plug may start a check (backend pilot allowlist). Unknown until status loads. */
+  const [available, setAvailable] = useState<boolean | null>(null);
   const [phase, setPhase] = useState<Phase>('loading');
   const [consented, setConsented] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -151,10 +161,13 @@ export function IdentityVerificationScreen() {
     try {
       const body = await apiFetch(STATUS_URL, { cache: 'no-store' }, { redirectTo: '/app/auth/login' });
       const next = (body?.status ?? 'NOT_STARTED') as IdentityServerStatus;
+      // Only an explicit false closes the flow; the backend enforces the gate on session start regardless.
+      const open = body?.available !== false;
+      setAvailable(open);
       setStatus(next);
       setFailureReason(next === 'DECLINED' ? ((body?.failureReason ?? null) as IdentityFailureReason | null) : null);
       // Keep the Hub and dashboard card in step with the server.
-      saveServerItemState(getPlugId() ?? '', 'nin_liveness', identityItemState(next));
+      saveServerItemState(getPlugId() ?? '', 'nin_liveness', open ? identityItemState(next) : 'not_started');
       return next;
     } catch (e: any) {
       setMessage(friendly(e, 'We couldn’t load your verification status.'));
@@ -203,6 +216,12 @@ export function IdentityVerificationScreen() {
       url = session?.url;
       if (!url) throw new Error('Could not start identity verification. Please try again.');
     } catch (e: any) {
+      if (e?.status === 403) {
+        // Off the pilot list: show the placeholder, not an error.
+        setAvailable(false);
+        setPhase('idle');
+        return;
+      }
       setMessage(friendly(e, 'Could not start identity verification. Please try again.'));
       setPhase('idle');
       loadStatus(); // e.g. a 409 because it was approved or went to review meanwhile
@@ -238,6 +257,20 @@ export function IdentityVerificationScreen() {
   }
 
   const copy = status ? copyFor(status, failureReason) : null;
+
+  if (available === false) {
+    // Same layout as the [item] placeholder route used by the other unbuilt items.
+    const item = itemByKey('nin_liveness');
+    return (
+      <Shell eyebrow="Verification" title={item.title} subtitle={item.summary} back={HUB}>
+        <div className="rise flex items-center gap-2">
+          <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate">Status</span>
+          <StateChip state="not_started" />
+        </div>
+        <VerificationItemUnavailable />
+      </Shell>
+    );
+  }
 
   return (
     <Shell eyebrow="Verification" title="NIN + face scan" subtitle="Confirm your NIN and that it’s really you." back={HUB}>

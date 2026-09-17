@@ -83,7 +83,16 @@ export function VerificationHubScreen({ base }: { base: string }) {
     // backend. Skipped while a test seed is loaded; on failure the last cached value stays on screen.
     if (!seeded) {
       apiFetch('/api/plug/verification/identity', { cache: 'no-store' }, { skipAuthRedirect: true })
-        .then((body) => setStates(saveServerItemState(plugId, 'nin_liveness', identityItemState(body?.status))))
+        .then((body) =>
+          setStates(
+            saveServerItemState(
+              plugId,
+              'nin_liveness',
+              // Off the identity pilot, the item is an unbuilt stub like the others: not started.
+              body?.available === false ? 'not_started' : identityItemState(body?.status),
+            ),
+          ),
+        )
         .catch(() => {});
     }
   }, []);
