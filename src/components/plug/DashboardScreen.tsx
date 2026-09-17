@@ -231,40 +231,21 @@ export function DashboardScreen({ base }: { base: string }) {
         <CompleteProfileDialog base={base} onClose={() => setPromptDismissed(true)} />
       )}
 
-      {/* Not yet cleared for jobs — two distinct reasons, two honest messages. */}
-      {pending && (
+      {/* Submitted, but not yet cleared for jobs: ops are reviewing and there is nothing to do but
+          wait. The "finish setting up your profile" half of this card is gone — the Complete
+          verification button below is the single prompt for a Plug who still has items to do. */}
+      {pending && !needsIdentity && (
         <Card className="mt-4 p-5 rise rise-1">
           <div className="flex items-start gap-3">
-            <span className={cn(
-              'grid place-items-center h-9 w-9 rounded-full shrink-0',
-              needsIdentity ? 'bg-gold/20' : 'bg-slate/15'
-            )}>
-              <ShieldCheck className={cn('w-5 h-5', needsIdentity ? 'text-gold' : 'text-slate')} />
+            <span className="grid place-items-center h-9 w-9 rounded-full shrink-0 bg-slate/15">
+              <ShieldCheck className="w-5 h-5 text-slate" />
             </span>
             <div>
-              <p className="font-bold text-pitch-black">
-                {needsIdentity ? 'Finish setting up your profile' : 'Under Review'}
-              </p>
+              <p className="font-bold text-pitch-black">Under Review</p>
               <p className="mt-1 text-[13px] leading-relaxed text-slate">
-                {needsIdentity ? (
-                  <>
-                    Verify your identity and you&rsquo;ll start receiving jobs. It takes about two minutes.
-                  </>
-                ) : (
-                  <>
-                    Your NIN and face scan are in. Our ops team is confirming your details — you&rsquo;ll start
-                    receiving jobs the moment you&rsquo;re approved.
-                  </>
-                )}
+                Your NIN and face scan are in. Our ops team is confirming your details — you&rsquo;ll start
+                receiving jobs the moment you&rsquo;re approved.
               </p>
-              {needsIdentity && (
-                <Link
-                  href={`${base}/plug/verification`}
-                  className="mt-3 inline-flex items-center gap-1.5 rounded-pill bg-gold px-4 py-2 text-[13px] font-bold text-pitch-black transition-all hover:bg-gold-light active:scale-[0.98]"
-                >
-                  Verify my identity <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              )}
             </div>
           </div>
         </Card>
