@@ -18,14 +18,21 @@ import { cn } from '@/src/lib/utils';
 import { Card, Money } from '@/src/components/ui';
 import { jsonFetch } from '@/src/lib/net';
 import { apiFetch } from '@/src/lib/api-client';
-import { getPlugId, signOutPlug, getPlugDraft } from '@/src/app/app/_lib/plugAuth';
+import { getPlugId, signOutPlug } from '@/src/app/app/_lib/plugAuth';
 import { CompleteProfileDialog, profilePromptDismissed } from './CompleteProfileDialog';
 import { PlugShell, BadgeChip, JobStatusChip, EmptyState, plugTier } from './PlugChrome';
 import { DashboardSkeleton } from '@/src/components/Skeleton';
 import { withSource } from '@/src/lib/apiSource';
 import { authHeaders } from '@/src/lib/api';
 import { plugStatusLabel } from '@/src/lib/jobStatusLadder';
-import { loadItemStates, summarize, type HubSummary } from '@/src/app/app/_lib/verificationHub';
+import {
+  identityItemState,
+  loadItemStates,
+  saveServerItemState,
+  summarize,
+  type HubSummary,
+  type ItemState,
+} from '@/src/app/app/_lib/verificationHub';
 
 function hhmm(total: number) {
   const h = Math.floor(total / 3600);
@@ -79,10 +86,24 @@ export function DashboardScreen({ base }: { base: string }) {
   const [promptDismissed, setPromptDismissed] = useState(true);
   // Verification Hub progress for the entry card — per-device state, read after mount.
   const [hub, setHub] = useState<HubSummary | null>(null);
+  // The identity item's state, from the backend (Didit's signed webhook → PlugProfile.identityStatus).
+  // Null until the fetch settles, so nothing that depends on it renders against a guess.
+  const [identityState, setIdentityState] = useState<ItemState | null>(null);
 
   useEffect(() => {
+    const plugId = getPlugId() ?? '';
     setPromptDismissed(profilePromptDismissed());
-    setHub(summarize(loadItemStates(getPlugId() ?? '')));
+    setHub(summarize(loadItemStates(plugId)));
+
+    // Same request, same mapping and same cache the Hub screen uses, so the two can never disagree.
+    // On failure the last cached value stands and the Plug is treated as not yet submitted.
+    apiFetch('/api/plug/verification/identity', { cache: 'no-store' }, { skipAuthRedirect: true })
+      .then((body) => {
+        const state = body?.available === false ? 'not_started' : identityItemState(body?.status);
+        setIdentityState(state);
+        setHub(summarize(saveServerItemState(plugId, 'nin_liveness', state)));
+      })
+      .catch(() => setIdentityState(loadItemStates(plugId).nin_liveness));
   }, []);
   const unlocked = useRef(false);
 
@@ -189,13 +210,13 @@ export function DashboardScreen({ base }: { base: string }) {
   //   submitted  -> ops are reviewing. Nothing for them to do but wait.
   //   !submitted -> WE are waiting on THEM. Prompt, and point at the verify screen.
   //
-  // The signal is the local onboarding draft, which is where the verify screen records the NIN
-  // it submitted. LIMITATION, stated plainly: it's per-device. A Plug who verifies on one phone
-  // and signs in on another sees the "finish this" prompt again until ops approve them. Nothing
-  // breaks — the prompt is only a nudge, and the server-side gate is unaffected either way — but
-  // the durable fix is a `verificationSubmittedAt` column on PlugProfile returned by /dashboard.
-  const identitySubmitted = Boolean(getPlugDraft().nin);
-  const needsIdentity = pending && !identitySubmitted;
+  // The signal is PlugProfile.identityStatus, fetched above — the same source the Hub reads, so this
+  // card and the Hub always agree. Submitted means the check is with a reviewer or already approved;
+  // anything the Plug can still act on (declined, expired, abandoned, never started) is not submitted.
+  // This replaces a per-device localStorage NIN written by the retired standalone verify screen,
+  // which nothing writes any more and which was wrong on a second device.
+  const identitySubmitted = identityState === 'pending_review' || identityState === 'verified';
+  const needsIdentity = pending && identityState !== null && !identitySubmitted;
   const available = Number(plug.wallet_balance_available);
   const locked = Number(plug.wallet_balance_locked);
   const counting = left !== null && left > 0;
@@ -234,7 +255,7 @@ export function DashboardScreen({ base }: { base: string }) {
       {/* Submitted, but not yet cleared for jobs: ops are reviewing and there is nothing to do but
           wait. The "finish setting up your profile" half of this card is gone — the Complete
           verification button below is the single prompt for a Plug who still has items to do. */}
-      {pending && !needsIdentity && (
+      {pending && identitySubmitted && (
         <Card className="mt-4 p-5 rise rise-1">
           <div className="flex items-start gap-3">
             <span className="grid place-items-center h-9 w-9 rounded-full shrink-0 bg-slate/15">
