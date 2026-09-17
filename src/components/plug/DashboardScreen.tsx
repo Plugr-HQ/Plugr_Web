@@ -270,25 +270,29 @@ export function DashboardScreen({ base }: { base: string }) {
         </Card>
       )}
 
-      {/* Verification Hub entry — the six-item checklist. */}
+      {/* Verification Hub entry — the six-item checklist. A button, not a status line: finishing
+          verification is the main thing a new Plug has to do, and the count is the progress cue.
+          Same copy for every Plug — who can actually progress is decided inside the Hub. The count
+          is `hub` (summarize() in verificationHub.ts), the same summary the Hub screen renders. */}
       {hub && (
-        <Link href={`${base}/plug/verification`} className="mt-4 block rise rise-1">
-          <Card className="p-4 transition-colors hover:border-gold/60">
-            <div className="flex items-center gap-3">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-pitch-black text-gold">
-                <ShieldCheck className="h-5 w-5" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="font-bold text-pitch-black">Verification</p>
-                <p className="mt-0.5 text-[13px] text-slate">
-                  {hub.status === 'under_review'
-                    ? 'All items complete — under review'
-                    : `${hub.requiredVerified} of ${hub.requiredTotal} required items verified`}
-                </p>
-              </div>
-              <ArrowRight className="h-4 w-4 shrink-0 text-pitch-black" />
-            </div>
-          </Card>
+        <Link
+          href={`${base}/plug/verification`}
+          className="mt-4 block rise rise-1 rounded-pill focus-visible:outline-2 focus-visible:outline-gold"
+        >
+          <span
+            className={cn(
+              'flex w-full items-center justify-center gap-2 rounded-pill px-5 py-3.5 text-[15px] font-bold transition-all active:scale-[0.99]',
+              hub.status === 'under_review'
+                ? 'bg-pitch-black text-gold hover:bg-pitch-black/90'
+                : 'bg-gold text-pitch-black hover:bg-gold-light',
+            )}
+          >
+            <ShieldCheck className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />
+            {hub.status === 'under_review'
+              ? 'Verification under review'
+              : `Complete verification (${hub.requiredVerified} of ${hub.requiredTotal})`}
+            <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+          </span>
         </Link>
       )}
 
