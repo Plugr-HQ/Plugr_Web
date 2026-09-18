@@ -76,11 +76,14 @@ export function WalletScreen({ base }: { base: string }) {
   }, [plugId, base]);
 
   useEffect(() => {
-    setBank(getPlugBank());
-    load();
-    const id = setInterval(load, 4000);
-    return () => clearInterval(id);
-  }, [load]);
+    // If backend returns bank details in dashboard data, hydrate state and cache in localStorage
+    if (data?.plug?.bank) {
+      setBank(data.plug.bank);
+      setPlugBank(data.plug.bank);
+    } else {
+      setBank(getPlugBank());
+    }
+  }, [data]);
 
   useEffect(() => {
     if (left === null || left <= 0) return;

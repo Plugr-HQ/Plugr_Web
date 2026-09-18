@@ -96,22 +96,47 @@ export function BankSetup({
 
     setSaving(true);
     try {
-      if (needPin) {
-        await apiFetch(withSource(`/api/plugs/${plugId}/pin`, base), {
+      const headers = { 'Content-Type': 'application/json', ...authHeaders() };
+
+      // 1. Persist Bank Account details to backend DB
+      await apiFetch(
+        withSource(`/api/plugs/${plugId}/bank`, base),
+        {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...authHeaders() },
-          body: JSON.stringify({ pin }),
-        }, { skipAuthRedirect: false });
+          headers,
+          body: JSON.stringify({
+            bankName: validated.bankName,
+            bankCode,
+            accountNumber,
+            accountName: validated.accountName,
+            bankLogoUrl: validated.bankLogoUrl,
+          }),
+        },
+        { skipAuthRedirect: false }
+      );
+
+      // 2. Set PIN if needed
+      if (needPin) {
+        await apiFetch(
+          withSource(`/api/plugs/${plugId}/pin`, base),
+          {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ pin }),
+          },
+          { skipAuthRedirect: false }
+        );
       }
+
       onDone({
         bankName: validated.bankName,
         bankCode,
         accountNumber,
-        accountName: validated.accountName, // Monnify-confirmed — never the user's own typed value
+        accountName: validated.accountName,
         bankLogoUrl: validated.bankLogoUrl,
       });
     } catch (e: any) {
-      setError(e.message);
+      setError(e.message || 'Failed to save account settings.');
     } finally {
       setSaving(false);
     }
