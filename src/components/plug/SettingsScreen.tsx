@@ -10,26 +10,28 @@
 // Payout account is stored client-side today (same PlugBank store the wallet/withdraw flow uses).
 // Persisting it server-side for real bank payouts needs a PlugProfile field on the backend — see
 // the report; not added here to avoid an unplanned prod-schema change inside a UI task.
+//
+// PayoutSection's edit form is the shared BankSetup component (BankSetup.tsx) — previously this
+// had its own stripped-down copy of that form with no PIN step, which is why Settings had no way
+// to set a withdrawal PIN even though WalletScreen did. One implementation now, both screens use it.
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, ShieldCheck, Clock, Landmark, LogOut, Pencil, Check } from 'lucide-react';
+import { ShieldCheck, Clock, Landmark, LogOut, Pencil } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { Card } from '@/src/components/ui';
 import { jsonFetch } from '@/src/lib/net';
-import { api } from '@/src/lib/api';
 import { apiFetch } from '@/src/lib/api-client';
+import { Loader2, Check } from 'lucide-react';
 import { SettingsSkeleton } from '@/src/components/Skeleton';
 import {
   getPlugId, getPlugPhone, maskPlugPhone, getPlugBank, setPlugBank, signOutPlug, type PlugBank,
 } from '@/src/app/app/_lib/plugAuth';
 import { withSource } from '@/src/lib/apiSource';
 import { PlugShell } from './PlugChrome';
-import { BankSelect, BankLogo, type BankOption } from './BankSelect';
-// NOTE: adjust this import path to wherever bank-logos.ts actually lives in your repo.
-import { useBankList } from '@/src/hooks/useBankList';
-import { BANK_LOGOS } from '@/src/lib/bank-logos';
+import { BankLogo } from './BankSelect';
+import { BankSetup } from './BankSetup';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate">{children}</p>;
@@ -115,7 +117,7 @@ export function SettingsScreen({ base }: { base: string }) {
             {/* Payout account */}
             <div className="rise rise-1">
               <SectionLabel>Payout account</SectionLabel>
-              <PayoutSection />
+              <PayoutSection base={base} plugId={plug?.id ?? ''} hasPin={Boolean(plug?.has_pin)} />
               <p className="mt-2 px-1 text-[11px] text-slate/70">
                 Where your withdrawals are sent. Without this, a payout can’t reach your bank.
               </p>
@@ -144,11 +146,6 @@ export function SettingsScreen({ base }: { base: string }) {
     </PlugShell>
   );
 }
-
-// Built from the known bank-logos manifest — used whenever the live api.verification.getBanks()
-// call fails or returns empty, so the picker is never blank. api.verification.validateAccount()
-// still does the real verification either way; this list only ever drives the dropdown UI, never
-// whether an account is accepted.
 
 /**
  * Optional contact email — the "edit it later" half of the field collected at the end of signup.
@@ -255,147 +252,32 @@ function EmailRow({
   );
 }
 
-function PayoutSection() {
+function PayoutSection({ base, plugId, hasPin }: { base: string; plugId: string; hasPin: boolean }) {
   const [bank, setBank] = useState<PlugBank | null>(null);
   const [editing, setEditing] = useState(false);
 
-  const [bankCode, setBankCode] = useState('');
-  const [accountNumber, setAccountNumber] = useState('');
-
-  const [validating, setValidating] = useState(false);
-  const [validated, setValidated] = useState<{ accountName: string; bankName: string; bankLogoUrl: string } | null>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
-
-  // Shared, session-cached list — see useBankList.ts. Only fetches while `editing` is true,
-  // and only once across every screen that uses it (this one + WalletScreen's BankSetup).
-  const { banks, usingFallback, loading: banksLoading } = useBankList(editing);
-
   useEffect(() => {
-    const b = getPlugBank();
-    setBank(b);
+    setBank(getPlugBank());
   }, []);
 
-  // Auto-validate once both a bank and a full 10-digit account number are present.
-  useEffect(() => {
-    if (!bankCode || accountNumber.length !== 10) {
-      setValidated(null);
-      setValidationError(null);
-      return;
-    }
-
-    let cancelled = false;
-    setValidating(true);
-    setValidationError(null);
-    setValidated(null);
-
-    const timer = setTimeout(() => {
-      api.verification
-        .validateAccount(accountNumber, bankCode)
-        .then((result) => {
-          if (cancelled) return;
-          // Override name/logo from the known manifest — the live provider's own bankName on
-          // this endpoint can carry a stale/mislabeled value (e.g. "Opay 3") even though the
-          // dropdown list (useBankList) is already clean. accountName is left alone: that one
-          // genuinely has to come from the provider, it's the confirmed account holder's name.
-          const known = BANK_LOGOS[bankCode];
-          setValidated({
-            accountName: result.accountName,
-            bankName: known?.name ?? result.bankName,
-            bankLogoUrl: known?.logo ?? result.bankLogoUrl,
-          });
-        })
-        .catch((err) => {
-          if (cancelled) return;
-          setValidationError(err?.message || 'Could not verify this account. Double-check the number and bank.');
-        })
-        .finally(() => {
-          if (!cancelled) setValidating(false);
-        });
-    }, 400);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [bankCode, accountNumber]);
-
-
   function startEdit() {
-    setBankCode(bank?.bankCode ?? '');
-    setAccountNumber(bank?.accountNumber ?? '');
-    setValidated(null);
-    setValidationError(null);
     setEditing(true);
   }
 
-  function save() {
-    if (!validated || !bankCode || accountNumber.length !== 10) return;
-    const clean: PlugBank = {
-      bankName: validated.bankName,
-      bankCode,
-      accountNumber,
-      accountName: validated.accountName, // Monnify-confirmed — never the user's own typed value
-      bankLogoUrl: validated.bankLogoUrl,
-    };
-    setPlugBank(clean);
-    setBank(clean);
-    setEditing(false);
-  }
-
-  const input =
-    'w-full rounded-2xl border border-pitch-black/10 bg-white px-4 py-3 text-sm text-pitch-black placeholder:text-slate/50 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow';
-
   if (editing) {
     return (
-      <Card className="space-y-3 p-4">
-        {usingFallback && (
-          <p className="px-1 text-[11px] text-slate/70">
-            Showing a standard bank list — live list unavailable right now.
-          </p>
-        )}
-
-        <BankSelect
-          banks={banks}
-          value={bankCode}
-          onChange={setBankCode}
-          loading={banksLoading}
+      <Card className="p-4">
+        <BankSetup
+          bank={bank}
+          plugId={plugId}
+          base={base}
+          hasPin={hasPin}
+          onDone={(b) => {
+            setPlugBank(b);
+            setBank(b);
+            setEditing(false);
+          }}
         />
-
-        <input
-          className={input}
-          inputMode="numeric"
-          placeholder="Account number (10 digits)"
-          value={accountNumber}
-          onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-        />
-
-        {/* Confirmed account name — read-only, never typed by the user */}
-        {validating && (
-          <div className="flex items-center gap-2 px-1 text-xs text-slate">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Verifying account…
-          </div>
-        )}
-        {!validating && validated && (
-          <div className="flex items-center gap-2 rounded-2xl bg-gold/10 px-4 py-2.5 text-sm font-semibold text-pitch-black">
-            <Check className="h-4 w-4 text-gold" /> {validated.accountName}
-          </div>
-        )}
-        {!validating && validationError && (
-          <p className="px-1 text-xs font-semibold text-red-600">{validationError}</p>
-        )}
-
-        <div className="flex gap-3 pt-1">
-          <button onClick={() => setEditing(false)} className="flex-1 rounded-pill px-4 py-2.5 text-sm font-bold text-slate hover:text-pitch-black">
-            Cancel
-          </button>
-          <button
-            onClick={save}
-            disabled={!validated}
-            className="flex flex-1 items-center justify-center gap-2 rounded-pill bg-pitch-black py-2.5 text-sm font-bold text-white transition-colors hover:bg-petrol disabled:opacity-40 disabled:hover:bg-pitch-black"
-          >
-            <Check className="h-4 w-4" /> Save
-          </button>
-        </div>
       </Card>
     );
   }
