@@ -13,7 +13,9 @@
 // BankSetup uses BankSelect (same component + BANK_LOGOS-filtered list + Monnify auto-validate
 // as SettingsScreen's PayoutSection) instead of a free-text bank name field — so a bank linked
 // from here carries a real bankCode + confirmed accountName + bankLogoUrl, consistent with
-// what SettingsScreen produces.
+// what SettingsScreen produces. Same BANK_LOGOS override on the validateAccount() response as
+// SettingsScreen too — the live provider's own bankName on that endpoint isn't trustworthy
+// (see PayoutSection's comment on the "Opay 3" mislabel this fixes).
 
 'use client';
 
@@ -39,6 +41,7 @@ import { withSource } from '@/src/lib/apiSource';
 import { api, authHeaders } from '@/src/lib/api';
 // NOTE: adjust this import path to wherever bank-logos.ts actually lives in your repo.
 import { useBankList } from '@/src/hooks/useBankList';
+import { BANK_LOGOS } from '@/src/lib/bank-logos';
 
 type Range = 'week' | 'month' | 'total';
 type Sheet = null | 'withdraw' | 'bank' | 'changeBank';
@@ -53,12 +56,6 @@ function hhmm(total: number) {
 }
 
 const naira = (n: number) => '₦' + Number(n || 0).toLocaleString('en-NG');
-
-// Built from the known bank-logos manifest — used whenever the live api.verification.getBanks()
-// call fails or returns empty, so the picker is never blank. Same constant as SettingsScreen.tsx;
-// duplicated here rather than shared to avoid a cross-file refactor for one 5-line array —
-// worth extracting to a shared module if a third screen ever needs it too.
-
 
 export function WalletScreen({ base }: { base: string }) {
   const [data, setData] = useState<any>(null);
@@ -368,7 +365,6 @@ function Sheets({
  * pick a bank, type a 10-digit account number, and the account name is Monnify-confirmed —
  * never hand-typed. Save is disabled until that confirmation succeeds.
  */
-// Delete the module-level FALLBACK_BANKS constant entirely — moved into useBankList.ts.
 
 function BankSetup({
   bank, plugId, base, hasPin, onDone,
@@ -415,7 +411,16 @@ function BankSetup({
         .validateAccount(accountNumber, bankCode)
         .then((result) => {
           if (cancelled) return;
-          setValidated({ accountName: result.accountName, bankName: result.bankName, bankLogoUrl: result.bankLogoUrl });
+          // Override name/logo from the known manifest — same fix as SettingsScreen's
+          // PayoutSection. The live provider's own bankName on this endpoint isn't
+          // trustworthy (e.g. "Opay 3"); accountName is left as-is, it's the real
+          // provider-confirmed account holder name.
+          const known = BANK_LOGOS[bankCode];
+          setValidated({
+            accountName: result.accountName,
+            bankName: known?.name ?? result.bankName,
+            bankLogoUrl: known?.logo ?? result.bankLogoUrl,
+          });
         })
         .catch((err) => {
           if (cancelled) return;

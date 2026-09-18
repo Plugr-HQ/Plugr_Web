@@ -29,6 +29,7 @@ import { PlugShell } from './PlugChrome';
 import { BankSelect, BankLogo, type BankOption } from './BankSelect';
 // NOTE: adjust this import path to wherever bank-logos.ts actually lives in your repo.
 import { useBankList } from '@/src/hooks/useBankList';
+import { BANK_LOGOS } from '@/src/lib/bank-logos';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate">{children}</p>;
@@ -292,7 +293,16 @@ function PayoutSection() {
         .validateAccount(accountNumber, bankCode)
         .then((result) => {
           if (cancelled) return;
-          setValidated({ accountName: result.accountName, bankName: result.bankName, bankLogoUrl: result.bankLogoUrl });
+          // Override name/logo from the known manifest — the live provider's own bankName on
+          // this endpoint can carry a stale/mislabeled value (e.g. "Opay 3") even though the
+          // dropdown list (useBankList) is already clean. accountName is left alone: that one
+          // genuinely has to come from the provider, it's the confirmed account holder's name.
+          const known = BANK_LOGOS[bankCode];
+          setValidated({
+            accountName: result.accountName,
+            bankName: known?.name ?? result.bankName,
+            bankLogoUrl: known?.logo ?? result.bankLogoUrl,
+          });
         })
         .catch((err) => {
           if (cancelled) return;
