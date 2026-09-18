@@ -22,7 +22,7 @@ export type CertificateFile = { id: string; fileName: string; sizeBytes: number;
 
 export type ServerItems = {
   guarantor: { state: ItemState; submittedAt: string | null; reviewNote: string | null };
-  background: { state: ItemState; submittedAt: string | null };
+  background: { state: ItemState; submittedAt: string | null; reviewNote: string | null };
   certificates: { state: ItemState; files: CertificateFile[] };
   skills: { state: ItemState; path: 'CALL' | 'VOICE_NOTE' | null; requestedAt: string | null; reviewNote: string | null };
 };
@@ -69,7 +69,11 @@ export async function loadVerificationSnapshot(plugId: string): Promise<Verifica
         submittedAt: body?.guarantor?.submittedAt ?? null,
         reviewNote: body?.guarantor?.reviewNote ?? null,
       },
-      background: { state: asState(body?.background?.state), submittedAt: body?.background?.submittedAt ?? null },
+      background: {
+        state: asState(body?.background?.state),
+        submittedAt: body?.background?.submittedAt ?? null,
+        reviewNote: body?.background?.reviewNote ?? null,
+      },
       certificates: {
         state: asState(body?.certificates?.state),
         files: Array.isArray(body?.certificates?.files) ? body.certificates.files : [],

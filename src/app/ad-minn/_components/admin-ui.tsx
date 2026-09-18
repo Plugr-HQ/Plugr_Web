@@ -328,12 +328,15 @@ export function Modal({
   onClose,
   children,
   footer,
+  size = 'md',
 }: {
   title: string;
   sub?: string;
   onClose: () => void;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  /** 'lg' for a detail view with several sections side by side; every existing modal is 'md'. */
+  size?: 'md' | 'lg';
 }) {
   return (
     <div
@@ -341,7 +344,10 @@ export function Modal({
       onClick={onClose}
     >
       <div
-        className="flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-[26px] bg-white card-shadow rise sm:max-h-[88vh] sm:max-w-lg sm:rounded-[26px]"
+        className={cn(
+          'flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-[26px] bg-white card-shadow rise sm:max-h-[88vh] sm:rounded-[26px]',
+          size === 'lg' ? 'sm:max-w-4xl' : 'sm:max-w-lg',
+        )}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between border-b border-pitch-black/[0.06] px-6 py-4">

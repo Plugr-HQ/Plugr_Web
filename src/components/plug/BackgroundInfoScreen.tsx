@@ -34,6 +34,8 @@ const EMPTY: Form = { yearsExperience: '', training: '', jobHistory: '', dateOfB
 
 export function BackgroundInfoScreen() {
   const [state, setState] = useState<ItemState | null>(null);
+  /** Ops' note when they sent this back — shown so the Plug knows what to correct. */
+  const [reviewNote, setReviewNote] = useState<string | null>(null);
   const [form, setForm] = useState<Form>(EMPTY);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +44,7 @@ export function BackgroundInfoScreen() {
   const load = useCallback(async () => {
     const snap = await loadVerificationSnapshot(getPlugId() ?? '');
     setState(snap.items?.background.state ?? 'not_started');
+    setReviewNote(snap.items?.background.reviewNote ?? null);
   }, []);
 
   useEffect(() => {
@@ -107,6 +110,12 @@ export function BackgroundInfoScreen() {
         </div>
       ) : (
         <div className="rise rise-1 mt-2 space-y-4">
+          {reviewNote && (
+            <div className="rounded-[18px] border border-gold/50 bg-gold/[0.07] p-4" role="alert">
+              <p className="text-sm font-bold text-pitch-black">Please update your details</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-slate">{reviewNote}</p>
+            </div>
+          )}
           <div>
             <label htmlFor="b-years" className="mb-1.5 block text-[13px] font-bold text-pitch-black">
               Years of experience

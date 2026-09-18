@@ -1,14 +1,16 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { MoreVertical, ShieldCheck, AlertCircle, Loader2, CheckCircle2, X } from 'lucide-react'
+import { MoreVertical, ShieldCheck, AlertCircle, Loader2, CheckCircle2, X, FileSearch } from 'lucide-react'
 import { cn } from '@/src/lib/utils'
 import { apiFetch } from '@/src/lib/api-client'
+import { authHeaders } from '@/src/lib/api'
 import { AdminShell, type AdminTab } from './_components/AdminShell'
 import { DispatchQueue } from './_components/DispatchQueue'
 import { JobPipeline } from './_components/JobPipeline'
 import { Flags } from './_components/Flags'
 import { TableCard, Thead, rowClass, cellClass, Chip, Avatar, PillButton } from './_components/admin-ui'
+import { VerificationDetail } from './_components/VerificationDetail'
 
 type PendingPlug = {
   id: string
@@ -170,6 +172,19 @@ function PendingVerifications() {
   const [plugs, setPlugs] = useState<PendingPlug[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [acting, setActing] = useState<string | null>(null)
+  // The Plug whose submission is open in the review panel.
+  const [reviewing, setReviewing] = useState<string | null>(null)
+
+  // Same shape as the other admin screens' adminFetch: the stored admin token, JSON, login on 401.
+  const adminFetch = useCallback(
+    (input: string, init?: RequestInit) =>
+      apiFetch(
+        input,
+        { ...init, headers: { 'Content-Type': 'application/json', ...authHeaders(), ...(init?.headers || {}) } },
+        { redirectTo: '/ad-minn/login' },
+      ),
+    [],
+  )
 
   const load = useCallback(async () => {
     setError(null)
@@ -221,8 +236,9 @@ function PendingVerifications() {
         <div>
           <h4 className="font-bold">{plugs.length} Pending Review{plugs.length === 1 ? '' : 's'}</h4>
           <p className="text-sm text-amber-800/80">
-            Artisans awaiting manual approval. Approving makes a plug verified and bookable. (Automated
-            NIN/liveness checks aren’t wired yet — review identity out-of-band before approving.)
+            Artisans awaiting manual approval. Approving makes a plug verified and bookable. Open{' '}
+            <span className="font-bold">Review submission</span> first to see what they actually sent — identity
+            result, guarantor, background, skills and certificates.
           </p>
         </div>
       </div>
@@ -252,6 +268,13 @@ function PendingVerifications() {
                 <Chip tone="neutral">{plug.trade ? plug.trade[0].toUpperCase() + plug.trade.slice(1) : '—'}</Chip>
               </div>
 
+              <button
+                onClick={() => setReviewing(plug.id)}
+                className="mb-3 flex w-full items-center justify-center gap-1.5 rounded-pill border border-pitch-black/10 bg-white py-2.5 text-xs font-bold text-pitch-black transition-colors hover:border-gold"
+              >
+                <FileSearch className="h-4 w-4" /> Review submission
+              </button>
+
               <div className="flex gap-3">
                 <PillButton
                   variant="primary"
@@ -273,6 +296,8 @@ function PendingVerifications() {
           ))}
         </div>
       )}
+
+      {reviewing && <VerificationDetail plugId={reviewing} adminFetch={adminFetch} onClose={() => setReviewing(null)} />}
     </div>
   )
 }
