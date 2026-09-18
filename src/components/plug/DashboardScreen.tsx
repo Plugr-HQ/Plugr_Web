@@ -25,14 +25,8 @@ import { DashboardSkeleton } from '@/src/components/Skeleton';
 import { withSource } from '@/src/lib/apiSource';
 import { authHeaders } from '@/src/lib/api';
 import { plugStatusLabel } from '@/src/lib/jobStatusLadder';
-import {
-  identityItemState,
-  loadItemStates,
-  saveServerItemState,
-  summarize,
-  type HubSummary,
-  type ItemState,
-} from '@/src/app/app/_lib/verificationHub';
+import { loadItemStates, summarize, type HubSummary, type ItemState } from '@/src/app/app/_lib/verificationHub';
+import { loadVerificationSnapshot } from '@/src/app/app/_lib/verificationItems';
 
 function hhmm(total: number) {
   const h = Math.floor(total / 3600);
@@ -95,13 +89,12 @@ export function DashboardScreen({ base }: { base: string }) {
     setPromptDismissed(profilePromptDismissed());
     setHub(summarize(loadItemStates(plugId)));
 
-    // Same request, same mapping and same cache the Hub screen uses, so the two can never disagree.
-    // On failure the last cached value stands and the Plug is treated as not yet submitted.
-    apiFetch('/api/plug/verification/identity', { cache: 'no-store' }, { skipAuthRedirect: true })
-      .then((body) => {
-        const state = body?.available === false ? 'not_started' : identityItemState(body?.status);
-        setIdentityState(state);
-        setHub(summarize(saveServerItemState(plugId, 'nin_liveness', state)));
+    // The same snapshot the Hub screen loads, so the two can never disagree. On failure the last
+    // cached value stands and the Plug is treated as not yet submitted.
+    loadVerificationSnapshot(plugId)
+      .then((snap) => {
+        setIdentityState(snap.states.nin_liveness);
+        setHub(summarize(snap.states));
       })
       .catch(() => setIdentityState(loadItemStates(plugId).nin_liveness));
   }, []);

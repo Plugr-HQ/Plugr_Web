@@ -34,16 +34,14 @@ import {
 import { Shell } from '@/src/components/Shell';
 import { cn } from '@/src/lib/utils';
 import { getPlugId } from '@/src/app/app/_lib/plugAuth';
-import { apiFetch } from '@/src/lib/api-client';
+import { loadVerificationSnapshot } from '@/src/app/app/_lib/verificationItems';
 import {
   VERIFICATION_ITEMS,
   SEEDS,
   seedsEnabled,
-  identityItemState,
   isActionable,
   loadItemStates,
   saveItemStates,
-  saveServerItemState,
   summarize,
   type ItemState,
   type ItemStates,
@@ -79,20 +77,12 @@ export function VerificationHubScreen({ base }: { base: string }) {
 
     setStates(loadItemStates(plugId));
 
-    // NIN + face scan is decided server-side (Didit's signed webhook), so its state comes from the
-    // backend. Skipped while a test seed is loaded; on failure the last cached value stays on screen.
+    // Five of the six items are decided server-side — identity by Didit's signed webhook, the rest
+    // by what the Plug submitted and what ops made of it. Skipped while a test seed is loaded; on
+    // failure the last cached value stays on screen.
     if (!seeded) {
-      apiFetch('/api/plug/verification/identity', { cache: 'no-store' }, { skipAuthRedirect: true })
-        .then((body) =>
-          setStates(
-            saveServerItemState(
-              plugId,
-              'nin_liveness',
-              // Off the identity pilot, the item is an unbuilt stub like the others: not started.
-              body?.available === false ? 'not_started' : identityItemState(body?.status),
-            ),
-          ),
-        )
+      loadVerificationSnapshot(plugId)
+        .then((snap) => setStates(snap.states))
         .catch(() => {});
     }
   }, []);
