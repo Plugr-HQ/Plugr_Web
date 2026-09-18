@@ -1,8 +1,8 @@
 // src/components/plug/SkillsAssessmentScreen.tsx
 // Verification Hub item: Skills assessment. Two ways to do it, both ending in pending review:
 //
-//   1. Request an assessment call. There is no booking tool: the tap messages the ops team on
-//      WhatsApp (backend, OPS_TEAM_WHATSAPP_NUMBERS) and whoever picks it up rings the Plug to agree
+//   1. Request an assessment call. There is no booking tool: the tap alerts the ops team in the
+//      Telegram ops chat (backend) and whoever picks it up rings the Plug to agree
 //      a time by hand.
 //   2. Send a WhatsApp voice note answering the ops lead's questions.
 //
