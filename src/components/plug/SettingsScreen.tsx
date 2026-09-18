@@ -149,8 +149,6 @@ export function SettingsScreen({ base }: { base: string }) {
 // still does the real verification either way; this list only ever drives the dropdown UI, never
 // whether an account is accepted.
 
-// Delete this entirely — moved into useBankList.ts:
-// const FALLBACK_BANKS: BankOption[] = Object.values(BANK_LOGOS).map(...)
 /**
  * Optional contact email — the "edit it later" half of the field collected at the end of signup.
  * Saves through PATCH /api/plugs/:id/profile (guarded PLUG + ownership on the backend, which
