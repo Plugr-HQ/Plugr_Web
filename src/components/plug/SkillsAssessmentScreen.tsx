@@ -1,21 +1,21 @@
 // src/components/plug/SkillsAssessmentScreen.tsx
 // Verification Hub item: Skills assessment. Two ways to do it, both ending in pending review:
 //
-//   1. Book a call with the ops lead, through an external booking tool. No slot picker is built
-//      here on purpose — the booking tool owns availability.
+//   1. Request an assessment call. There is no booking tool: the tap messages the ops team on
+//      WhatsApp (backend, OPS_TEAM_WHATSAPP_NUMBERS) and whoever picks it up rings the Plug to agree
+//      a time by hand.
 //   2. Send a WhatsApp voice note answering the ops lead's questions.
 //
 // Committing to either moves the item to pending review straight away. The item tracks that the Plug
 // acted, not that the call has happened — ops decide pass or fail afterwards.
 //
-// CONFIG: NEXT_PUBLIC_SKILLS_BOOKING_URL (the booking page) and NEXT_PUBLIC_SKILLS_WHATSAPP (the
-// number voice notes go to, digits only). Whichever is unset renders as "coming soon" rather than a
-// dead link — no account existed for either when this was built.
+// CONFIG: NEXT_PUBLIC_SKILLS_WHATSAPP, the number voice notes go to. Unset renders the voice-note
+// option as "coming soon" rather than a dead link. The call request needs no web config.
 
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { CalendarClock, CheckCircle2, Hourglass, Loader2, Mic } from 'lucide-react';
+import { CheckCircle2, Hourglass, Loader2, Mic, PhoneCall } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
 import { apiFetch } from '@/src/lib/api-client';
 import { cn } from '@/src/lib/utils';
@@ -26,7 +26,6 @@ import type { ItemState } from '@/src/app/app/_lib/verificationHub';
 const HUB = '/app/plug/verification';
 const START_URL = '/api/plug/verification/skills';
 
-const BOOKING_URL = process.env.NEXT_PUBLIC_SKILLS_BOOKING_URL ?? '';
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_SKILLS_WHATSAPP ?? '';
 
 const VOICE_NOTE_PROMPT =
@@ -51,7 +50,7 @@ export function SkillsAssessmentScreen() {
   }, [load]);
 
   /** Record the choice first, then hand off — so a Plug who never comes back still shows as started. */
-  async function choose(which: 'CALL' | 'VOICE_NOTE', handOff: () => void) {
+  async function choose(which: 'CALL' | 'VOICE_NOTE', handOff: () => void = () => {}) {
     if (busy) return;
     setBusy(which);
     setError(null);
@@ -87,11 +86,11 @@ export function SkillsAssessmentScreen() {
             <Hourglass className="h-6 w-6" />
           </span>
           <p className="font-bold text-pitch-black">
-            {path === 'CALL' ? 'Your call is booked' : 'Waiting on your voice note'}
+            {path === 'CALL' ? 'We’ll call you' : 'Waiting on your voice note'}
           </p>
           <p className="mt-1.5 max-w-[300px] text-sm leading-relaxed text-slate">
             {path === 'CALL'
-              ? 'Turn up at the time you picked and our team will run through a few questions about your trade. We’ll update this once it’s done.'
+              ? 'Someone from our team will ring you on your Plugr number to agree a time, then run through a few questions about your trade. We’ll update this once it’s done.'
               : 'Send your voice note on WhatsApp whenever you’re ready. Our team reviews it and updates this item — this can take a few days.'}
           </p>
           {path === 'VOICE_NOTE' && waHref && (
@@ -131,17 +130,12 @@ export function SkillsAssessmentScreen() {
 
           <div className="rise rise-1 mt-4 space-y-3">
             <Option
-              icon={<CalendarClock className="h-5 w-5" />}
-              title="Schedule a call"
-              body={
-                BOOKING_URL
-                  ? 'Pick a time that works for you. The call takes about 15 minutes.'
-                  : 'Booking opens shortly — use a voice note in the meantime and we’ll pick it up.'
-              }
-              cta="Pick a time"
-              disabled={!BOOKING_URL}
+              icon={<PhoneCall className="h-5 w-5" />}
+              title="Request assessment call"
+              body="Our team will ring you to agree a time that suits you. The call itself takes about 15 minutes."
+              cta="Request assessment call"
               loading={busy === 'CALL'}
-              onClick={() => choose('CALL', () => window.open(BOOKING_URL, '_blank', 'noopener,noreferrer'))}
+              onClick={() => choose('CALL')}
             />
 
             <Option
