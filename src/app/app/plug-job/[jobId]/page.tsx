@@ -109,14 +109,18 @@ export default function PlugJobCard() {
     }
   }
 
-  async function submitQuote(amount: number) {
+  // Sends the two itemised lines the backend actually validates (SubmitQuoteDto:
+  // materialsAmount, labourAmount) — NOT a pre-summed `amount`. The combined figure is still
+  // computed here only for the toast/flag-for-review copy.
+  async function submitQuote(materialsAmount: number, labourAmount: number) {
     if (busy) return;
     setBusy('quote');
     setError(null);
+    const amount = materialsAmount + labourAmount;
     try {
       const res = await apiFetch(
         `/api/plug/jobs/${jobId}/quote`,
-        { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount }) },
+        { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ materialsAmount, labourAmount }) },
         { skipAuthRedirect: true },
       );
       // Backend returns { job, flaggedForReview }.
@@ -229,7 +233,7 @@ export default function PlugJobCard() {
               <div className="mt-5 rounded-2xl border border-pitch-black/[0.07] bg-white px-4 py-3.5">
                 <div className="flex items-baseline justify-between gap-3">
                   <p className="text-sm font-bold text-pitch-black">{meta.plug}</p>
-                  <p className="shrink-0 text-[11px] font-bold uppercase tracking-[0.1em] text-slate/60">
+                  <p className="shrink-0 text-[11px] font-bold uppercase tracking-widest text-slate/60">
                     Step {meta.step} of {LADDER_LENGTH}
                   </p>
                 </div>
@@ -349,10 +353,12 @@ export default function PlugJobCard() {
 }
 
 // ── Quote form ─────────────────────────────────────────────────────────────────
-// The backend stores a single `amount`. Materials + labour are a client-side convenience that sum
-// into that one figure — the ₦500 floor is validated here (mirroring SubmitQuoteDto) and again by
-// the backend.
-function QuoteForm({ submitting, onSubmit, onCancel }: { submitting: boolean; onSubmit: (amount: number) => void; onCancel: () => void }) {
+// The backend stores materialsAmount and labourAmount as separate fields (SubmitQuoteDto) —
+// materials + labour are entered separately here and sent as two lines, not pre-summed into one
+// `amount`. The ₦500 floor is checked on the combined total client-side for UX only; the backend
+// (JobsService.submitQuote) is the real enforcement point since it's a cross-field rule the DTO
+// itself can't express.
+function QuoteForm({ submitting, onSubmit, onCancel }: { submitting: boolean; onSubmit: (materialsAmount: number, labourAmount: number) => void; onCancel: () => void }) {
   const [materials, setMaterials] = useState('');
   const [labour, setLabour] = useState('');
 
@@ -389,7 +395,7 @@ function QuoteForm({ submitting, onSubmit, onCancel }: { submitting: boolean; on
         >
           Cancel
         </button>
-        <GoldButton onClick={() => onSubmit(total)} loading={submitting} disabled={submitting || belowFloor} className="flex-1">
+        <GoldButton onClick={() => onSubmit(mat, lab)} loading={submitting} disabled={submitting || belowFloor} className="flex-1">
           {submitting ? 'Sending…' : 'Send quote'}
         </GoldButton>
       </div>
