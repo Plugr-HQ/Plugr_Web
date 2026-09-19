@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Star, BadgeCheck, ArrowUpRight, Info } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
@@ -26,13 +26,18 @@ export type HackPlug = {
 };
 
 const TABS = ['all', 'electrician', 'plumber', 'furniture'] as const;
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 export default function AppBrowseClient({ plugs, configError }: { plugs: HackPlug[]; configError: boolean }) {
   const [tab, setTab] = useState<(typeof TABS)[number]>('all');
-  const filtered = useMemo(
-    () => (tab === 'all' ? plugs : plugs.filter((p) => p.trade?.toLowerCase() === tab)),
-    [plugs, tab]
-  );
+  const filtered = tab === 'all' ? shuffle(plugs) : shuffle(plugs.filter((p) => p.trade?.toLowerCase() === tab));
 
   return (
     <Shell eyebrow="Client · Browse" title="Find a Plug" subtitle="Verified artisans near Yaba." back="/app">
