@@ -12,8 +12,9 @@
 //                   or a skills call can take days, and a spinner reads as "loading, wait here".
 //   verified        emerald check
 //
-// When all five required items are verified the header reads "All items complete — under
-// review". That is a status, not a grant: eligibility is decided by ops and enforced server-side.
+// When every required item is verified the header reads "All items complete — under review".
+// That is a status, not a grant: eligibility is decided by ops and enforced server-side. Which items
+// are required (and which are "Coming soon") comes from verificationHub.ts — see BVN_ENABLED.
 
 'use client';
 
@@ -102,7 +103,8 @@ export function VerificationHubScreen({ base }: { base: string }) {
 function HubBody({ base, states }: { base: string; states: ItemStates }) {
   const summary = summarize(states);
   const required = VERIFICATION_ITEMS.filter((i) => i.required);
-  const optional = VERIFICATION_ITEMS.filter((i) => !i.required);
+  const optional = VERIFICATION_ITEMS.filter((i) => !i.required && !i.comingSoon);
+  const comingSoon = VERIFICATION_ITEMS.filter((i) => i.comingSoon);
 
   return (
     <>
@@ -133,6 +135,21 @@ function HubBody({ base, states }: { base: string; states: ItemStates }) {
           ))}
         </ul>
       </section>
+
+      {comingSoon.length > 0 && (
+        <section className="mt-7" aria-labelledby="coming-soon-heading">
+          <h2 id="coming-soon-heading" className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-slate">
+            Coming soon · not needed yet
+          </h2>
+          <ul className="space-y-2.5">
+            {comingSoon.map((item) => (
+              <li key={item.key}>
+                <ItemRow base={base} item={item} state={states[item.key]} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </>
   );
 }
@@ -189,13 +206,20 @@ function StatusHeader({ states }: { states: ItemStates }) {
       </div>
       <p className="mt-3.5 text-sm font-bold text-pitch-black">{line}</p>
       <p className="mt-1 text-[13px] leading-relaxed text-slate">
-        When all five required items are verified, our team reviews your profile.
+        When all {countWord(summary.requiredTotal)} required items are verified, our team reviews your profile.
       </p>
     </div>
   );
 }
 
+/** "4" → "four", so the copy follows the required count instead of hard-coding a number. */
+function countWord(n: number): string {
+  return ['zero', 'one', 'two', 'three', 'four', 'five', 'six'][n] ?? String(n);
+}
+
 function ItemRow({ base, item, state }: { base: string; item: VerificationItem; state: ItemState }) {
+  if (item.comingSoon) return <ComingSoonRow item={item} />;
+
   const Icon = ICONS[item.key];
   const actionable = isActionable(state);
   const pending = state === 'pending_review';
@@ -258,6 +282,33 @@ function ItemRow({ base, item, state }: { base: string; item: VerificationItem; 
     </Link>
   ) : (
     body
+  );
+}
+
+/** An item that exists but can't be done yet. Never a link, never counted, whatever was cached. */
+function ComingSoonRow({ item }: { item: VerificationItem }) {
+  const Icon = ICONS[item.key];
+  return (
+    <div
+      className="flex items-center gap-3.5 rounded-[18px] border border-dashed border-pitch-black/[0.12] bg-white/60 p-4"
+      aria-disabled="true"
+      data-testid={`item-${item.key}`}
+    >
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-pitch-black/[0.04] text-slate/70">
+        <Icon className="h-5 w-5" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <p className="text-[15px] font-bold text-pitch-black/60">{item.title}</p>
+          <span className="inline-flex items-center rounded-pill bg-pitch-black/[0.06] px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.08em] text-slate">
+            Coming soon
+          </span>
+        </div>
+        <p className="mt-1 text-[13px] leading-snug text-slate">
+          Not needed to finish verifying right now. We’ll let you know when it opens.
+        </p>
+      </div>
+    </div>
   );
 }
 

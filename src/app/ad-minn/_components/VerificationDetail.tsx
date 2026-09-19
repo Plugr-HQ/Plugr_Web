@@ -3,7 +3,7 @@
 // Plug actually submitted before deciding — the tab used to offer approve/reject with nothing to
 // look at.
 //
-// One section per item: the five required ones, BVN's slot (not built yet), and certificates. Every
+// One section per item: the required ones, BVN's slot (on hold, not required), and certificates. Every
 // decision goes through the one backend review route (PATCH /admin/verification/:item/:plugId); this
 // panel has no approval logic of its own.
 //
@@ -254,7 +254,7 @@ export function VerificationDetail({
               testId="section-bvn"
             >
               <p className="text-sm text-slate">
-                Not submitted. The BVN check isn’t built yet — it’s waiting on a Fincra account. Nothing to review.
+                Not submitted, and not required right now — BVN is on hold until Fincra clears its KYC review. Approving a Plug doesn’t need it.
               </p>
             </Section>
 

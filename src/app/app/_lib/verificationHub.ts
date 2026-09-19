@@ -6,14 +6,15 @@
 // the account: verification happens after signup, from the Plug's own dashboard.
 //
 //   nin_liveness  NIN + liveness      (Didit — live; status comes from the backend, see below)
-//   bvn           BVN                 (vendor pending confirmation)
+//   bvn           BVN                 (ON HOLD — see BVN_ENABLED below: "Coming soon", not required)
 //   guarantor     Guarantor           (a human on the other end → pending review)
 //   skills        Skills assessment   (a human on the other end → pending review)
 //   (nin_liveness can also sit in pending review: Didit may send a check to manual review)
 //   background    Background info
 //   certificates  Certificates        (OPTIONAL — never blocks the overall status)
 //
-// When all five REQUIRED items are verified the Hub reads "All items complete — under review".
+// When every REQUIRED item is verified the Hub reads "All items complete — under review". How many
+// that is comes from the `required` flags below — never write the number anywhere else.
 // That is a Plug-facing status only: nothing here grants eligibility. Dispatch eligibility is
 // enforced server-side (Plugr_Backend plug-eligibility.ts) and an ops review decides it.
 //
@@ -32,6 +33,19 @@ export type VerificationItemKey =
 
 export type ItemState = 'not_started' | 'in_progress' | 'pending_review' | 'verified';
 
+/**
+ * BVN is on hold until Fincra finishes its own KYC review of Plugr, so it can't be built yet.
+ *
+ *   false (now)  BVN shows in the Hub as "Coming soon", can't be opened, and is NOT counted: the
+ *                Plug needs 4 items (NIN + face, guarantor, skills, background) to be complete.
+ *   true         BVN becomes a normal required item again: 5 items, and it opens its own screen.
+ *
+ * This constant is the whole switch. The required total, the progress bar, the "X of N" lines and
+ * the dashboard button all derive from it. When Fincra clears and the BVN screen exists, set this to
+ * true — nothing else in this file or the Hub needs to change.
+ */
+export const BVN_ENABLED = false;
+
 export type VerificationItem = {
   key: VerificationItemKey;
   /** URL segment for the item's own screen: /app/plug/verification/<slug>. */
@@ -41,6 +55,8 @@ export type VerificationItem = {
   summary: string;
   /** Optional items never hold back the overall status. */
   required: boolean;
+  /** Shown in the Hub but not available yet: labelled "Coming soon", never opens, never counted. */
+  comingSoon?: boolean;
   /** A person on the other end (a guarantor to respond, a skills call to happen), so finishing
    *  the Plug's part leads to pending_review, which can last days, rather than straight to verified. */
   needsHumanReview: boolean;
@@ -61,7 +77,8 @@ export const VERIFICATION_ITEMS: VerificationItem[] = [
     slug: 'bvn',
     title: 'BVN',
     summary: 'Confirm your Bank Verification Number.',
-    required: true,
+    required: BVN_ENABLED,
+    comingSoon: !BVN_ENABLED,
     needsHumanReview: false,
   },
   {
@@ -178,8 +195,9 @@ export function summarize(states: ItemStates): HubSummary {
   const required = VERIFICATION_ITEMS.filter((i) => i.required);
   const requiredVerified = required.filter((i) => states[i.key] === 'verified').length;
   const awaitingReview = required.filter((i) => states[i.key] === 'pending_review').length;
-  // Any movement at all, optional certificates included, counts as started.
-  const anyStarted = VERIFICATION_ITEMS.some((i) => states[i.key] !== 'not_started');
+  // Any movement at all, optional certificates included, counts as started. A coming-soon item
+  // can't be touched, so a stale cached state for it never counts.
+  const anyStarted = VERIFICATION_ITEMS.some((i) => !i.comingSoon && states[i.key] !== 'not_started');
 
   const status: HubStatus =
     requiredVerified === required.length ? 'under_review' : anyStarted ? 'in_progress' : 'not_started';

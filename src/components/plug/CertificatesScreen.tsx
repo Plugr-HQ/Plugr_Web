@@ -1,5 +1,5 @@
 // src/components/plug/CertificatesScreen.tsx
-// Verification Hub item: Certificates. OPTIONAL — it never counts toward the five required items,
+// Verification Hub item: Certificates. OPTIONAL — it never counts toward the required items,
 // and a Plug who has no certificates is finished with this item by doing nothing. The copy says so
 // outright, so "not started" doesn't read as a chore left undone.
 //
@@ -100,7 +100,7 @@ export function CertificatesScreen() {
         <p className="text-[13px] leading-relaxed text-slate">
           Trade certificates, training certificates, anything that shows what you’ve been taught. This item is{' '}
           <span className="font-bold text-pitch-black">optional</span>: skipping it doesn’t hold up your verification,
-          and it never counts against your five required items.
+          and it never counts against your required items.
         </p>
       </div>
 
