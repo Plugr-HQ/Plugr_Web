@@ -8,16 +8,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Users, Briefcase, ShieldCheck, Flag, LayoutDashboard, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Users, Briefcase, ShieldCheck, Flag, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Tags } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 
-export type AdminTab = 'dispatch' | 'jobs' | 'flags' | 'plugs' | 'verifications';
+export type AdminTab = 'dispatch' | 'jobs' | 'flags' | 'plugs' | 'verifications' | 'categories';
 
 const NAV: { key: AdminTab; label: string; icon: typeof Users }[] = [
   { key: 'dispatch', label: 'Dispatch', icon: LayoutDashboard },
   { key: 'jobs', label: 'Job Pipeline', icon: Briefcase },
   { key: 'flags', label: 'Flags', icon: Flag },
   { key: 'plugs', label: 'Plugs', icon: Users },
+  { key: 'categories', label: 'Categories', icon: Tags },
   { key: 'verifications', label: 'Verifications', icon: ShieldCheck },
 ];
 
@@ -26,6 +27,7 @@ const TITLES: Record<AdminTab, string> = {
   jobs: 'Job Pipeline',
   flags: 'Flags',
   plugs: 'Manage Plugs',
+  categories: 'Categories',
   verifications: 'Verifications',
 };
 
