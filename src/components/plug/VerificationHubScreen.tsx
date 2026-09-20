@@ -2,8 +2,8 @@
 // The Verification Hub — six independent items, doable in any order, reached from the dashboard.
 //
 // This screen is the shell only: item states, the overall status, and navigation into each
-// item's own screen. What happens inside an item (Didit, BVN, guarantor, skills call, background,
-// certificates) is built separately; until then each item opens a placeholder.
+// item's own screen. What happens inside an item (NIN + liveness, BVN, guarantor, skills call,
+// background, certificates) is built separately, in that item's own screen.
 //
 // Item states and their visual language:
 //   not_started     slate chip, "Start"
@@ -14,7 +14,7 @@
 //
 // When every required item is verified the header reads "All items complete — under review".
 // That is a status, not a grant: eligibility is decided by ops and enforced server-side. Which items
-// are required (and which are "Coming soon") comes from verificationHub.ts — see BVN_ENABLED.
+// are required comes from verificationHub.ts — never write the number here.
 
 'use client';
 
@@ -58,6 +58,19 @@ const ICONS: Record<VerificationItemKey, React.ComponentType<{ className?: strin
   background: ClipboardList,
   certificates: FileBadge,
 };
+
+/**
+ * What an item waiting on a human says while it waits. Keyed rather than chained, so an item with
+ * no line of its own falls back to something true for every item instead of another item's copy.
+ */
+const PENDING_COPY: Partial<Record<VerificationItemKey, string>> = {
+  nin_liveness: 'Your NIN, slip and selfie are with a reviewer. We’ll update this when there’s a decision.',
+  bvn: 'Your BVN is with a reviewer. We’ll update this when there’s a decision.',
+  guarantor: 'Waiting for your guarantor to respond and our team to confirm. This can take a few days.',
+  skills: 'Waiting on your skills assessment to be reviewed. This can take a few days.',
+};
+
+const GENERIC_PENDING = 'With our team for review. We’ll update this when there’s a decision.';
 
 export function VerificationHubScreen({ base }: { base: string }) {
   const [states, setStates] = useState<ItemStates | null>(null);
@@ -257,13 +270,7 @@ function ItemRow({ base, item, state }: { base: string; item: VerificationItem; 
           <StateChip state={state} />
         </div>
         <p className="mt-1 text-[13px] leading-snug text-slate">
-          {pending
-            ? item.key === 'guarantor'
-              ? 'Waiting for your guarantor to respond and our team to confirm. This can take a few days.'
-              : item.key === 'nin_liveness'
-                ? 'Your ID check is with a reviewer. We’ll update this when there’s a decision.'
-                : 'Waiting on your skills call to be reviewed. This can take a few days.'
-            : item.summary}
+          {pending ? (PENDING_COPY[item.key] ?? GENERIC_PENDING) : item.summary}
         </p>
       </div>
 

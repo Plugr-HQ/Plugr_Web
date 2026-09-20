@@ -3,22 +3,30 @@
 // Plug actually submitted before deciding — the tab used to offer approve/reject with nothing to
 // look at.
 //
-// One section per item: the required ones, BVN's slot (on hold, not required), and certificates. Every
-// decision goes through the one backend review route (PATCH /admin/verification/:item/:plugId); this
-// panel has no approval logic of its own.
+// One section per item: the five required ones and certificates. Every decision goes through the one
+// backend review route (PATCH /admin/verification/:item/:plugId); this panel has no approval logic
+// of its own, and identity and BVN use that same route rather than a second mechanism.
 //
-// Two things are only ever visible here: the guarantor's decrypted NIN, and the Didit result for the
-// Plug's identity session, which the backend fetches live each time this opens and never stores.
+// IDENTITY IS REVIEWED BY EYE HERE. Its section is the one that carries real work: the typed NIN,
+// the uploaded NIN slip and the live selfie, side by side, so the reviewer can check the number on
+// the slip against the typed one and the face on the slip against the selfie. The two files open
+// through short-lived signed URLs, exactly like a certificate.
+//
+// Decrypted values are only ever visible here: the guarantor's NIN, and the Plug's own NIN and BVN.
+// The dormant Didit result also still renders, but only for a Plug who ran a check before the switch
+// to manual review — nothing creates new sessions.
 
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
 import {
   AlertTriangle,
+  Camera,
   CheckCircle2,
   ClipboardList,
   ExternalLink,
   FileBadge,
+  History,
   Landmark,
   Loader2,
   Mic,
@@ -31,7 +39,7 @@ import { cn } from '@/src/lib/utils';
 import { Avatar, Chip, Modal, ModalError, PillButton, type Tone } from './admin-ui';
 
 type ReviewStatus = 'PENDING_REVIEW' | 'VERIFIED' | 'NEEDS_CHANGES' | 'REJECTED';
-type ReviewableItem = 'guarantor' | 'skills' | 'background';
+type ReviewableItem = 'identity' | 'bvn' | 'guarantor' | 'skills' | 'background';
 
 type Detail = {
   plug: {
@@ -44,13 +52,36 @@ type Detail = {
     joinedAt: string;
     isVerified: boolean;
   };
-  identity: {
+  /** The manual NIN + liveness submission — null until the Plug sends one. */
+  identity: null | {
+    status: ReviewStatus;
+    nin: string | null;
+    ninError: string | null;
+    slip: { fileName: string; mimeType: string; sizeBytes: number };
+    selfie: { mimeType: string; sizeBytes: number };
+    submittedAt: string;
+    reviewedAt: string | null;
+    reviewNote: string | null;
+  };
+  /** The manually collected BVN. `nin` is the decrypted digits — the backend uses the same two keys
+   *  for every decrypted number it returns, so this view reads them one way. */
+  bvn: null | {
+    status: ReviewStatus;
+    nin: string | null;
+    ninError: string | null;
+    submittedAt: string;
+    reviewedAt: string | null;
+    reviewNote: string | null;
+  };
+  /** The DORMANT Didit integration. Only populated for a Plug who ran a check before identity moved
+   *  to manual review; for everyone else `hasSession` is false and the section doesn't render. */
+  didit: {
     status: string;
     failureReason: string | null;
     updatedAt: string | null;
     verifiedAt: string | null;
     hasSession: boolean;
-    didit:
+    result:
       | { fetched: false; reason: string }
       | {
           fetched: true;
@@ -69,7 +100,6 @@ type Detail = {
           };
         };
   };
-  bvn: { status: 'NOT_SUBMITTED' };
   guarantor: null | {
     status: ReviewStatus;
     fullName: string;
@@ -197,6 +227,16 @@ export function VerificationDetail({
     [adminFetch, plugId],
   );
 
+  /** The slip and the selfie, opened the same way a certificate is: a short-lived signed URL,
+   *  fetched when ops actually click, never embedded in the page. */
+  const openIdentityFile = useCallback(
+    async (kind: 'slip' | 'selfie') => {
+      const res = await adminFetch(`/api/admin/verification/${plugId}/identity/${kind}/url`);
+      if (res?.url) window.open(res.url, '_blank', 'noopener,noreferrer');
+    },
+    [adminFetch, plugId],
+  );
+
   const p = detail?.plug;
 
   return (
@@ -238,24 +278,48 @@ export function VerificationDetail({
               onClick={load}
               disabled={loading}
               className="inline-flex items-center gap-1.5 rounded-pill px-3 py-1.5 text-xs font-bold text-slate hover:text-pitch-black disabled:opacity-40"
-              title="Reload (re-fetches the Didit result)"
+              title="Reload"
             >
               <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} /> Refresh
             </button>
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <IdentitySection identity={detail.identity} />
+            <IdentitySection identity={detail.identity} onOpen={openIdentityFile} onReview={review} />
 
             <Section
               icon={<Landmark className="h-4 w-4" />}
               title="BVN"
-              chip={REVIEW_CHIP.NOT_SUBMITTED}
+              chip={REVIEW_CHIP[detail.bvn?.status ?? 'NOT_SUBMITTED']}
               testId="section-bvn"
             >
-              <p className="text-sm text-slate">
-                Not submitted, and not required right now — BVN is on hold until Fincra clears its KYC review. Approving a Plug doesn’t need it.
-              </p>
+              {!detail.bvn ? (
+                <Empty>No BVN submitted yet.</Empty>
+              ) : (
+                <>
+                  <Fields
+                    rows={[
+                      [
+                        'BVN',
+                        detail.bvn.nin ? (
+                          <span className="font-mono tracking-wider" data-testid="bvn-digits">
+                            {detail.bvn.nin}
+                          </span>
+                        ) : (
+                          <span className="text-red-600">{detail.bvn.ninError}</span>
+                        ),
+                      ],
+                      ['Submitted', when(detail.bvn.submittedAt)],
+                    ]}
+                  />
+                  <p className="mt-3 text-xs text-slate">
+                    Collected by hand — the Fincra lookup is built but stopped pending their KYC review of Plugr.
+                    Confirm the digits with the Plug, then decide.
+                  </p>
+                  <ReviewNote reviewedAt={detail.bvn.reviewedAt} note={detail.bvn.reviewNote} />
+                  <ReviewActions item="bvn" status={detail.bvn.status} onReview={review} />
+                </>
+              )}
             </Section>
 
             <Section
@@ -379,6 +443,9 @@ export function VerificationDetail({
                 </ul>
               )}
             </Section>
+
+            {/* Only for a Plug who ran a Didit check before identity moved to manual review. */}
+            {detail.didit.hasSession && <DiditSection didit={detail.didit} />}
           </div>
         </div>
       )}
@@ -386,13 +453,83 @@ export function VerificationDetail({
   );
 }
 
-function IdentitySection({ identity }: { identity: Detail['identity'] }) {
-  const chip = IDENTITY_CHIP[identity.status] ?? { tone: 'neutral' as Tone, label: identity.status };
-  const d = identity.didit;
+/**
+ * The item ops actually work. Everything needed for the comparison is in one place: the number the
+ * Plug typed, the slip it should appear on, and the selfie that should be the same face as the one
+ * on the slip. The two files open in new tabs so a reviewer can put them side by side.
+ */
+function IdentitySection({
+  identity,
+  onOpen,
+  onReview,
+}: {
+  identity: Detail['identity'];
+  onOpen: (kind: 'slip' | 'selfie') => Promise<void>;
+  onReview: (item: ReviewableItem, status: ReviewStatus, note?: string) => Promise<void>;
+}) {
   return (
-    <Section icon={<ScanFace className="h-4 w-4" />} title="Identity (NIN + face)" chip={chip} testId="section-identity">
-      {identity.failureReason && identity.status === 'DECLINED' && (
-        <p className="mb-3 text-sm font-bold text-red-600">{FAILURE_LABEL[identity.failureReason] ?? identity.failureReason}</p>
+    <Section
+      icon={<ScanFace className="h-4 w-4" />}
+      title="Identity (NIN + face)"
+      chip={REVIEW_CHIP[identity?.status ?? 'NOT_SUBMITTED']}
+      testId="section-identity"
+    >
+      {!identity ? (
+        <Empty>No NIN, slip or selfie submitted yet.</Empty>
+      ) : (
+        <>
+          <Fields
+            rows={[
+              [
+                'NIN typed',
+                identity.nin ? (
+                  <span className="font-mono tracking-wider" data-testid="identity-nin">
+                    {identity.nin}
+                  </span>
+                ) : (
+                  <span className="text-red-600">{identity.ninError}</span>
+                ),
+              ],
+              ['Submitted', when(identity.submittedAt)],
+            ]}
+          />
+
+          <div className="mt-3 space-y-2">
+            <FileRow
+              icon={<FileBadge className="h-4 w-4 shrink-0 text-slate" />}
+              title={identity.slip.fileName}
+              sub={`NIN slip · ${identity.slip.mimeType === 'application/pdf' ? 'PDF' : 'JPG'} · ${sizeLabel(identity.slip.sizeBytes)}`}
+              onOpen={() => onOpen('slip')}
+            />
+            <FileRow
+              icon={<Camera className="h-4 w-4 shrink-0 text-slate" />}
+              title="Live selfie"
+              sub={`Taken on camera · JPG · ${sizeLabel(identity.selfie.sizeBytes)}`}
+              onOpen={() => onOpen('selfie')}
+            />
+          </div>
+
+          <p className="mt-3 text-xs text-slate">
+            Check the NIN on the slip against the number typed above, and the face on the slip against the selfie.
+            Passing this verifies the Plug outright — it is not a provisional status.
+          </p>
+
+          <ReviewNote reviewedAt={identity.reviewedAt} note={identity.reviewNote} />
+          <ReviewActions item="identity" status={identity.status} onReview={onReview} />
+        </>
+      )}
+    </Section>
+  );
+}
+
+/** The dormant Didit result, for a Plug who ran a check before the switch to manual review. */
+function DiditSection({ didit }: { didit: Detail['didit'] }) {
+  const chip = IDENTITY_CHIP[didit.status] ?? { tone: 'neutral' as Tone, label: didit.status };
+  const d = didit.result;
+  return (
+    <Section icon={<History className="h-4 w-4" />} title="Earlier Didit check" chip={chip} testId="section-didit">
+      {didit.failureReason && didit.status === 'DECLINED' && (
+        <p className="mb-3 text-sm font-bold text-red-600">{FAILURE_LABEL[didit.failureReason] ?? didit.failureReason}</p>
       )}
 
       {'reason' in d ? (
@@ -424,10 +561,34 @@ function IdentitySection({ identity }: { identity: Detail['identity'] }) {
         </>
       )}
       <p className="mt-3 text-xs text-slate">
-        Decided by Didit’s signed webhook, so it isn’t reviewed here — a manual status would be overwritten by the next
-        webhook. A declined Plug re-runs the check from their Hub.
+        History only. This Plug ran a Didit check before identity moved to review by hand; nothing starts new checks,
+        and this result decides nothing. The identity section above is what counts.
       </p>
     </Section>
+  );
+}
+
+/** One openable file. Same shape as a certificate row, because it is the same idea. */
+function FileRow({
+  icon,
+  title,
+  sub,
+  onOpen,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  sub: string;
+  onOpen: () => Promise<void>;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-pitch-black/[0.06] px-3 py-2.5">
+      {icon}
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-bold text-pitch-black">{title}</p>
+        <p className="text-xs text-slate">{sub}</p>
+      </div>
+      <OpenButton onOpen={onOpen} />
+    </div>
   );
 }
 

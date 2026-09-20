@@ -5,11 +5,10 @@
 // Six items, each independently completable in any order. None blocks another, and none blocks
 // the account: verification happens after signup, from the Plug's own dashboard.
 //
-//   nin_liveness  NIN + liveness      (Didit — live; status comes from the backend, see below)
-//   bvn           BVN                 (ON HOLD — see BVN_ENABLED below: "Coming soon", not required)
+//   nin_liveness  NIN + liveness      (ops review the typed NIN, the slip and the live selfie)
+//   bvn           BVN                 (ops review the typed digits)
 //   guarantor     Guarantor           (a human on the other end → pending review)
 //   skills        Skills assessment   (a human on the other end → pending review)
-//   (nin_liveness can also sit in pending review: Didit may send a check to manual review)
 //   background    Background info
 //   certificates  Certificates        (OPTIONAL — never blocks the overall status)
 //
@@ -18,10 +17,9 @@
 // That is a Plug-facing status only: nothing here grants eligibility. Dispatch eligibility is
 // enforced server-side (Plugr_Backend plug-eligibility.ts) and an ops review decides it.
 //
-// STORAGE SEAM: item state lives in localStorage, per Plug id, because no backend model exists for
-// most items yet. It is per-device and not authoritative. The exception is nin_liveness: its truth is
-// the backend (Didit's signed webhook → PlugProfile.identityStatus). The Hub fetches it and caches it
-// here with `saveServerItemState`, so the dashboard card and an offline Hub show the last known value.
+// STORAGE SEAM: item state lives in localStorage, per Plug id. It is a per-device CACHE, not the
+// truth — every item's real state comes from GET /verification/items, and the cache exists so the
+// dashboard card and an offline Hub can show the last known value instead of a blank.
 
 export type VerificationItemKey =
   | 'nin_liveness'
@@ -34,17 +32,18 @@ export type VerificationItemKey =
 export type ItemState = 'not_started' | 'in_progress' | 'pending_review' | 'verified';
 
 /**
- * BVN is on hold until Fincra finishes its own KYC review of Plugr, so it can't be built yet.
+ * BVN is a required item again. It was "Coming soon" while it had no implementation of its own:
+ * Fincra's API is built but stopped pending Fincra's own KYC review of Plugr, so there was nothing
+ * behind the item. It now has a manual path — the Plug types their BVN, it is encrypted at rest, and
+ * ops confirm the digits — which is an implementation, so the item is open and counted again.
  *
- *   false (now)  BVN shows in the Hub as "Coming soon", can't be opened, and is NOT counted: the
- *                Plug needs 4 items (NIN + face, guarantor, skills, background) to be complete.
- *   true         BVN becomes a normal required item again: 5 items, and it opens its own screen.
+ *   true (now)   BVN is a normal required item: 5 required items, and it opens its own screen.
+ *   false        BVN reverts to "Coming soon", can't be opened, and is NOT counted (4 items).
  *
  * This constant is the whole switch. The required total, the progress bar, the "X of N" lines and
- * the dashboard button all derive from it. When Fincra clears and the BVN screen exists, set this to
- * true — nothing else in this file or the Hub needs to change.
+ * the dashboard button all derive from it — never write the number anywhere else.
  */
-export const BVN_ENABLED = false;
+export const BVN_ENABLED = true;
 
 export type VerificationItem = {
   key: VerificationItemKey;
@@ -67,19 +66,20 @@ export const VERIFICATION_ITEMS: VerificationItem[] = [
     key: 'nin_liveness',
     slug: 'identity',
     title: 'NIN + face scan',
-    summary: 'Enter your NIN and take a selfie matched to your NIN photo.',
+    summary: 'Enter your NIN, upload your NIN slip, and take a live selfie.',
     required: true,
-    // Didit can route a check to manual review before deciding.
+    // Our own team compares the three by eye — see the note at the top of this file.
     needsHumanReview: true,
   },
   {
     key: 'bvn',
     slug: 'bvn',
     title: 'BVN',
-    summary: 'Confirm your Bank Verification Number.',
+    summary: 'Enter your Bank Verification Number.',
     required: BVN_ENABLED,
     comingSoon: !BVN_ENABLED,
-    needsHumanReview: false,
+    // Ops confirm the digits, so submitting leads to pending review rather than straight to done.
+    needsHumanReview: true,
   },
   {
     key: 'guarantor',
@@ -238,7 +238,12 @@ export function saveItemStates(plugId: string, states: ItemStates): void {
   }
 }
 
-// ─── Identity (Didit) status from the backend ───────────────────────────────────────────────
+// ─── Identity (Didit) status — DORMANT ──────────────────────────────────────────────────────
+//
+// Nothing in the Plug-facing flow reads these any more: the identity item is decided by an ops
+// review like every other item, and its state arrives on /verification/items. They are kept because
+// the Didit integration behind them is intact and dormant, not deleted — an old decision is still
+// readable in the admin view, and switching back needs no retrofit.
 
 /** Why a DECLINED identity check failed (PlugProfile.identityFailureReason). */
 export type IdentityFailureReason =
@@ -303,7 +308,7 @@ export const SEEDS: Record<string, ItemStates> = {
   none: emptyItemStates(),
   partial: {
     ...emptyItemStates(),
-    nin_liveness: 'verified',
+    nin_liveness: 'pending_review',
     bvn: 'in_progress',
     guarantor: 'pending_review',
   },
