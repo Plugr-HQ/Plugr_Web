@@ -139,7 +139,7 @@ function HubBody({ base, states }: { base: string; states: ItemStates }) {
       {comingSoon.length > 0 && (
         <section className="mt-7" aria-labelledby="coming-soon-heading">
           <h2 id="coming-soon-heading" className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-slate">
-            Coming soon · not needed yet
+            Coming soon 
           </h2>
           <ul className="space-y-2.5">
             {comingSoon.map((item) => (
