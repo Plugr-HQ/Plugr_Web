@@ -84,20 +84,29 @@ export function PlugProfileScreen({ base }: { base: string }) {
 
   const plugId = typeof window !== 'undefined' ? getPlugId() : '';
 
+  /** The API is inconsistent: the snapshot wraps the row, the profile PATCH returns it bare. */
+  const unwrapPlug = (body: any) => (body && typeof body === 'object' && body.plug ? body.plug : body);
+
+  /** One place that pushes a server row into every piece of screen state. */
+  const applyPlug = useCallback((row: any) => {
+    if (!row || typeof row !== 'object') return;
+    setPlug(row);
+    setBio(row.bio ?? '');
+    setPhoto(row.photo_url ?? null);
+    setSkills(Array.isArray(row.skills) ? row.skills : []);
+    setExperience(Array.isArray(row.experience) ? row.experience : []);
+  }, []);
+
   const load = useCallback(async () => {
     if (!plugId) return;
     try {
       const body = await apiFetch(withSource(`/api/plugs/${plugId}`, base), {}, { skipAuthRedirect: false });
-      setPlug(body.plug);
-      setBio(body.plug.bio ?? '');
-      setPhoto(body.plug.photo_url ?? null);
-      setSkills(Array.isArray(body.plug.skills) ? body.plug.skills : []);
-      setExperience(Array.isArray(body.plug.experience) ? body.plug.experience : []);
+      applyPlug(unwrapPlug(body));
       setError(null);
     } catch (e: any) {
       setError(/plug not found/i.test(e?.message ?? '') ? 'Your session expired. Sign in again.' : e.message);
     }
-  }, [plugId, base]);
+  }, [plugId, base, applyPlug]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -108,8 +117,14 @@ export function PlugProfileScreen({ base }: { base: string }) {
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify(payload),
     }, { skipAuthRedirect: false });
-    setPlug(body.plug);
-    return body.plug;
+
+    // GET returns { plug }, PATCH returns the row itself — reading body.plug for both set the
+    // screen's state to undefined after every successful save, which is why an edit only appeared
+    // once the page was reloaded. Take whichever shape arrives, and refresh the editor fields from
+    // the saved row so what's on screen is what the server stored.
+    const saved = unwrapPlug(body);
+    applyPlug(saved);
+    return saved;
   }
 
   async function saveEdits() {
