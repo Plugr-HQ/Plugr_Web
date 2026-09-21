@@ -71,6 +71,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     ? `${plug.name} is identity-verified via NIN on Plugr${plug.service_area ? `, serving ${plug.service_area}` : ''}. Direct booking opens soon.`
     : `${plug.name} on Plugr${plug.service_area ? `, serving ${plug.service_area}` : ''}. Direct booking opens soon.`;
 
+  // Photos are currently stored as base64 data: URLs. A link-preview scraper (WhatsApp, X) can't
+  // fetch a data: URL, so in og:image it does nothing — but Next writes it into the page several
+  // times over (og:image, twitter:image, and again in the serialized metadata), which is most of
+  // why a profile with an 83KB photo arrived as a 532KB page. Only a real, fetchable URL goes in
+  // the preview; once photos move to storage and photo_url becomes an https URL, previews get
+  // their image back with no change here.
+  const previewImage = plug.photo_url && /^https?:\/\//i.test(plug.photo_url) ? plug.photo_url : null;
+
   return {
     title,
     description,
@@ -78,7 +86,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       title,
       description,
       type: 'profile',
-      images: plug.photo_url ? [{ url: plug.photo_url }] : undefined,
+      images: previewImage ? [{ url: previewImage }] : undefined,
     },
     twitter: { card: 'summary', title, description },
   };
