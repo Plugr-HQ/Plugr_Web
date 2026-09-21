@@ -55,6 +55,7 @@ export async function PATCH(
     skills?: unknown;
     experience?: unknown;
     email?: string;
+    phone?: string;
   };
   try {
     body = await request.json();
@@ -80,6 +81,13 @@ export async function PATCH(
       return NextResponse.json({ error: 'enter a valid email address, or clear the field' }, { status: 400 });
     }
     payload.email = email;
+  }
+  if (typeof body.phone === 'string') {
+    const phone = body.phone.trim();
+    if (!phone) {
+      return NextResponse.json({ error: 'please enter a phone number' }, { status: 400 });
+    }
+    payload.phone = phone;
   }
 
   if (Object.keys(payload).length === 0) {

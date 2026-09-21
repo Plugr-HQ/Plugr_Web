@@ -26,7 +26,7 @@ import { apiFetch } from '@/src/lib/api-client';
 import { Loader2, Check } from 'lucide-react';
 import { SettingsSkeleton } from '@/src/components/Skeleton';
 import {
-  getPlugId, getPlugPhone, maskPlugPhone, getPlugBank, setPlugBank, signOutPlug, type PlugBank,
+  getPlugId, getPlugPhone, setPlugPhone, maskPlugPhone, getPlugBank, setPlugBank, signOutPlug, type PlugBank,
 } from '@/src/app/app/_lib/plugAuth';
 import { withSource } from '@/src/lib/apiSource';
 import { PlugShell } from './PlugChrome';
@@ -86,10 +86,16 @@ export function SettingsScreen({ base }: { base: string }) {
               <Card className="px-4">
                 <Field label="Name" value={plug?.name ?? '—'} />
                 <div className="h-px bg-pitch-black/[0.06]" />
-                <Field label="Phone" value={phone ? maskPlugPhone(phone) : '—'} />
+                <PhoneRow
+                  plugId={plug?.id ?? null}
+                  initial={plug?.phone ?? phone ?? null}
+                  onSaved={(newPhone) => {
+                    setPlugPhone(newPhone);
+                    setPlug((p: any) => (p ? { ...p, phone: newPhone } : p));
+                  }}
+                />
                 <div className="h-px bg-pitch-black/[0.06]" />
-                {/* Optional email — the one identity field a Plug CAN edit here (name/phone/
-                    verification are Plugr-managed). Collected optionally at the end of signup. */}
+                {/* Optional email — collected optionally at signup, editable here. */}
                 <EmailRow
                   plugId={plug?.id ?? null}
                   initial={plug?.email ?? null}
@@ -144,6 +150,109 @@ export function SettingsScreen({ base }: { base: string }) {
         </div>
       )}
     </PlugShell>
+  );
+}
+
+/**
+ * Contact phone number — editable from Plug Settings.
+ * Saves through PATCH /api/plugs/:id/profile (guarded PLUG + ownership on the backend, which
+ * writes it to the User row).
+ */
+function PhoneRow({
+  plugId, initial, onSaved,
+}: { plugId: string | null; initial: string | null; onSaved: (phone: string) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(initial ?? '');
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => { setValue(initial ?? ''); }, [initial]);
+
+  async function save() {
+    if (!plugId || saving) return;
+    const phoneTrimmed = value.trim();
+    if (!phoneTrimmed) {
+      setErr('Please enter a valid phone number.');
+      return;
+    }
+    setSaving(true);
+    setErr(null);
+    try {
+      const res = await apiFetch(`/api/plugs/${plugId}/profile`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phoneTrimmed }),
+      });
+      const updatedPhone = res?.phone ?? phoneTrimmed;
+      onSaved(updatedPhone);
+      setEditing(false);
+    } catch (e: any) {
+      setErr(e?.message ?? 'Could not save your phone number.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const displayPhone = initial ? maskPlugPhone(initial) : '';
+
+  if (!editing) {
+    return (
+      <div className="flex items-center justify-between gap-3 py-3">
+        <span className="text-sm text-slate">Phone</span>
+        <div className="flex min-w-0 items-center gap-2">
+          <span className={cn('min-w-0 truncate text-sm font-semibold', displayPhone ? 'text-pitch-black' : 'text-slate/60')}>
+            {displayPhone || 'Not added'}
+          </span>
+          <button
+            onClick={() => { setEditing(true); setValue(initial ?? ''); setErr(null); }}
+            className="shrink-0 rounded-pill border border-pitch-black/10 px-3 py-1.5 text-[11px] font-bold text-pitch-black transition-colors hover:bg-bone"
+          >
+            {initial ? 'Edit' : 'Add'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-3">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-sm text-slate">Phone</span>
+      </div>
+      <input
+        value={value}
+        onChange={(e) => { setValue(e.target.value); if (err) setErr(null); }}
+        type="tel"
+        inputMode="tel"
+        autoComplete="tel"
+        placeholder="e.g. 08012345678"
+        aria-label="Phone number"
+        className={cn(
+          'w-full rounded-2xl border bg-white px-4 py-3 text-sm text-pitch-black placeholder:text-slate/50 focus:outline-none focus:ring-4 focus:ring-gold/10 transition-shadow',
+          err ? 'border-red-400' : 'border-pitch-black/10 focus:border-gold',
+        )}
+      />
+      {err && (
+        <p className="mt-2 text-[12px] text-red-600">{err}</p>
+      )}
+      <div className="flex gap-3 pt-3">
+        <button
+          onClick={() => { setEditing(false); setValue(initial ?? ''); setErr(null); }}
+          disabled={saving}
+          className="flex-1 rounded-pill px-4 py-2.5 text-sm font-bold text-slate hover:text-pitch-black disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={save}
+          disabled={saving}
+          className="flex flex-1 items-center justify-center gap-2 rounded-pill bg-pitch-black py-2.5 text-sm font-bold text-white transition-colors hover:bg-petrol disabled:opacity-60"
+        >
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+          {saving ? 'Saving…' : 'Save'}
+        </button>
+      </div>
+    </div>
   );
 }
 
