@@ -168,7 +168,7 @@ export function AdminShell({
         </nav>
 
         {expanded && (
-          <p className="border-t border-white/5 px-5 py-4 text-[10px] uppercase tracking-[0.12em] text-bone-muted">Plugr Admin Dashboard V2.2</p>
+          <p className="border-t border-white/5 px-5 py-4 text-[10px] uppercase tracking-[0.12em] text-bone-muted">Plugr Admin Dashboard V2.3</p>
         )}
       </aside>
 
