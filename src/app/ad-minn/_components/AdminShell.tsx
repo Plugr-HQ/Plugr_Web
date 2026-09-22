@@ -8,8 +8,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Users, Briefcase, ShieldCheck, Flag, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Tags } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Users, Briefcase, ShieldCheck, Flag, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Tags, LogOut } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
+import { getAdminUser, getAdminInitials, getAdminFirstName, clearAdminUser, type AdminUser } from '@/src/lib/adminAuth';
+import { clearToken } from '@/src/lib/api';
 
 export type AdminTab = 'dispatch' | 'jobs' | 'flags' | 'plugs' | 'verifications' | 'categories';
 
@@ -62,11 +65,15 @@ export function AdminShell({
   onNavigate: (tab: AdminTab) => void;
   children: React.ReactNode;
 }) {
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
+  const [adminUser, setAdminUserState] = useState<AdminUser | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(EXPANDED_KEY);
     if (stored !== null) setExpanded(stored === 'true');
+    setAdminUserState(getAdminUser());
   }, []);
 
   const toggle = () => {
@@ -88,6 +95,18 @@ export function AdminShell({
       return prev;
     });
   };
+
+  const handleLogout = () => {
+    clearToken();
+    clearAdminUser();
+    router.replace('/ad-minn/login');
+  };
+
+  const initials = getAdminInitials(adminUser);
+  const firstName = getAdminFirstName(adminUser);
+  const fullName = adminUser?.name || 'Admin User';
+  const email = adminUser?.email || '';
+  const phone = adminUser?.phone || '';
 
   return (
     <div className="min-h-screen bg-bone text-pitch-black">
@@ -153,9 +172,48 @@ export function AdminShell({
 
       {/* Main column — always clears the rail (ml-16); pushed to ml-64 when expanded on desktop. */}
       <div className={cn('flex min-h-screen flex-col transition-[margin] duration-300 ease-in-out ml-16', expanded && 'md:ml-64')}>
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-pitch-black/[0.06] bg-bone/80 px-4 backdrop-blur-md sm:px-6 lg:px-8">
-          <h1 className="font-display text-xl text-pitch-black sm:text-2xl">{TITLES[active]}</h1>
-          <div className="ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold text-xs font-bold text-pitch-black">AD</div>
+        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-pitch-black/[0.06] bg-bone/80 px-4 backdrop-blur-md sm:px-6 lg:px-8">
+          <div className="flex items-baseline gap-3 min-w-0">
+            <h1 className="font-display text-xl text-pitch-black sm:text-2xl truncate">{TITLES[active]}</h1>
+            <span className="hidden text-xs font-semibold text-slate sm:inline-block truncate">
+              Welcome, {firstName}
+            </span>
+          </div>
+
+          <div className="relative ml-auto flex items-center gap-3">
+            <div className="group relative">
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold text-xs font-bold text-pitch-black shadow-sm transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gold/50"
+                title={`${fullName}${email ? ` (${email})` : ''}`}
+                aria-label={`Logged in as ${fullName}`}
+              >
+                {initials}
+              </button>
+
+              {dropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                  <div className="absolute right-0 top-11 z-50 w-56 rise rounded-2xl border border-pitch-black/10 bg-white p-3 shadow-xl">
+                    <div className="border-b border-pitch-black/5 pb-2.5 mb-2 px-1">
+                      <p className="truncate text-xs font-bold text-pitch-black">{fullName}</p>
+                      {email && <p className="truncate text-[11px] text-slate">{email}</p>}
+                      {phone && <p className="truncate text-[11px] text-slate/80">{phone}</p>}
+                      <span className="mt-1.5 inline-block rounded-pill bg-gold/15 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.1em] text-[#8a5a08]">
+                        Admin Account
+                      </span>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-50"
+                    >
+                      <LogOut className="h-4 w-4" /> Log out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </header>
 
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">

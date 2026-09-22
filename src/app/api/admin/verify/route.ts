@@ -25,12 +25,14 @@ export async function GET(request: Request) {
       headers: { Authorization: auth },
     });
 
+    const data = await backendRes.json().catch(() => ({} as any));
+
     if (!backendRes.ok) {
       // Mirror the backend's rejection status (401/403) so the client treats it as "not admin".
       return NextResponse.json({ ok: false }, { status: backendRes.status });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, user: data?.user ?? null });
   } catch (e) {
     console.error('admin verify proxy failed', e);
     return NextResponse.json({ ok: false }, { status: 502 });

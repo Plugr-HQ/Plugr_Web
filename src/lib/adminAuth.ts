@@ -43,15 +43,92 @@ export function isAdminTokenValid(token: string | null): boolean {
   return true;
 }
 
+const ADMIN_USER_KEY = 'plugr_admin_user';
+
+export type AdminUser = {
+  id?: string;
+  phone?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+};
+
+export function setAdminUser(user: AdminUser | null) {
+  if (typeof window === 'undefined') return;
+  if (user) {
+    localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(user));
+  } else {
+    localStorage.removeItem(ADMIN_USER_KEY);
+  }
+}
+
+export function getAdminUser(): AdminUser | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(ADMIN_USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearAdminUser() {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(ADMIN_USER_KEY);
+}
+
+/** Compute first & last initials from name (e.g. "Abdul Rasheed" -> "AR"), falling back to email prefix or "AD". */
+export function getAdminInitials(user?: AdminUser | null): string {
+  const name = user?.name?.trim();
+  if (name) {
+    const parts = name.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    if (parts.length === 1 && parts[0].length >= 2) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+    if (parts.length === 1) {
+      return parts[0][0].toUpperCase();
+    }
+  }
+
+  const email = user?.email?.trim();
+  if (email && email.includes('@')) {
+    const prefix = email.split('@')[0];
+    if (prefix.length >= 2) return prefix.slice(0, 2).toUpperCase();
+    if (prefix.length === 1) return prefix[0].toUpperCase();
+  }
+
+  return 'AD';
+}
+
+/** Extract first name for welcome label. */
+export function getAdminFirstName(user?: AdminUser | null): string {
+  const name = user?.name?.trim();
+  if (name) {
+    return name.split(/\s+/)[0];
+  }
+  const email = user?.email?.trim();
+  if (email && email.includes('@')) {
+    const prefix = email.split('@')[0];
+    return prefix.charAt(0).toUpperCase() + prefix.slice(1);
+  }
+  return 'Admin';
+}
+
 /**
  * Authoritative check against the backend. Returns true only on a 2xx from the guarded
  * admin endpoint; any 401/403 (expired, revoked, not-admin) or network error → false.
  */
 export async function verifyAdminSession(): Promise<boolean> {
   const token = getToken();
-  if (!isAdminTokenValid(token)) return false;
+  if (!isAdminTokenValid(token)) {
+    clearAdminUser();
+    return false;
+  }
   try {
-    await apiFetch(
+    const res: any = await apiFetch(
       '/api/admin/verify',
       {
         method: 'GET',
@@ -60,7 +137,12 @@ export async function verifyAdminSession(): Promise<boolean> {
       },
       { skipAuthRedirect: true }
     );
-    return true;
+    if (res?.ok) {
+      if (res?.user) setAdminUser(res.user);
+      return true;
+    }
+    clearAdminUser();
+    return false;
   } catch {
     return false;
   }

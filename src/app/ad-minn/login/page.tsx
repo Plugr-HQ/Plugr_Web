@@ -13,7 +13,8 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, ShieldCheck } from 'lucide-react';
-import { api, setToken, clearToken } from '@/src/lib/api';
+import { setToken, clearToken } from '@/src/lib/api';
+import { setAdminUser } from '@/src/lib/adminAuth';
 import { cn } from '@/src/lib/utils';
 import { Card, PrimaryButton } from '@/src/components/ui';
 import { useResendCooldown, formatCooldown } from '@/src/lib/useResendCooldown';
@@ -129,6 +130,7 @@ export default function AdminLoginPage() {
       }
 
       setToken(accessToken);
+      if (res?.user) setAdminUser(res.user);
       router.replace('/ad-minn');
     } catch (err: any) {
       setDigits(Array(LENGTH).fill(''));
