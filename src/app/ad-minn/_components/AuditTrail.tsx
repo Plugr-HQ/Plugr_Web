@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Loader2, ShieldAlert, UserCheck, Clock, Eye, RefreshCw } from 'lucide-react';
 import { apiFetch } from '@/src/lib/api-client';
+import { authHeaders } from '@/src/lib/api';
 import { TableCard, Thead, rowClass, cellClass, Chip } from './admin-ui';
 import { cn } from '@/src/lib/utils';
 
@@ -58,7 +59,16 @@ export function AuditTrail() {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiFetch('/api/admin/audit-trail', {}, { redirectTo: '/ad-minn/login' });
+      const res = await apiFetch(
+        '/api/admin/audit-trail',
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            ...authHeaders(),
+          },
+        },
+        { redirectTo: '/ad-minn/login' },
+      );
       setData(res);
     } catch (e: any) {
       if (e?.message !== 'Session expired') setError(e?.message ?? 'Could not load the audit trail.');
