@@ -12,6 +12,7 @@ import { Flags } from './_components/Flags'
 import { TableCard, Thead, rowClass, cellClass, Chip, Avatar, PillButton } from './_components/admin-ui'
 import { VerificationDetail } from './_components/VerificationDetail'
 import { Categories } from './_components/Categories'
+import { AuditTrail } from './_components/AuditTrail'
 
 type PendingPlug = {
   id: string
@@ -47,6 +48,7 @@ export default function AdminDashboard() {
       {activeTab === 'plugs' && <PlugsTable />}
       {activeTab === 'categories' && <Categories />}
       {activeTab === 'verifications' && <PendingVerifications />}
+      {activeTab === 'audit' && <AuditTrail />}
     </AdminShell>
   )
 }

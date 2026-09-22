@@ -9,12 +9,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Briefcase, ShieldCheck, Flag, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Tags, LogOut } from 'lucide-react';
+import { Users, Briefcase, ShieldCheck, Flag, LayoutDashboard, PanelLeftClose, PanelLeftOpen, Tags, LogOut, ClipboardList } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { getAdminUser, getAdminInitials, getAdminFirstName, clearAdminUser, type AdminUser } from '@/src/lib/adminAuth';
 import { clearToken } from '@/src/lib/api';
 
-export type AdminTab = 'dispatch' | 'jobs' | 'flags' | 'plugs' | 'verifications' | 'categories';
+export type AdminTab = 'dispatch' | 'jobs' | 'flags' | 'plugs' | 'verifications' | 'categories' | 'audit';
 
 const NAV: { key: AdminTab; label: string; icon: typeof Users }[] = [
   { key: 'dispatch', label: 'Dispatch', icon: LayoutDashboard },
@@ -23,6 +23,7 @@ const NAV: { key: AdminTab; label: string; icon: typeof Users }[] = [
   { key: 'plugs', label: 'Plugs', icon: Users },
   { key: 'categories', label: 'Categories', icon: Tags },
   { key: 'verifications', label: 'Verifications', icon: ShieldCheck },
+  { key: 'audit', label: 'Reviewers', icon: ClipboardList },
 ];
 
 const TITLES: Record<AdminTab, string> = {
@@ -32,6 +33,7 @@ const TITLES: Record<AdminTab, string> = {
   plugs: 'Manage Plugs',
   categories: 'Categories',
   verifications: 'Verifications',
+  audit: 'Admin Reviewers',
 };
 
 const EXPANDED_KEY = 'plugr-admin-sidebar-expanded';
