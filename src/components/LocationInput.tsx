@@ -1,20 +1,11 @@
 // src/components/LocationInput.tsx
 import React, { useState } from 'react';
 import { MapPin, Search, Loader2 } from 'lucide-react';
+import { reverseGeocode, searchGeocode, GeocodeResult } from '../lib/geocodingApi';
+import { ConfirmLocationModal } from './ConfirmLocationModal';
 
 interface LocationInputProps {
   onLocationSelect: (location: { latitude: number; longitude: number; address: string }) => void;
-}
-
-// Nominatim's `address` object breaks a result into components instead of one baked string.
-// We only want area-level granularity (no house number/street), so build the display string
-// from these fields rather than using `display_name`, which is house-level by default.
-function toAreaLevelAddress(nominatimResult: any): string {
-  const a = nominatimResult?.address ?? {};
-  const area = a.suburb || a.neighbourhood || a.city_district || a.town || a.city || a.county;
-  const state = a.state;
-  const parts = [area, state].filter(Boolean);
-  return parts.length > 0 ? parts.join(', ') : nominatimResult?.display_name || '';
 }
 
 function friendlyGeolocationError(err: GeolocationPositionError): string {
@@ -34,6 +25,22 @@ export function LocationInput({ onLocationSelect }: LocationInputProps) {
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Holds a low-confidence result while it's awaiting explicit user confirmation.
+  const [pendingConfirmation, setPendingConfirmation] = useState<GeocodeResult | null>(null);
+
+  const acceptResult = (result: GeocodeResult) => {
+    setAddress(result.formattedAddress);
+    onLocationSelect({ latitude: result.latitude, longitude: result.longitude, address: result.formattedAddress });
+  };
+
+  const handleResult = (result: GeocodeResult) => {
+    if (result.lowConfidence) {
+      // Don't silently fill the field with a weak match — make the user confirm it first.
+      setPendingConfirmation(result);
+    } else {
+      acceptResult(result);
+    }
+  };
 
   const handleGetBrowserLocation = () => {
     if (!navigator.geolocation) {
@@ -50,17 +57,14 @@ export function LocationInput({ onLocationSelect }: LocationInputProps) {
         const lng = position.coords.longitude;
 
         try {
-          // zoom=14 asks Nominatim for suburb/city-level granularity instead of the
-          // building-level default (zoom=18) — matches what we actually want to show.
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&addressdetails=1`
-          );
-          const data = await res.json();
-          const displayAddress = toAreaLevelAddress(data) || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-          setAddress(displayAddress);
-          onLocationSelect({ latitude: lat, longitude: lng, address: displayAddress });
+          const result = await reverseGeocode(lat, lng);
+          handleResult(result);
         } catch {
-          onLocationSelect({ latitude: lat, longitude: lng, address: `${lat.toFixed(4)}, ${lng.toFixed(4)}` });
+          // Geocoding failed outright (not just low-confidence) — fall back to raw
+          // coordinates rather than blocking the user, same behavior as before.
+          const fallbackAddress = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+          setAddress(fallbackAddress);
+          onLocationSelect({ latitude: lat, longitude: lng, address: fallbackAddress });
         } finally {
           setLoading(false);
         }
@@ -83,20 +87,10 @@ export function LocationInput({ onLocationSelect }: LocationInputProps) {
     setError(null);
 
     try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&addressdetails=1&countrycodes=ng`
-      );
-      const data = await res.json();
-
-      if (data && data.length > 0) {
-        const lat = parseFloat(data[0].lat);
-        const lng = parseFloat(data[0].lon);
-        onLocationSelect({ latitude: lat, longitude: lng, address: toAreaLevelAddress(data[0]) });
-      } else {
-        setError('Location not found. Please try a different address.');
-      }
+      const result = await searchGeocode(address);
+      handleResult(result);
     } catch {
-      setError('Failed to look up address location.');
+      setError('Location not found. Please try a different address.');
     } finally {
       setLoading(false);
     }
@@ -137,6 +131,20 @@ export function LocationInput({ onLocationSelect }: LocationInputProps) {
 
       {loading && <p className="text-sm text-slate">Detecting location…</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
+
+      {pendingConfirmation && (
+        <ConfirmLocationModal
+          address={pendingConfirmation.formattedAddress}
+          onConfirm={() => {
+            acceptResult(pendingConfirmation);
+            setPendingConfirmation(null);
+          }}
+          onReject={() => {
+            setPendingConfirmation(null);
+            setAddress('');
+          }}
+        />
+      )}
     </div>
   );
 }
