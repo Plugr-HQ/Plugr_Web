@@ -13,7 +13,7 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, ShieldCheck } from 'lucide-react';
-import { setToken, clearToken } from '@/src/lib/api';
+import { api, setToken, clearToken } from '@/src/lib/api';
 import { setAdminUser } from '@/src/lib/adminAuth';
 import { cn } from '@/src/lib/utils';
 import { Card, PrimaryButton } from '@/src/components/ui';
@@ -52,7 +52,7 @@ export default function AdminLoginPage() {
     e?.preventDefault();
     if (busy) return;
     setError(null);
-    
+
     const formattedPhone = formatPhone(phone);
     if (formattedPhone.length < 11) {
       setError('Enter a valid phone number (e.g., +2348000000001 or 08000000001).');
