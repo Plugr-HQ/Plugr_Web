@@ -39,14 +39,14 @@ const STEPS: Step[] = [
     key: 'nin',
     icon: <ShieldCheck className="h-4 w-4" />,
     label: 'Verify your NIN',
-    body: 'Checked against the national register (NIMC). Never shown on your profile.',
+    body: 'Reviewed by our team. Never shown on your profile or shared with clients.',
     state: 'now',
   },
   {
     key: 'liveness',
     icon: <ScanFace className="h-4 w-4" />,
     label: 'Selfie',
-    body: 'Matched to your NIN photo, in the same check.',
+    body: 'Taken on camera, as part of the same review.',
     state: 'next',
   },
 ];

@@ -7,14 +7,16 @@
 // Editable: photo + bio only. Name/trade are locked post-verification, and raw NIN/BVN is
 // never displayed — the stack confirms verification happened, nothing more.
 //
-// Tier: Basic at launch for everyone. BVN / Guarantor / Skills are the upgrades that raise
-// it, and none ship at launch — so they're shown as locked, non-blocking.
+// Tier: the badge still reflects plugTier(), but this screen no longer advertises how to raise it.
+// It used to carry a "Raise your tier" card offering BVN, Guarantor and Skills as optional
+// post-launch upgrades; all three are required Verification Hub items now, so the card was wrong
+// on both counts and was removed. The Hub is the one place that says what verification needs.
 
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Loader2, Star, Check, Lock, Pencil, Plus, Share2, Quote, X, Camera, Briefcase,
+  Loader2, Star, Check, Pencil, Plus, Share2, Quote, X, Camera, Briefcase,
   MapPin, Clock, Zap, ShieldCheck,
 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
@@ -31,12 +33,6 @@ import { authHeaders } from '@/src/lib/api';
 
 type WorkPost = { id: string; title: string; photos: string[]; createdAt: string };
 type ExperienceEntry = { id: string; title: string; org: string; period: string; note: string };
-
-const UPGRADES = [
-  { label: 'BVN', why: 'Adds a financial identity check.' },
-  { label: 'Guarantor', why: 'Someone accountable for your conduct.' },
-  { label: 'Skills Assessment', why: 'Proves the trade claim, not just the badge.' },
-];
 
 function shrink(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -449,27 +445,6 @@ export function PlugProfileScreen({ base }: { base: string }) {
             <Plus className="w-3.5 h-3.5" /> Add experience
           </button>
         )}
-      </Card>
-
-      {/* Raise your tier — locked upgrades, never blocking */}
-      <Card className="mt-4 p-5 rise rise-4">
-        <div className="flex items-center justify-between mb-1">
-          <Label>Raise your tier</Label>
-          <BadgeChip tier={tier} />
-        </div>
-        <p className="text-[11px] text-slate mb-3">Optional, never blocking. Coming after launch.</p>
-        <div className="space-y-2.5">
-          {UPGRADES.map((u) => (
-            <div key={u.label} className="flex items-center gap-3 opacity-70">
-              <span className="grid place-items-center h-6 w-6 rounded-full bg-pitch-black/6 shrink-0"><Lock className="w-3 h-3 text-slate" /></span>
-              <span className="min-w-0">
-                <span className="block text-sm font-semibold text-pitch-black">{u.label}</span>
-                <span className="block text-[11px] text-slate">{u.why}</span>
-              </span>
-              <span className="ml-auto shrink-0 text-[11px] font-bold text-slate">After launch</span>
-            </div>
-          ))}
-        </div>
       </Card>
 
       {/* Work posts */}

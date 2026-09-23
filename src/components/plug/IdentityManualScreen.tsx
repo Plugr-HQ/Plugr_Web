@@ -2,10 +2,13 @@
 // Verification Hub item: NIN + face scan, reviewed by our own team.
 //
 // This replaced a vendor flow (Didit's NIMC lookup, which needs a funded account). The Plug gives
-// three things and ops compare them by eye: the NIN they typed, a photo or PDF of their NIN slip,
-// and a selfie taken live on this screen. The reviewer reads the NIN off the slip against the typed
-// one, and the face on the slip against the selfie. That is why all three are collected together and
-// submitted in one request — any one of them alone proves nothing.
+// three things and ops review them by eye: the NIN they typed, a photo or PDF of their NIN slip,
+// and a selfie taken live on this screen. All three are collected together and submitted in one
+// request — any one of them alone proves nothing.
+//
+// The on-screen copy deliberately does NOT walk through how the check is done. It says the review
+// happens and that the NIN is protected, and stops there; the mechanics are ops' business, and
+// spelling them out only tells someone trying to fake a submission what to line up.
 //
 // A pass here is a FULL verification. There is no lesser "manually verified" status: the item goes
 // to pending review and comes back verified, exactly like the guarantor and skills items.
@@ -206,7 +209,7 @@ export function IdentityManualScreen() {
           tone="done"
           icon={<CheckCircle2 className="h-6 w-6" />}
           title="Identity verified"
-          body="Your NIN matched your slip and your selfie matched the photo on it. Nothing else to do here."
+          body="Our team confirmed your identity. Nothing else to do here."
         />
       ) : (
         <>
@@ -223,9 +226,8 @@ export function IdentityManualScreen() {
                 <ShieldCheck className="h-5 w-5 text-gold" />
               </span>
               <p className="text-[13px] leading-relaxed text-slate">
-                Three things, checked by our own team: your NIN, a picture of your NIN slip, and a selfie taken right
-                here. We compare the number you type with the one on your slip, and your selfie with the photo on it.
-                Your NIN is never shown on your profile and nothing is shared with clients.
+                Your NIN and photo ID are reviewed by our team to confirm your identity. Your NIN is never shown on
+                your profile or shared with clients.
               </p>
             </div>
           </div>
