@@ -32,6 +32,7 @@ import { withSource } from '@/src/lib/apiSource';
 import { PlugShell } from './PlugChrome';
 import { BankLogo } from './BankSelect';
 import { BankSetup } from './BankSetup';
+import { InstallButton } from '@/src/components/pwa/install-prompt';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate">{children}</p>;
@@ -136,17 +137,25 @@ export function SettingsScreen({ base }: { base: string }) {
              still a gap or slight overlap on your device. */}
           <div
             className={cn(
-              'sticky bottom-4 z-40 mt-6 rise rise-2 bg-bone/95 backdrop-blur-sm pt-2 transition-transform duration-300 ease-out',
-              bankDropdownOpen && 'translate-y-[340px]',
-            )}
-          >
-            <button
-              onClick={logout}
-              className="flex w-full items-center justify-center gap-2 rounded-pill border border-red-500/30 bg-white py-3.5 text-sm font-bold text-red-600 shadow-[0_4px_16px_-4px_rgba(15,23,42,0.15)] transition-colors hover:bg-red-50"
+               'sticky bottom-4 z-40 mt-6 rise rise-2 bg-bone/95 backdrop-blur-sm pt-2 transition-transform duration-300 ease-out',
+                  bankDropdownOpen && 'translate-y-[340px]',
+              )}
             >
-              <LogOut className="h-4 w-4" /> Log out
-            </button>
-          </div>
+              <div className="flex flex-col gap-2">
+               <InstallButton
+                 className="flex w-full items-center justify-center gap-2 rounded-pill border border-gold/40 bg-gold/10 py-3.5 text-sm font-bold text-pitch-black transition-colors hover:bg-gold/20"
+               />
+
+               <button
+                 type="button"
+                 onClick={logout}
+                 className="flex w-full items-center justify-center gap-2 rounded-pill border border-red-500/30 bg-white py-3.5 text-sm font-bold text-red-600 shadow-[0_4px_16px_-4px_rgba(15,23,42,0.15)] transition-colors hover:bg-red-50"
+               >
+                 <LogOut className="h-4 w-4" />
+                 Log out
+               </button>
+             </div>
+            </div>
         </div>
       )}
     </PlugShell>
