@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, Check } from 'lucide-react';
 
 import { isEligiblePlug } from '@/src/lib/pwa/get-plug-role';
 
@@ -32,6 +32,30 @@ function isStandalone(): boolean {
 }
 
 /**
+ * Chrome-on-Android only (requires the `related_applications` entry with
+ * platform "webapp" in manifest.json, pointing at this manifest's own URL).
+ * No support on iOS Safari or desktop — resolves false there, which is the
+ * correct fallback (can't tell, so behave as before).
+ *
+ * NOTE: this checks whether Android's package manager has ANY record for
+ * this WebAPK id, including a broken/partial one left over from an
+ * interrupted install. It does not distinguish "properly installed" from
+ * "stuck half-install" — if install still silently fails after this
+ * resolves true, that's the signal to check Settings → Apps → See all apps
+ * for a stray Plugr entry to manually uninstall, not a code bug here.
+ */
+async function checkAlreadyInstalled(): Promise<boolean> {
+  if (typeof navigator === 'undefined') return false;
+  if (!('getInstalledRelatedApps' in navigator)) return false;
+  try {
+    const related = await (navigator as any).getInstalledRelatedApps();
+    return Array.isArray(related) && related.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * The actual PWA install prompt.
  *
  * Mounted once from app/app/layout.tsx so the browser's
@@ -44,6 +68,7 @@ export function InstallPrompt() {
   const [showIosInstructions, setShowIosInstructions] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [forceOpen, setForceOpen] = useState(false);
+  const [alreadyInstalled, setAlreadyInstalled] = useState(false);
 
   useEffect(() => {
     setEligible(isEligiblePlug());
@@ -51,6 +76,8 @@ export function InstallPrompt() {
     setDismissed(
       window.localStorage.getItem(DISMISSED_KEY) === '1',
     );
+
+    checkAlreadyInstalled().then(setAlreadyInstalled);
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -85,16 +112,14 @@ export function InstallPrompt() {
     eligible &&
     !dismissed &&
     !isStandalone() &&
+    !alreadyInstalled &&
     (deferredPrompt || isIos() || forceOpen);
 
   if (!shouldShow) return null;
 
-  // Bug fix: dismiss() used to always write DISMISSED_KEY, so the fallback
-  // "Got it" button (nothing installed, nothing rejected — just closing a
-  // forceOpen panel) permanently disabled the install prompt on one tap.
-  // `permanent` distinguishes a real decision (installed, explicitly
-  // rejected via beforeinstallprompt, or "Not now") from just closing the
-  // forceOpen panel.
+  // dismiss(permanent): a real decision (installed, explicitly rejected via
+  // beforeinstallprompt, or "Not now") writes DISMISSED_KEY and stays gone.
+  // Just closing the forceOpen panel (the fallback "Got it") does not.
   const dismiss = (permanent: boolean) => {
     if (permanent) {
       window.localStorage.setItem(DISMISSED_KEY, '1');
@@ -112,7 +137,6 @@ export function InstallPrompt() {
       setDeferredPrompt(null);
 
       if (outcome === 'accepted' || outcome === 'dismissed') {
-        // Real outcome from the browser's own install dialog — permanent.
         dismiss(true);
       }
 
@@ -124,11 +148,6 @@ export function InstallPrompt() {
       return;
     }
 
-    /*
-     * Some browsers do not expose beforeinstallprompt.
-     * Keep the prompt open so the user can use the browser's
-     * own install option instead of silently doing nothing.
-     */
     setShowIosInstructions(false);
   };
 
@@ -184,19 +203,50 @@ export function InstallPrompt() {
 /**
  * Small inline button for screens such as Settings.
  *
- * The actual installation remains owned by InstallPrompt in
- * app/app/layout.tsx. This simply asks that component to open.
+ * When Plugr is already installed (Chrome/Android only — see
+ * checkAlreadyInstalled), this switches from "Install app" to an
+ * "Installed" state instead of asking InstallPrompt to open. There is no
+ * meaningful "Update" action to wire here: PWAs self-update via the
+ * service worker in the background, with no user-facing update step —
+ * that's a real difference from native APKs, not a gap in this component.
  */
 export function InstallButton({
   className = '',
 }: {
   className?: string;
 }) {
+  const [alreadyInstalled, setAlreadyInstalled] = useState(false);
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    checkAlreadyInstalled().then((v) => {
+      setAlreadyInstalled(v);
+      setChecked(true);
+    });
+  }, []);
+
   const handleClick = () => {
     window.dispatchEvent(
       new Event(OPEN_INSTALL_EVENT),
     );
   };
+
+  // Not yet resolved (or unsupported browser, where this just stays false):
+  // render the normal Install button. Chrome-on-Android confirming an
+  // install flips this without a page reload needed on next mount.
+  if (checked && alreadyInstalled) {
+    return (
+      <button
+        type="button"
+        disabled
+        className={className}
+        aria-label="Plugr is already installed on this device"
+      >
+        <Check className="h-4 w-4" />
+        Installed
+      </button>
+    );
+  }
 
   return (
     <button
