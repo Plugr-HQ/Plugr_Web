@@ -51,8 +51,10 @@ export function SettingsScreen({ base }: { base: string }) {
   const router = useRouter();
   const [plug, setPlug] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  // True while the bank-select dropdown (inside PayoutSection) is open. Drives the Logout
-  // button pushing down out of the way, then springing back once it closes.
+  // True while the bank-select dropdown (inside PayoutSection) is open. Previously drove the
+  // Logout/Install block pushing down out of the way while sticky; no longer consumed now that
+  // block is in normal flow (see note below) — flagged for Phantom to confirm whether
+  // BankSetup/PayoutSection is still meant to wire its setter in.
   const [bankDropdownOpen, setBankDropdownOpen] = useState(false);
   const phone = typeof window !== 'undefined' ? getPlugPhone() : '';
 
@@ -131,31 +133,27 @@ export function SettingsScreen({ base }: { base: string }) {
             </div>
           </div>
 
-          {/* Logout — pushes down out of the way while the bank dropdown is open (its list can
-             run tall on short screens), then springs back up once it closes. 340px is a rough
-             estimate of the open dropdown's height (search bar + list) — nudge it if there's
-             still a gap or slight overlap on your device. */}
-          <div
-            className={cn(
-               'sticky bottom-4 z-40 mt-6 rise rise-2 bg-bone/95 backdrop-blur-sm pt-2 transition-transform duration-300 ease-out',
-                  bankDropdownOpen && 'translate-y-[340px]',
-              )}
-            >
-              <div className="flex flex-col gap-2">
-               <InstallButton
-                 className="flex w-full items-center justify-center gap-2 rounded-pill border border-gold/40 bg-gold/10 py-3.5 text-sm font-bold text-pitch-black transition-colors hover:bg-gold/20"
-               />
+          {/* Install / Logout — normal document flow, NOT sticky. This block used to be
+             `sticky bottom-4 z-40`, which re-pinned it to the viewport bottom on top of
+             PlugChrome's own `sticky bottom-0 z-30` tab bar (z-40 > z-30), so it rendered
+             over the nav instead of below it. `main`'s `pb-28` in PlugChrome already exists
+             to clear the sticky nav for normal-flow content — leaving this block unpositioned
+             lets that padding do its job: it sits after the Payout card, below the nav's
+             visual footprint until the user scrolls down to it. */}
+          <div className="mt-6 flex flex-col gap-2 rise rise-2">
+            <InstallButton
+              className="flex w-full items-center justify-center gap-2 rounded-pill border border-gold/40 bg-gold/10 py-3.5 text-sm font-bold text-pitch-black transition-colors hover:bg-gold/20"
+            />
 
-               <button
-                 type="button"
-                 onClick={logout}
-                 className="flex w-full items-center justify-center gap-2 rounded-pill border border-red-500/30 bg-white py-3.5 text-sm font-bold text-red-600 shadow-[0_4px_16px_-4px_rgba(15,23,42,0.15)] transition-colors hover:bg-red-50"
-               >
-                 <LogOut className="h-4 w-4" />
-                 Log out
-               </button>
-             </div>
-            </div>
+            <button
+              type="button"
+              onClick={logout}
+              className="flex w-full items-center justify-center gap-2 rounded-pill border border-red-500/30 bg-white py-3.5 text-sm font-bold text-red-600 shadow-[0_4px_16px_-4px_rgba(15,23,42,0.15)] transition-colors hover:bg-red-50"
+            >
+              <LogOut className="h-4 w-4" />
+              Log out
+            </button>
+          </div>
         </div>
       )}
     </PlugShell>
