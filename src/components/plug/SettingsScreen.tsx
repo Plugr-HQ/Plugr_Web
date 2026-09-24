@@ -139,16 +139,17 @@ export function SettingsScreen({ base }: { base: string }) {
              over the nav instead of below it. `main`'s `pb-28` in PlugChrome already exists
              to clear the sticky nav for normal-flow content — leaving this block unpositioned
              lets that padding do its job: it sits after the Payout card, below the nav's
-             visual footprint until the user scrolls down to it. */}
-          <div className="mt-6 flex flex-col gap-2 rise rise-2">
+             visual footprint until the user scrolls down to it. Side by side (flex-1 each)
+             to save vertical space. */}
+          <div className="mt-6 flex flex-row gap-2 rise rise-2">
             <InstallButton
-              className="flex w-full items-center justify-center gap-2 rounded-pill border border-gold/40 bg-gold/10 py-3.5 text-sm font-bold text-pitch-black transition-colors hover:bg-gold/20"
+              className="flex flex-1 items-center justify-center gap-2 rounded-pill border border-gold/40 bg-gold/10 py-3.5 text-sm font-bold text-pitch-black transition-colors hover:bg-gold/20"
             />
 
             <button
               type="button"
               onClick={logout}
-              className="flex w-full items-center justify-center gap-2 rounded-pill border border-red-500/30 bg-white py-3.5 text-sm font-bold text-red-600 shadow-[0_4px_16px_-4px_rgba(15,23,42,0.15)] transition-colors hover:bg-red-50"
+              className="flex flex-1 items-center justify-center gap-2 rounded-pill border border-red-500/30 bg-white py-3.5 text-sm font-bold text-red-600 shadow-[0_4px_16px_-4px_rgba(15,23,42,0.15)] transition-colors hover:bg-red-50"
             >
               <LogOut className="h-4 w-4" />
               Log out

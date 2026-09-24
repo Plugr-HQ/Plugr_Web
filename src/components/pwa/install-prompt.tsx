@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Download } from 'lucide-react';
 
 import { isEligiblePlug } from '@/src/lib/pwa/get-plug-role';
 
@@ -203,6 +204,7 @@ export function InstallButton({
       onClick={handleClick}
       className={className}
     >
+      <Download className="h-4 w-4" />
       Install app
     </button>
   );
