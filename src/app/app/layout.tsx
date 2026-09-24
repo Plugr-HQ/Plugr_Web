@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { InstallPrompt } from '@/src/components/pwa/install-prompt';
+import { InstallDebugPanel } from '@/src/components/pwa/install-debug-panel';
 
 // Merges with the root layout's metadata (app/layout.tsx) — title/description/
 // the SVG favicon there are untouched. This only adds what's specific to the
@@ -54,6 +55,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         }}
       />
       <InstallPrompt />
+      <InstallDebugPanel />
       {children}
     </>
   );
