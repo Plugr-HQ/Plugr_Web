@@ -15,7 +15,7 @@
 //
 // THE SELFIE IS CAMERA-ONLY. There is deliberately no file picker for it: a selfie chosen from the
 // gallery could be anyone's photo, which defeats the entire point of asking for a live one. The
-// capture is the same getUserMedia + canvas pattern already used by OnboardingVerifyScreen; it
+// capture is the getUserMedia + canvas pattern from the old onboarding screen (since deleted); it
 // produces a JPEG Blob, and the backend refuses anything that isn't one.
 
 'use client';

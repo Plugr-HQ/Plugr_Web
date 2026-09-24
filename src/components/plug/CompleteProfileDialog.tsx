@@ -5,7 +5,7 @@
 // Signup no longer collects NIN, so a brand-new Plug has a working account, a dashboard, and a
 // profile, but cannot be dispatched to anyone. This is what tells them so, and points at where
 // verification actually happens: the Verification Hub (/app/plug/verification). The old standalone
-// NIN screen (/onboarding/verify) is retired — its code remains, but nothing links to it.
+// NIN screen (/onboarding/verify) is retired — deleted, and its URL redirects to the Hub.
 //
 // IMPORTANT — this is a NUDGE, not a gate. It can be dismissed, and dismissing it is fine: the
 // real enforcement is server-side (Plugr_Backend: plug-eligibility.ts), where an unverified Plug
