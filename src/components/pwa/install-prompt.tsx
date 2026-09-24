@@ -88,9 +88,17 @@ export function InstallPrompt() {
 
   if (!shouldShow) return null;
 
-  const dismiss = () => {
-    window.localStorage.setItem(DISMISSED_KEY, '1');
-    setDismissed(true);
+  // Bug fix: dismiss() used to always write DISMISSED_KEY, so the fallback
+  // "Got it" button (nothing installed, nothing rejected — just closing a
+  // forceOpen panel) permanently disabled the install prompt on one tap.
+  // `permanent` distinguishes a real decision (installed, explicitly
+  // rejected via beforeinstallprompt, or "Not now") from just closing the
+  // forceOpen panel.
+  const dismiss = (permanent: boolean) => {
+    if (permanent) {
+      window.localStorage.setItem(DISMISSED_KEY, '1');
+      setDismissed(true);
+    }
     setForceOpen(false);
   };
 
@@ -103,7 +111,8 @@ export function InstallPrompt() {
       setDeferredPrompt(null);
 
       if (outcome === 'accepted' || outcome === 'dismissed') {
-        dismiss();
+        // Real outcome from the browser's own install dialog — permanent.
+        dismiss(true);
       }
 
       return;
@@ -152,7 +161,7 @@ export function InstallPrompt() {
         {!showIosInstructions && !deferredPrompt && !isIos() && (
           <button
             type="button"
-            onClick={dismiss}
+            onClick={() => dismiss(false)}
             className="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-neutral-900"
           >
             Got it
@@ -161,7 +170,7 @@ export function InstallPrompt() {
 
         <button
           type="button"
-          onClick={dismiss}
+          onClick={() => dismiss(true)}
           className="text-xs text-neutral-400 underline"
         >
           Not now
@@ -183,8 +192,6 @@ export function InstallButton({
   className?: string;
 }) {
   const handleClick = () => {
-    window.localStorage.removeItem(DISMISSED_KEY);
-  
     window.dispatchEvent(
       new Event(OPEN_INSTALL_EVENT),
     );
