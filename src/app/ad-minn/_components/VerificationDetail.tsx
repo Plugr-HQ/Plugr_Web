@@ -4,8 +4,8 @@
 // look at.
 //
 // One section per item: the five required ones and certificates. Every decision goes through the one
-// backend review route (PATCH /admin/verification/:item/:plugId); this panel has no approval logic
-// of its own, and identity and BVN use that same route rather than a second mechanism.
+// backend review route (PATCH /admin/verification/:plugId/review/:item); this panel has no approval
+// logic of its own, and identity and BVN use that same route rather than a second mechanism.
 //
 // IDENTITY IS REVIEWED BY EYE HERE. Its section is the one that carries real work: the typed NIN,
 // the uploaded NIN slip and the live selfie, side by side, so the reviewer can check the number on
@@ -431,11 +431,16 @@ export function VerificationDetail({
       reviewNote?: string,
     ) => {
       /*
-       * Controller route:
-       * PATCH /admin/verification/:item/:plugId
+       * Controller route (frontend proxy):
+       * PATCH /admin/verification/:plugId/review/:item
+       *
+       * plugId comes first here to match every other route this panel calls
+       * (reveal, identity file urls, certificate urls) — this is the one that
+       * used to be reversed (item/plugId) and 404'd because no such file exists
+       * under src/app/api/admin/verification.
        */
       await adminFetch(
-        `/api/admin/verification/${item}/${plugId}`,
+        `/api/admin/verification/${plugId}/review/${item}`,
         {
           method: 'PATCH',
           body: JSON.stringify({
