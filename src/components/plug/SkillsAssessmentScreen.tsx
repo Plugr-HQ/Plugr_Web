@@ -1,28 +1,29 @@
 // src/components/plug/SkillsAssessmentScreen.tsx
-// Verification Hub item: Skills assessment. Two ways to do it, both ending in pending review:
+// Verification Hub item: Skills assessment.
 //
-//   1. Request an assessment call: the Plug proposes a preferred date and time (Lagos time / WAT).
-//      Ops confirm that slot on WhatsApp (or agree another) and call the Plug to run through trade questions.
-//   2. Send a WhatsApp voice note answering the ops lead's questions.
-//
-// Committing to either moves the item to pending review straight away. The item tracks that the Plug
-// acted, not that the call has happened — ops decide pass or fail afterwards.
-//
-// CONFIG: NEXT_PUBLIC_SKILLS_WHATSAPP, the number voice notes go to. Unset renders the voice-note
-// option as "coming soon" rather than a dead link.
+// Artisans choose between:
+//   1. Request an assessment call: they set their available time slot within the daily windows:
+//      - Afternoon: 2:00 PM – 3:00 PM
+//      - Evening: 5:30 PM – 9:00 PM
+//      The chosen time is stored under their account on the backend.
+//   2. Send a WhatsApp voice note answering trade questions.
 
 'use client';
 
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import {
   Calendar,
+  Check,
   CheckCircle2,
+  ChevronRight,
   Clock,
   Hourglass,
   Loader2,
   Mic,
   PhoneCall,
   RefreshCw,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
 import { apiFetch } from '@/src/lib/api-client';
@@ -38,6 +39,35 @@ const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_SKILLS_WHATSAPP ?? '';
 
 const VOICE_NOTE_PROMPT =
   'Hi — I’d like to do my Plugr skills assessment by voice note. Please send me the questions.';
+
+// Defined call availability windows (every day)
+const TIME_WINDOWS = [
+  {
+    id: 'afternoon',
+    title: 'Afternoon Window',
+    range: '2:00 PM – 3:00 PM',
+    icon: Sun,
+    slots: [
+      { label: '2:00 PM', value: '14:00' },
+      { label: '2:30 PM', value: '14:30' },
+    ],
+  },
+  {
+    id: 'evening',
+    title: 'Evening Window',
+    range: '5:30 PM – 9:00 PM',
+    icon: Moon,
+    slots: [
+      { label: '5:30 PM', value: '17:30' },
+      { label: '6:00 PM', value: '18:00' },
+      { label: '6:30 PM', value: '18:30' },
+      { label: '7:00 PM', value: '19:00' },
+      { label: '7:30 PM', value: '19:30' },
+      { label: '8:00 PM', value: '20:00' },
+      { label: '8:30 PM', value: '20:30' },
+    ],
+  },
+];
 
 /** Formats an ISO UTC timestamp into Lagos time (WAT / UTC+1). */
 function formatLagosTime(isoString: string | null | undefined): string {
@@ -61,15 +91,19 @@ function formatLagosTime(isoString: string | null | undefined): string {
   }
 }
 
-/** Formats a Date object to YYYY-MM-DDTHH:mm for datetime-local input. */
-function toLocalDateTimeInput(d: Date): string {
+/** Formats a Date to YYYY-MM-DD in Lagos time */
+function toLagosDateString(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
-  const year = d.getFullYear();
-  const month = pad(d.getMonth() + 1);
-  const day = pad(d.getDate());
-  const hours = pad(d.getHours());
-  const minutes = pad(d.getMinutes());
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** Converts a Lagos date ('YYYY-MM-DD') and slot ('HH:mm') into a UTC ISO string. */
+function lagosSlotToUtcIso(dateStr: string, timeStr: string): string {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const [hour, minute] = timeStr.split(':').map(Number);
+  // Lagos is UTC+1 (WAT) all year round, so UTC hour = Lagos hour - 1
+  const utcDate = new Date(Date.UTC(year, month - 1, day, hour - 1, minute, 0, 0));
+  return utcDate.toISOString();
 }
 
 export function SkillsAssessmentScreen() {
@@ -80,30 +114,39 @@ export function SkillsAssessmentScreen() {
   const [reviewNote, setReviewNote] = useState<string | null>(null);
   const [busy, setBusy] = useState<'CALL' | 'VOICE_NOTE' | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [timeInputError, setTimeInputError] = useState<string | null>(null);
   const [resubmitting, setResubmitting] = useState(false);
 
-  // Default suggested time: tomorrow at 10:00 AM
-  const defaultSuggestedTime = useMemo(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    d.setHours(10, 0, 0, 0);
-    return toLocalDateTimeInput(d);
+  // Call slot selection state
+  const [activeMethod, setActiveMethod] = useState<'CALL' | 'VOICE_NOTE' | null>(null);
+  const [selectedDateStr, setSelectedDateStr] = useState<string>('');
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('14:00');
+  const [slotError, setSlotError] = useState<string | null>(null);
+
+  // Generate the next 7 days in Lagos
+  const availableDays = useMemo(() => {
+    const days = [];
+    const now = new Date();
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(now);
+      d.setDate(d.getDate() + i);
+      const dateStr = toLagosDateString(d);
+      let label = '';
+      if (i === 0) label = 'Today';
+      else if (i === 1) label = 'Tomorrow';
+      else {
+        label = d.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' });
+      }
+      days.push({ dateStr, label, date: d });
+    }
+    return days;
   }, []);
 
-  const [timeInput, setTimeInput] = useState<string>(defaultSuggestedTime);
-
-  // Min selectable: 1 hour from now
-  const minTimeInput = useMemo(() => {
-    const d = new Date(Date.now() + 60 * 60 * 1000);
-    return toLocalDateTimeInput(d);
-  }, []);
-
-  // Max selectable: 30 days from now
-  const maxTimeInput = useMemo(() => {
-    const d = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    return toLocalDateTimeInput(d);
-  }, []);
+  // Initialize selected date to tomorrow (or today if slots available)
+  useEffect(() => {
+    if (availableDays.length > 1 && !selectedDateStr) {
+      setSelectedDateStr(availableDays[1].dateStr); // Default: Tomorrow
+    }
+  }, [availableDays, selectedDateStr]);
 
   const load = useCallback(async () => {
     const snap = await loadVerificationSnapshot(getPlugId() ?? '');
@@ -118,7 +161,7 @@ export function SkillsAssessmentScreen() {
     load();
   }, [load]);
 
-  /** Record the choice with optional meeting time. */
+  /** Record the choice with selected meeting time. */
   async function choose(
     which: 'CALL' | 'VOICE_NOTE',
     options?: { meetingTime?: string },
@@ -127,7 +170,7 @@ export function SkillsAssessmentScreen() {
     if (busy) return;
     setBusy(which);
     setError(null);
-    setTimeInputError(null);
+    setSlotError(null);
 
     try {
       const payload: { path: 'CALL' | 'VOICE_NOTE'; meetingTime?: string } = { path: which };
@@ -142,6 +185,7 @@ export function SkillsAssessmentScreen() {
       );
       handOff();
       setResubmitting(false);
+      setActiveMethod(null);
       await load();
     } catch (e: any) {
       const rawMsg = e?.message ?? e?.error;
@@ -156,33 +200,23 @@ export function SkillsAssessmentScreen() {
     }
   }
 
-  function handleRequestCall() {
-    if (!timeInput) {
-      setTimeInputError('Please select a date and time for your call.');
+  function handleConfirmCallSlot() {
+    if (!selectedDateStr || !selectedTimeSlot) {
+      setSlotError('Please select both a date and an available time slot.');
       return;
     }
 
-    const picked = new Date(timeInput);
-    if (isNaN(picked.getTime())) {
-      setTimeInputError('That date and time doesn’t look right.');
-      return;
-    }
-
+    const isoUtcString = lagosSlotToUtcIso(selectedDateStr, selectedTimeSlot);
+    const targetDate = new Date(isoUtcString);
     const now = Date.now();
-    const diffMs = picked.getTime() - now;
-    if (diffMs < 30 * 60 * 1000) {
-      setTimeInputError('Please pick a time at least 1 hour from now.');
-      return;
-    }
-    if (diffMs > 30 * 24 * 60 * 60 * 1000) {
-      setTimeInputError('Please pick a time within the next 30 days.');
+
+    if (targetDate.getTime() - now < 30 * 60 * 1000) {
+      setSlotError('Please pick a time slot at least 1 hour from now.');
       return;
     }
 
-    setTimeInputError(null);
-    // Convert to UTC ISO string with timezone offset
-    const isoString = picked.toISOString();
-    choose('CALL', { meetingTime: isoString });
+    setSlotError(null);
+    choose('CALL', { meetingTime: isoUtcString });
   }
 
   const waHref = WHATSAPP_NUMBER
@@ -195,7 +229,7 @@ export function SkillsAssessmentScreen() {
     <Shell
       eyebrow="Verification"
       title="Skills assessment"
-      subtitle="A short check of your trade."
+      subtitle="A short check of your trade knowledge."
       back={HUB}
     >
       {state === null ? (
@@ -226,10 +260,10 @@ export function SkillsAssessmentScreen() {
               <p className="font-bold text-pitch-black text-lg">Call requested</p>
               <div className="mt-3 inline-flex items-center gap-2 rounded-pill bg-gold/10 border border-gold/30 px-4 py-1.5 text-xs font-bold text-[#8a5a08]">
                 <Calendar className="h-3.5 w-3.5" />
-                Preferred: {formatLagosTime(meetingTime)}
+                Your availability: {formatLagosTime(meetingTime)}
               </div>
               <p className="mt-4 max-w-[320px] text-sm leading-relaxed text-slate">
-                We received your preferred time. Our team will confirm this slot with you on WhatsApp (or agree another time), then ring your Plugr number.
+                We stored your selected available time. Our team will confirm this slot with you on WhatsApp (or agree another time), then ring your Plugr number.
               </p>
             </>
           ) : path === 'CALL' ? (
@@ -293,98 +327,198 @@ export function SkillsAssessmentScreen() {
           )}
 
           <p className="rise mt-4 text-[13px] leading-relaxed text-slate">
-            A few practical questions about your trade — the kind of thing you’d answer on a job. Pick whichever suits
-            you; both count the same.
+            A quick 15-minute conversation about your trade with our technical ops team. Choose your preferred method below:
           </p>
 
-          <div className="rise rise-1 mt-4 space-y-4">
-            {/* Option 1: Call with time proposal */}
-            <div className="rounded-[18px] border border-pitch-black/[0.08] bg-white p-5 shadow-xs">
-              <div className="flex items-start gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-pitch-black/[0.05] text-slate">
-                  <PhoneCall className="h-5 w-5" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[15px] font-bold text-pitch-black">Request assessment call</p>
-                  <p className="mt-1 text-[13px] leading-relaxed text-slate">
-                    Choose a preferred time for a 15-minute call. Ops will confirm this on WhatsApp and then call you.
-                  </p>
+          <div className="rise rise-1 mt-5 space-y-4">
+            {/* Option 1: Assessment Call with Time Slots */}
+            <div className="rounded-[20px] border border-pitch-black/[0.08] bg-white p-5 shadow-xs transition-all">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gold/15 text-gold">
+                    <PhoneCall className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <p className="text-[15px] font-bold text-pitch-black">Request assessment call</p>
+                    <p className="mt-1 text-[13px] leading-relaxed text-slate">
+                      Set a time you’re available for a 15-minute phone call.
+                    </p>
+                  </div>
+                </div>
 
-                  <div className="mt-4 rounded-2xl bg-bone p-3.5 border border-pitch-black/[0.06]">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label htmlFor="meeting-time" className="text-xs font-bold text-pitch-black">
-                        Preferred Date & Time
-                      </label>
-                      <span className="text-[11px] font-semibold text-[#8a5a08] bg-gold/15 px-2 py-0.5 rounded-full">
-                        Lagos time (WAT)
-                      </span>
-                    </div>
+                {activeMethod !== 'CALL' && (
+                  <button
+                    onClick={() => setActiveMethod('CALL')}
+                    className="shrink-0 rounded-pill bg-gold px-4 py-2 text-xs font-bold text-pitch-black hover:bg-gold-light active:scale-95 transition-all"
+                  >
+                    Set time
+                  </button>
+                )}
+              </div>
 
-                    <input
-                      id="meeting-time"
-                      type="datetime-local"
-                      value={timeInput}
-                      min={minTimeInput}
-                      max={maxTimeInput}
-                      onChange={(e) => {
-                        setTimeInput(e.target.value);
-                        if (timeInputError) setTimeInputError(null);
-                      }}
-                      className={cn(
-                        'w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm font-medium text-pitch-black outline-none transition-colors focus:border-gold',
-                        timeInputError ? 'border-red-400' : 'border-pitch-black/15',
-                      )}
-                    />
-
-                    {timeInputError && (
-                      <p className="mt-2 text-xs font-semibold text-red-600">{timeInputError}</p>
-                    )}
+              {/* Step 2: Time Selection Interface */}
+              {activeMethod === 'CALL' && (
+                <div className="mt-5 border-t border-pitch-black/[0.06] pt-5 animate-in fade-in duration-300">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate">1. Choose Day</span>
+                    <span className="text-[11px] font-semibold text-[#8a5a08] bg-gold/15 px-2.5 py-0.5 rounded-full">
+                      Lagos time (WAT)
+                    </span>
                   </div>
 
-                  <button
-                    onClick={handleRequestCall}
-                    disabled={busy !== null}
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-pill bg-gold px-5 py-2.5 text-[13px] font-bold text-pitch-black transition-all hover:bg-gold-light active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {busy === 'CALL' && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                    Request assessment call
-                  </button>
+                  {/* Day Picker Chips */}
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-5">
+                    {availableDays.map((d) => {
+                      const isSelected = selectedDateStr === d.dateStr;
+                      return (
+                        <button
+                          key={d.dateStr}
+                          type="button"
+                          onClick={() => {
+                            setSelectedDateStr(d.dateStr);
+                            setSlotError(null);
+                          }}
+                          className={cn(
+                            'flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all',
+                            isSelected
+                              ? 'border-gold bg-gold text-pitch-black shadow-xs'
+                              : 'border-pitch-black/10 bg-bone hover:border-gold/50 text-slate hover:text-pitch-black',
+                          )}
+                        >
+                          <span>{d.label}</span>
+                          <span className="text-[10px] font-normal opacity-80 mt-0.5">
+                            {d.date.toLocaleDateString('en-NG', { month: 'short', day: 'numeric' })}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate">
+                      2. Select Available Window (2-3pm or 5:30-9pm)
+                    </span>
+                  </div>
+
+                  {/* Windows & Specific Slots */}
+                  <div className="space-y-3 mb-5">
+                    {TIME_WINDOWS.map((window) => {
+                      const Icon = window.icon;
+                      return (
+                        <div
+                          key={window.id}
+                          className="rounded-xl border border-pitch-black/[0.07] bg-bone/70 p-3.5"
+                        >
+                          <div className="flex items-center gap-2 mb-2.5">
+                            <Icon className="h-4 w-4 text-gold" />
+                            <span className="text-xs font-bold text-pitch-black">{window.title}</span>
+                            <span className="text-[11px] font-medium text-slate">({window.range})</span>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            {window.slots.map((slot) => {
+                              const isSelected = selectedTimeSlot === slot.value;
+                              return (
+                                <button
+                                  key={slot.value}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedTimeSlot(slot.value);
+                                    setSlotError(null);
+                                  }}
+                                  className={cn(
+                                    'px-3.5 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5',
+                                    isSelected
+                                      ? 'border-pitch-black bg-pitch-black text-white shadow-xs'
+                                      : 'border-pitch-black/10 bg-white text-pitch-black hover:border-gold',
+                                  )}
+                                >
+                                  {isSelected && <Check className="h-3 w-3 text-gold" />}
+                                  {slot.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Summary & Submit Call Slot */}
+                  {selectedDateStr && selectedTimeSlot && (
+                    <div className="rounded-xl bg-gold/10 border border-gold/30 p-3 mb-4 flex items-center justify-between">
+                      <div className="text-xs">
+                        <span className="text-slate font-medium">Selected Availability:</span>{' '}
+                        <span className="font-bold text-pitch-black">
+                          {availableDays.find((d) => d.dateStr === selectedDateStr)?.label ?? selectedDateStr} at{' '}
+                          {TIME_WINDOWS.flatMap((w) => w.slots).find((s) => s.value === selectedTimeSlot)?.label} (WAT)
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {slotError && (
+                    <p className="mb-3 text-xs font-semibold text-red-600">{slotError}</p>
+                  )}
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={handleConfirmCallSlot}
+                      disabled={busy !== null}
+                      className="inline-flex items-center justify-center gap-2 rounded-pill bg-gold px-6 py-2.5 text-xs font-bold text-pitch-black hover:bg-gold-light active:scale-98 transition-all disabled:opacity-50"
+                    >
+                      {busy === 'CALL' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                      Confirm availability & request call
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveMethod(null)}
+                      className="text-xs font-bold text-slate hover:text-pitch-black"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* Option 2: Voice Note */}
+            {/* Option 2: Record Voice Note on WhatsApp */}
             <div
               className={cn(
-                'rounded-[18px] border border-pitch-black/[0.08] bg-white p-5 shadow-xs',
+                'rounded-[20px] border border-pitch-black/[0.08] bg-white p-5 shadow-xs transition-all',
                 !WHATSAPP_NUMBER && 'opacity-70',
               )}
             >
-              <div className="flex items-start gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-pitch-black/[0.05] text-slate">
-                  <Mic className="h-5 w-5" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[15px] font-bold text-pitch-black">Record your answers instead</p>
-                  <p className="mt-1 text-[13px] leading-relaxed text-slate">
-                    {WHATSAPP_NUMBER
-                      ? 'Send a WhatsApp voice note answering our questions. Do it whenever you have a quiet minute.'
-                      : 'This opens on WhatsApp — we’re switching the number on shortly.'}
-                  </p>
-
-                  <button
-                    onClick={() =>
-                      choose('VOICE_NOTE', undefined, () =>
-                        window.open(waHref, '_blank', 'noopener,noreferrer'),
-                      )
-                    }
-                    disabled={!WHATSAPP_NUMBER || busy !== null}
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-pill bg-pitch-black px-5 py-2.5 text-[13px] font-bold text-white transition-all hover:bg-petrol active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-pitch-black/[0.06] disabled:text-slate"
-                  >
-                    {busy === 'VOICE_NOTE' && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                    {!WHATSAPP_NUMBER ? 'Coming soon' : 'Open WhatsApp'}
-                  </button>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-pitch-black/[0.05] text-slate">
+                    <Mic className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <p className="text-[15px] font-bold text-pitch-black">Record answers on WhatsApp</p>
+                    <p className="mt-1 text-[13px] leading-relaxed text-slate">
+                      {WHATSAPP_NUMBER
+                        ? 'Answer our trade questions via WhatsApp voice note at your convenience.'
+                        : 'Opens on WhatsApp — number switching on shortly.'}
+                    </p>
+                  </div>
                 </div>
+
+                <button
+                  onClick={() =>
+                    choose('VOICE_NOTE', undefined, () =>
+                      window.open(waHref, '_blank', 'noopener,noreferrer'),
+                    )
+                  }
+                  disabled={!WHATSAPP_NUMBER || busy !== null}
+                  className="shrink-0 rounded-pill bg-pitch-black px-4 py-2 text-xs font-bold text-white hover:bg-petrol active:scale-95 transition-all disabled:opacity-50"
+                >
+                  {busy === 'VOICE_NOTE' ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    'Open WhatsApp'
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -392,7 +526,10 @@ export function SkillsAssessmentScreen() {
           {resubmitting && (
             <div className="mt-4 flex justify-center">
               <button
-                onClick={() => setResubmitting(false)}
+                onClick={() => {
+                  setResubmitting(false);
+                  setActiveMethod(null);
+                }}
                 className="text-xs font-semibold text-slate hover:text-pitch-black underline"
               >
                 Cancel and keep existing request
