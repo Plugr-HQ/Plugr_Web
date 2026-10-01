@@ -23,7 +23,14 @@ export type ServerItems = {
   guarantor: ReviewedItem;
   background: ReviewedItem;
   certificates: { state: ItemState; files: CertificateFile[] };
-  skills: { state: ItemState; path: 'CALL' | 'VOICE_NOTE' | null; requestedAt: string | null; reviewNote: string | null };
+  skills: {
+    state: ItemState;
+    path: 'CALL' | 'VOICE_NOTE' | null;
+    requestedAt: string | null;
+    meetingTime: string | null;
+    confirmedTime: string | null;
+    reviewNote: string | null;
+  };
 };
 
 export type VerificationSnapshot = {
@@ -67,6 +74,8 @@ export async function loadVerificationSnapshot(plugId: string): Promise<Verifica
         state: asState(body?.skills?.state),
         path: body?.skills?.path ?? null,
         requestedAt: body?.skills?.requestedAt ?? null,
+        meetingTime: body?.skills?.meetingTime ?? null,
+        confirmedTime: body?.skills?.confirmedTime ?? null,
         reviewNote: body?.skills?.reviewNote ?? null,
       },
     };
