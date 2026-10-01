@@ -1,1 +1,137 @@
 @import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-pitch-black: #0F0A0A;
+  --color-petrol: #081F20;
+  --color-gold: #E8A020;
+  --color-gold-light: #F5C86A;
+  --color-bone: #F5F1EC;
+  /* Supporting/secondary text on the dark anchors — a muted step off Bone,
+     not a separate colour family. */
+  --color-bone-muted: #8E8986;
+  --color-ink: #1A1A1F;
+  --color-steel-blue: #7A9CC8;
+  --color-slate: #8A9DB0;
+
+  /* Fonts */
+  --font-display: 'Clash Display', sans-serif;
+  --font-body: 'Satoshi', sans-serif;
+
+  /* Radii (referenced by existing pages via rounded-card / rounded-pill) */
+  --radius-card: 1rem;
+  --radius-pill: 9999px;
+}
+
+/* app/globals.css */
+
+@keyframes gradientLoop {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+    /* Slides the gradient continuously in one direction */
+  }
+}
+
+.animate-gradient-circular {
+  background-size: 200% auto !important;
+  animation: gradientLoop 8s linear infinite;
+  /* 'linear' keeps the wave speed perfectly constant */
+}
+
+/* --- Premium light-mode animation + shadow helpers --- */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "ss01" 1;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.rise-1 {
+  animation-delay: 0.04s;
+}
+
+.rise-2 {
+  animation-delay: 0.10s;
+}
+
+.rise-3 {
+  animation-delay: 0.16s;
+}
+
+.rise-4 {
+  animation-delay: 0.22s;
+}
+
+/* soft, warm elevation for cards on the bone canvas */
+.card-shadow {
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--color-pitch-black) 4%, transparent),
+    0 18px 40px -28px color-mix(in oklab, var(--color-pitch-black) 28%, transparent);
+}
+
+/* --- Splash (AUTH-01): logo settle + determinate loading bar --- */
+@keyframes splash-mark {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: none; }
+}
+.splash-mark { animation: splash-mark 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+@keyframes splash-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+.splash-fade-up { animation: splash-fade-up 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) 0.25s both; }
+
+/* fills left→right over the splash hold, so the wait reads as progress not a hang */
+@keyframes splash-bar {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.splash-bar { transform-origin: left; animation: splash-bar 1.7s cubic-bezier(0.4, 0, 0.2, 1) 0.15s both; }
+
+/* AUTH-03: wrong code — boxes shake, then clear */
+@keyframes otp-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.otp-shake { animation: otp-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+
+@media (prefers-reduced-motion: reduce) {
+
+  .rise,
+  .rise-1,
+  .rise-2,
+  .rise-3,
+  .rise-4 {
+    animation: none;
+  }
+
+  .splash-mark,
+  .splash-fade-up {
+    animation: none;
+  }
+
+  .splash-bar {
+    animation: splash-bar 0.01s linear both;
+  }
+}

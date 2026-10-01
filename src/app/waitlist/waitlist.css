@@ -5,11 +5,12 @@
    ============================================================ */
 
 :root {
-  --midnight: #0F1F3D;
-  --deep-blue: #162952;
+  --pitch-black: #0F0A0A;
+  --petrol: #081F20;
   --gold: #E8A020;
   --gold-light: #F5C86A;
   --bone: #F5F1EC;
+  --bone-muted: #8E8986;
   --white: #FFFFFF;
   --ink: #1A1A1F;
   --steel-blue: #7A9CC8;
@@ -59,7 +60,7 @@
    SECTION 1 — HERO
    ============================================================ */
 .wl-hero {
-  background: var(--midnight);
+  background: var(--pitch-black);
   text-align: center;
   padding: 80px 24px 96px;
 }
@@ -86,7 +87,7 @@
   font-family: 'Satoshi', sans-serif;
   font-size: 12px;
   font-weight: 500;
-  color: var(--steel-blue);
+  color: var(--bone-muted);
   margin: 8px 0 0;
   letter-spacing: 0.01em;
 }
@@ -106,7 +107,7 @@
   font-size: clamp(16px, 2.2vw, 19px);
   font-weight: 400;
   line-height: 1.6;
-  color: var(--steel-blue);
+  color: var(--bone-muted);
   max-width: 620px;
   margin: 24px 0 0;
 }
@@ -124,7 +125,7 @@
   font-family: 'Satoshi', sans-serif;
   font-weight: 700;
   font-size: 16px;
-  color: var(--midnight);
+  color: var(--pitch-black);
   background: var(--gold);
   border: none;
   border-radius: 24px;
@@ -206,7 +207,7 @@
   line-height: 1.55;
   color: var(--slate);
   padding: 14px 0;
-  border-top: 1px solid rgba(15, 31, 61, 0.08);
+  border-top: 1px solid color-mix(in oklab, var(--pitch-black) 8%, transparent);
 }
 
 .wl-pain-list li:first-child {
@@ -227,7 +228,7 @@
    SECTION 3 — THE CONTEXT (data strip)
    ============================================================ */
 .wl-context {
-  background: var(--deep-blue);
+  background: var(--petrol);
   text-align: center;
 }
 
@@ -294,7 +295,7 @@
   line-height: 1.5;
   color: var(--ink);
   padding: 13px 0;
-  border-top: 1px solid rgba(15, 31, 61, 0.08);
+  border-top: 1px solid color-mix(in oklab, var(--pitch-black) 8%, transparent);
 }
 
 .wl-steps li:first-child {
@@ -425,7 +426,7 @@
   font-family: 'Satoshi', sans-serif;
   font-weight: 700;
   font-size: 16px;
-  color: var(--midnight);
+  color: var(--pitch-black);
   cursor: pointer;
   transition: background 0.2s ease;
 }
@@ -483,7 +484,7 @@
   color: var(--gold);
   text-decoration: none;
   margin-top: 24px;
-  background-color: var(--deep-blue);
+  background-color: var(--petrol);
   padding: 10px 20px;
   border-radius: 20px;
 }
@@ -513,7 +514,7 @@
    SECTION 6 — FOOTER
    ============================================================ */
 .wl-footer {
-  background: var(--midnight);
+  background: var(--pitch-black);
   text-align: center;
   padding: 64px 24px 56px;
 }

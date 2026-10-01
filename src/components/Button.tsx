@@ -16,9 +16,9 @@ export function Button({
   ...props 
 }: ButtonProps) {
   const variants = {
-    primary: "bg-gold text-midnight hover:bg-gold-light",
+    primary: "bg-gold text-pitch-black hover:bg-gold-light",
     outline: "border border-white text-white hover:bg-white/10",
-    ghost: "text-slate hover:text-midnight hover:bg-bone/50"
+    ghost: "text-slate hover:text-pitch-black hover:bg-bone/50"
   }
 
   const classes = cn(

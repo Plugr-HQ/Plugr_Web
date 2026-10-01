@@ -2,3 +2,11 @@ node_modules/
 .env
 .next
 .vercel
+
+# local dev logs
+.devlog.txt
+.buildlog.txt
+.install.log
+
+# local secrets (e.g. DIDIT_API_KEY, DIDIT_WEBHOOK_SECRET) — never commit
+.env*.local

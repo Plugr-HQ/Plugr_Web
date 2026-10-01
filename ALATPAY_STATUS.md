@@ -1,0 +1,374 @@
+# Plugr × ALATPay — Build Status
+
+**Repo:** `Plugr-HQ/Plugr_Web` · **Branch:** `main` · **Last commit at time of writing:** `c8aa6d56`
+**Stack:** Next.js 16 (App Router) · TypeScript · Tailwind v4 · Postgres (Supabase) via `pg` · Vercel
+
+---
+
+## 1. What this build is
+
+The ALATPay Buildathon submission, built **inside the real Plugr repo** rather than as a standalone
+demo. It proves the full booking-to-payment loop: a client books a verified Plug, pays into escrow
+via a real ALATPay virtual account, the Plug completes the job, the client confirms, funds move to
+the Plug's wallet after a dispute window, and a withdrawal is triggered.
+
+It has since grown past the hackathon scope to include the **Plug-facing MVP** (auth → onboarding →
+dashboard → profile → wallet) per `plugr_mvp_screens_spec.md`.
+
+---
+
+## 2. Key architecture decisions
+
+Each of these was a fork in the road — recorded here so nobody has to re-derive the reasoning.
+
+### 2.1 Data layer uses `pg` + `DATABASE_URL`, **not** the Supabase JS client
+The original code used `@supabase/supabase-js` with a `SUPABASE_SERVICE_ROLE_KEY`. That key was
+**never available** — the provided env files only contained `DATABASE_URL` (Postgres pooler) and an
+anon key. Rather than request more secrets, the data layer was rewritten onto `pg` against
+`DATABASE_URL`, which:
+- matches how the rest of this repo already talks to the DB (the waitlist route),
+- connects directly to Postgres, so there's no PostgREST/RLS gate to configure,
+- needs no service-role key at all.
+
+Helper: `src/lib/db.ts` (`q()` / `one()`). The old `supabaseAdmin.ts` was removed.
+
+### 2.1b Two storage backends behind one API — `/demo` on `hack_`, `/app` on the core tables
+The demo was built on `hack_`-prefixed tables. Those are now the **frozen buildathon submission**,
+and `/app` talks to the **real product tables** instead:
+
+| Surface | Tables |
+|---|---|
+| `/demo` | `hack_plugs`, `hack_jobs`, `hack_transactions` |
+| `/app`  | `"PlugProfile"` + `"User"` + `"Category"`, `"Job"`, `"transactions"` |
+
+Both go through `src/lib/repo/` — one interface, two implementations (`hack.ts`, `core.ts`). The core
+backend **aliases its columns back to the snake_case shape the API already returned**, so every
+response stayed byte-compatible and no UI component had to change.
+
+Routes pick a backend from `?source=core|hack` (or a `source` field in a JSON body).
+**The default is `hack`** — deliberately, so a missed call site keeps reading demo data rather than
+silently writing into production tables. Client components derive it from their existing `base` prop
+via `src/lib/apiSource.ts`.
+
+The **webhook is the one exception**: ALATPay only sends an `OrderId`, so it cannot be told which
+backend to use. It looks the job up in the core tables first, then the `hack_` tables, and acts on
+whichever owns it.
+
+Two mappings worth knowing:
+- **Status.** The core schema splits job state across **two columns** (confirmed against
+  `schema.prisma`): `"Job"."status"` is the `JobStatus` enum (work progress) and
+  `"Job"."escrowStatus"` holds **only** the money state — `'locked' | 'released' | 'refunded'`, per
+  the schema comment. The demo's single lifecycle maps onto that pair, and `core.ts` reconstructs it
+  on read:
+
+  | demo status | `"Job"."status"` | `"Job"."escrowStatus"` |
+  |---|---|---|
+  | requested   | `PENDING`        | `null` |
+  | paid_escrow | `PLUG_ASSIGNED`  | `locked` |
+  | accepted    | `PLUG_ACCEPTED`  | `locked` |
+  | completed   | `COMPLETED`      | `locked` (dispute window) |
+  | released    | `COMPLETED`      | `released` |
+
+  Speaking the CTO's `escrowStatus` vocabulary matters: the WhatsApp/AI backend reads these same
+  rows and checks `escrowStatus` for `locked`/`released` — it would never match a demo value like
+  `paid_escrow`. Verified end-to-end that the raw columns hold exactly these pairs.
+- **Identity.** `hack_jobs` stored the client as loose text; `"Job"."clientId"` is a real FK, so
+  booking find-or-creates a `"User"` keyed on phone. That is why phone is required on `/app` and
+  wasn't in the demo.
+
+### 2.2 Payment confirmation is **polling**, not the webhook
+ALATPay's business account is in *Pending Basic Tier* approval, so the webhook URL cannot be
+registered. Confirmation therefore runs through `GET /api/jobs/[jobId]/check-status`, which re-queries
+ALATPay directly and performs the **exact same state transition** the webhook would.
+
+The webhook route is **still live and correct** — it verifies the HMAC signature before touching the
+DB and returns 401 on a bad/missing signature. Both paths are idempotent, so **when approval clears,
+the webhook starts working with zero code changes** and the poll simply becomes redundant.
+
+ALATPay's status endpoint keys on the **`transactionId`** field from the virtual-account response
+(querying by `id` returns "Transaction not found"). It returns `404 + "Transaction Pending."` while a
+transfer is settling — that is **a state, not an error**, and is surfaced to the UI as
+`{ alatpay: "pending" }` so the user sees "Transfer detected — confirming…" instead of a dead spinner.
+
+### 2.3 Escrow lock is UI-driven, compressed to 60s
+The real product uses a ~24h dispute window; the demo compresses it to a visible 60 seconds. The
+countdown **must** live in the browser and call `/api/jobs/[jobId]/unlock` at zero — Vercel serverless
+functions don't persist state between invocations, so a server-side timer would never fire.
+
+### 2.4 Withdrawal stays honestly "pending"
+ALATPay's public API exposes **no merchant-triggerable payout endpoint** (Settlements is read-only).
+The withdrawal deducts from the available balance and records a `pending` transaction. **We never
+fabricate a completed bank transfer.** This is deliberate and should not be "fixed".
+
+### 2.5 `/app` is production, `/demo` is the guided demo — one source of truth
+Both namespaces render the **same components** (`src/components/plug/*`, `src/app/demo/_components/*`)
+parameterised by a `base` prop. There is no copy-paste duplication. Landing CTAs point at `/app`;
+"Try demo" points at `/demo`.
+
+### 2.6 Client and Plug sides are deliberately disconnected
+No cross-links between the two. You open the client in one tab and the Plug in another — this is an
+intentional MVP-realism decision, not an oversight.
+
+### 2.7 Tier is **Basic at launch for everyone**
+Verification (NIN + liveness) makes a Plug *trusted*, not a higher tier. Verified/Pro are earned via
+the upgrade stack (BVN → guarantor → skills assessment), **none of which ship at launch**, so nothing
+can currently reach Pro. `plugTier()` in `PlugChrome.tsx` reads a `tier_upgrades` array — that's the
+seam those flows drop into.
+
+### 2.8 Back navigation uses real browser history
+Every screen's Back button calls `router.back()` (shared `Shell`), with the hardcoded path only as a
+fallback for direct URL loads. Hardcoded backs previously sent users to pages they'd never visited.
+
+### 2.9 Tables are `hack_`-prefixed and additive
+`hack_plugs`, `hack_jobs`, `hack_transactions` live in the **shared production Supabase project**
+alongside the real `Plugr Waitlist` table. Nothing pre-existing was touched or migrated.
+
+---
+
+## 3. Data model
+
+### 3.1 `hack_` tables — the `/demo` surface (frozen)
+
+```
+hack_plugs (12 rows)
+  id, name, trade, photo_url, rating, jobs_completed, verified,
+  wallet_balance_available, wallet_balance_locked, alatpay_wallet_id,
+  created_at, bio, work_posts (jsonb)
+
+hack_jobs (12 rows)
+  id, plug_id, client_name, client_phone, job_description, amount,
+  status, created_at, completed_at, escrow_released_at
+
+hack_transactions (28 rows)
+  id, job_id, alatpay_transaction_id, alatpay_virtual_account, amount,
+  type, status, raw_webhook_payload (jsonb), created_at
+
+functions: increment_wallet_locked(), move_locked_to_available()
+```
+
+### 3.2 Core tables — the `/app` surface (Prisma-managed)
+
+```
+"Category"     id, name, code, description, isActive, createdAt, updatedAt
+"User"         id, phone*, email*, name, role, status, onboardingStep,
+               latitude, longitude, address, createdAt, updatedAt, deletedAt
+"PlugProfile"  id, userId*, bio, status, isVerified, averageRating, categoryId,
+               jobsCompleted, walletBalanceAvailable, walletBalanceLocked,
+               photoUrl†, workPosts†, createdAt, updatedAt, deletedAt
+"Job"          id, clientId, plugId, categoryId, status, title, description,
+               latitude, longitude, address, price, escrowAmount, escrowStatus,
+               escrowReleasedAt, complaintWindowClosesAt, disputeRaised, ...
+"transactions" id, jobId, alatpayTransactionId*, alatpayVirtualAccount, amount,
+               type, status, rawWebhookPayload, createdAt
+
+* unique   † added by this work — see sql/core_schema_additions.sql
+functions: increment_wallet_locked_core(), move_locked_to_available_core()
+```
+
+**Schema alignment.** Verified against `schema.prisma` (repo root — it was untracked until this
+change, now committed as the schema of record). `photoUrl` and `workPosts` were added to `"PlugProfile"`
+because the core schema had nowhere to store a Plug's photo or portfolio; both are additive and
+nullable/defaulted, and **have been added to the `PlugProfile` model in `schema.prisma`** to match,
+so `prisma migrate status` should report in-sync rather than drift. The CTO just needs to keep those
+two fields when regenerating migrations.
+
+**Demo lifecycle (both surfaces):** `requested → paid_escrow → accepted → completed → released`
+On `/app` this is stored as the two-column pair in §2.1b; on `/demo` it's the single `hack_jobs.status`
+column. (`withdrawn` is wallet-level, not a job state — a withdrawal debits the wallet and writes a
+`WITHDRAWAL` transaction; it never sets a job status.)
+
+> **Note:** the `/release` guard accepts **`completed` OR `paid_escrow`**. The original dropped code
+> required strictly `paid_escrow`, but the screen order puts the Plug's "mark complete" *before* the
+> client confirms — so at release time the job is `completed`. Both are post-payment states, so an
+> unfunded job still cannot be released.
+
+**Seeded:** 6 catalogue Plugs (2 electricians, 2 plumbers, 2 furniture) in `hack_plugs`, plus test
+rows left by onboarding runs. All wallet balances zeroed.
+
+**Catalogue migration.** `scripts/migrate-plugs-to-core.cjs` copies those 6 into `"User"` +
+`"PlugProfile"`. It is **dry-run by default** (`--apply` to write) and idempotent, keyed on a
+deterministic placeholder phone (`0800…`, an unallocated Nigerian prefix, derived from the Plug's
+uuid) since `hack_plugs` never had a phone column and `"User"."phone"` is `NOT NULL UNIQUE`.
+
+By default it migrates only **catalogue-quality** Plugs — verified, with a real rating. The other 6
+`hack_plugs` rows are onboarding test residue, and putting them in the production `"User"` table
+would be pollution. `--all` overrides.
+
+**Not migrated:** `hack_jobs` and `hack_transactions`. Those are demo artefacts — simulated payments
+and 60-second escrow releases. Copying them into `"Job"`/`"transactions"` would put fake jobs and
+fake money movements into the tables the real product reports on.
+
+---
+
+## 4. API endpoints
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/api/jobs` | GET, POST | list (optional `?status=`) / create job |
+| `/api/jobs/[jobId]` | GET | job + plug + transaction trail |
+| `/api/jobs/[jobId]/pay` | POST | **generate real ALATPay virtual account** |
+| `/api/jobs/[jobId]/check-status` | GET | **poll ALATPay** → flips to `paid_escrow` (`?simulate=true` bypass) |
+| `/api/jobs/[jobId]/accept` | POST | Plug accepts |
+| `/api/jobs/[jobId]/complete` | POST | Plug marks complete |
+| `/api/jobs/[jobId]/release` | POST | escrow → locked balance |
+| `/api/jobs/[jobId]/unlock` | POST | locked → available (called by UI countdown) |
+| `/api/plugs/register` | POST | create Plug at end of onboarding |
+| `/api/plugs/[plugId]` | GET, PATCH | plug snapshot / edit bio, photo, work posts, `verified` |
+| `/api/plugs/[plugId]/dashboard` | GET | earnings, active job, recent jobs, lock state |
+| `/api/plugs/[plugId]/withdraw` | POST | records **pending** withdrawal |
+| `/api/webhooks/alatpay` | POST | HMAC-verified webhook (dormant until approval) |
+| `/api/plugs`, `/api/waitlist` | — | **pre-existing repo routes — untouched** |
+
+---
+
+## 5. What's done
+
+**Landing (`/`)** — rebuilt on the design system: scroll animations (`motion`), gold-fill CTAs with
+midnight alternates, real photography, working FAQ accordion, Instagram/X/mail socials, Furniture
+trade. Logo hard-reloads home. "Use Plugr" → `/app` role select.
+
+**Client flow (`/app`)** — role select → browse (trade filters) → **LinkedIn-style profile** →
+sign-up → book → **pay (real VA)** → confirm (60s countdown) → receipt.
+
+**Plug MVP (`/app/plug`, mirrored at `/demo/plug`)** — per spec:
+- `AUTH-01` splash (bone, gold mark, determinate loading bar) + role select
+- `AUTH-02` phone (+234 locked, activates at 10 digits)
+- `AUTH-03` OTP (6 auto-advancing boxes, auto-submit, 30s resend, shake-on-error, 10min expiry)
+- `PLG-ON-01` profile setup (name → trade → photo, progress saved per step)
+- `PLG-ON-02` NIN + liveness only (NIN masks after 1s, 3 fails → contact support)
+- `PLG-01` dashboard (all states: Pending Review / no jobs / active / done / wallet lock)
+- `PLG-02` profile (bio, stats, verification stack, work posts, reviews, **Digital ID**)
+- `PLG-03` wallet (available/pending, earnings + withdrawal tabs, single bank account,
+  OTP-gated account change, **4-digit PIN on every withdrawal**, lock-enterable withdraw)
+
+**Digital ID** — plug number (`PLG-XXXX-XXXX`), scannable QR to the public profile, share, copy link,
+**PNG download** (composed on canvas).
+
+**Privacy policy (`/privacy`)** — redesigned onto the design system, all 13 legal sections verbatim.
+
+**Shared `<SiteFooter/>`** — landing and privacy use one identical footer.
+
+**Verified end-to-end** against the live DB + ALATPay sandbox: real VA generation
+(e.g. acct `8880518831`, Wema Bank, `orderId == job.id`), full escrow lifecycle with correct wallet
+math, webhook 401s, and all guards (double-accept, over-balance withdraw, bad NIN/trade → 400).
+
+---
+
+## 6. Pending / blocked
+
+| Item | Status | Owner |
+|---|---|---|
+| **Vercel env vars** | 🔴 **Blocks production** | Ramon / CTO |
+| ALATPay webhook approval | 🟡 Pending Basic Tier — poll works meanwhile | ALATPay |
+| Real SMS provider (OTP) | 🟡 **Any 6 digits pass** | — |
+| Real NIN verification (NIMC) | 🟡 **Any 11 digits pass** | — |
+| Real liveness SDK | 🟡 Self-approves | Ramon to pick SDK |
+| Real payout endpoint | 🟡 Not offered by ALATPay | ALATPay |
+| Digital ID **PDF** export | ⚪ Deferred (PNG done) | — |
+| Tier upgrades (BVN/guarantor/skills) | ⚪ Post-launch by design | — |
+| Settings screen | ⚪ Post-launch by design | — |
+
+### 6.1 Vercel environment variables — the production blocker
+The app **cannot function in production** until these are set in the Vercel project (Settings →
+Environment Variables → Production → redeploy). The landing will still render; `/app` and `/demo`
+will 500.
+
+```
+DATABASE_URL
+ALATPAY_BASE_URL            # https://apibox.alatpay.ng
+ALATPAY_SECRET_KEY          # Ocp-Apim-Subscription-Key
+ALATPAY_BUSINESS_ID
+ALATPAY_WEBHOOK_SECRET_KEY  # only used once webhook approval clears
+```
+
+Values live in the local (gitignored) `.env` and in `ALATPAY Plugr/Env/`. **They are deliberately not
+committed.**
+
+### 6.2 When webhook approval clears
+1. Register `https://<domain>/api/webhooks/alatpay` in ALATPay Dashboard → Settings → Business → Edit.
+2. Confirm `ALATPAY_WEBHOOK_SECRET_KEY` is set in Vercel.
+3. Nothing else. The route already verifies signatures and is idempotent with the poll.
+
+---
+
+## 7. Demo-scope decisions & the path to production
+
+Everything below is a **deliberate scoping choice**, not an unknown. The escrow logic, the ALATPay
+integration and the data model are the real thing — verified end-to-end against live ALATPay. What is
+scoped down is the surrounding infrastructure a hackathon build doesn't need but a launch does. Each
+item is listed with the work required to close it.
+
+**Before a public launch**
+
+1. **Stage-demo payment shortcut.** A "Simulate Sandbox Payment" control lets the demo advance without
+   waiting on live bank settlement — essential for a timed stage run. It sits *alongside* the real VA
+   flow rather than replacing it. *To close: gate behind an env flag (`DEMO_MODE`) or strip at build
+   time* (`check-status?simulate=true` + the pay-screen button) — ~1 hour.
+2. **Authentication is presentation-layer.** Phone + OTP are wired for the demo journey; identity is
+   held in `localStorage` with no server-side session. *To close: adopt whichever auth provider the
+   main product settles on and move identity server-side.* This is the one item that must land before
+   real users — ~1–2 days depending on provider.
+
+**Before real money moves**
+
+3. **Withdrawal PIN and bank details are held client-side.** Chosen deliberately — a real PIN has no
+   business sitting in a demo database. *To close: move to the production backend with proper hashing
+   when payouts go live.*
+4. **Demo data shares the production Supabase project.** The `hack_` prefix keeps these tables fully
+   isolated from the live waitlist, so there is no collision risk today. *To close: split into its own
+   project, or drop the `hack_` tables once the schema graduates.*
+5. **Bank-code map is intentionally minimal.** `virtualBankAccountNumber` + `virtualBankCode` are
+   confirmed against live ALATPay responses; `BANK_CODES` maps `035` → Wema Bank, which is what the
+   sandbox returns. Unknown codes render honestly as `Bank code {n}` rather than guessing. *To close:
+   extend the map as ALATPay routes through more banks.*
+
+**Polish**
+
+6. **Landing photography is licensed Unsplash imagery.** Free to use and credited in-code. *To close:
+   swap for owned artisan photography — a brand upgrade, not a fix.*
+7. **The three context docs live outside the repo.** `CLAUDE.md` and `plugr_concept_document.md` are in
+   `Downloads/`; `plugr_mvp_screens_spec.md` is in `ALATPAY Plugr/`. *To close: copy to repo root,
+   where the spec already assumes they are* — 5 minutes.
+
+### 7.1 Operational gotcha — stale `.next`
+Running `next build` against the same `.next` the dev server uses **poisons it**: `/` keeps working
+while **every dynamic route 404s**, and client `fetch` then receives an HTML 404 page, surfacing as
+`Unexpected token '<', "<!DOCTYPE"... is not valid JSON`.
+
+**Rule: after any `next build`, delete `.next` before restarting `next dev`.**
+
+```bash
+rm -rf .next && npm run dev
+```
+
+Screens now route through `jsonFetch`, so a non-JSON response reports a real message instead of a raw
+parser error, and a stale session signs out to phone auth rather than stranding the user.
+
+---
+
+## 8. Where things were left off
+
+- Local build green (`tsc --noEmit` + `next build`). Dev server clean; `/`, `/app`, `/app/browse`,
+  `/demo`, `/demo/browse`, `/privacy` all 200, no console or server errors.
+- **`/app` now runs on the core product tables; `/demo` still runs on `hack_`.** Verified by running
+  the full escrow lifecycle against *both* backends — create → simulate payment → accept → complete →
+  release → 60s lock → unlock → withdraw. Both passed, and the isolation check confirmed the core run
+  wrote only to `"Job"`/`"transactions"` and the demo run only to `hack_jobs`/`hack_transactions`. All
+  test rows were cleaned up afterwards; row counts returned to their pre-test values.
+- `/app/browse` renders the 6 migrated Plugs **plus `Emeka Okafor`**, the `PlugProfile` that already
+  existed in the production table. `/demo/browse` still shows the `hack_` set. Neither leaks into the
+  other.
+- **Checked against `schema.prisma`** (repo root; was untracked, now committed). Two things came out of it: `photoUrl`
+  and `workPosts` are now in the `PlugProfile` model, and `escrowStatus` was corrected to the CTO's
+  `locked`/`released` vocabulary (§2.1b) — the raw columns were re-verified to hold exactly
+  `PLUG_ASSIGNED`+`locked`, `COMPLETED`+`locked`, `COMPLETED`+`released` across the lifecycle.
+- **Next actions, in order:**
+  1. **CTO:** confirm the `photoUrl`/`workPosts` additions to `schema.prisma` and keep them on the
+     next `prisma migrate` (they already exist in the DB, so this should read as in-sync, not drift).
+  2. Set the Vercel env vars and redeploy.
+
+### Demo walkthrough (2 tabs)
+**Tab A — client:** Landing → Use Plugr → Book a Plug → pick a Plug → profile → Request → sign-up →
+book → pay (real VA; use *Simulate* on stage) → Track & confirm → 60s countdown → receipt.
+**Tab B — plug:** Landing → Become a Plug → phone → OTP → onboarding (name/trade/photo → NIN →
+liveness) → dashboard → accept → complete → wallet → withdraw (PIN) → "pending".
