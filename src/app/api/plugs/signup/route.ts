@@ -45,8 +45,8 @@ export async function POST(request: Request) {
   // Optional — blank must travel as undefined, never '', which would collide on the backend's
   // unique email index across every Plug who skipped it.
   const email = (body.email ?? '').trim().toLowerCase();
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json({ error: 'a valid email address is required' }, { status: 400 });
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return NextResponse.json({ error: 'enter a valid email address, or leave it blank' }, { status: 400 });
   }
 
   if (!firstName || !lastName) {
@@ -63,9 +63,6 @@ export async function POST(request: Request) {
   }
   if (!TRADES.includes(trade)) {
     return NextResponse.json({ error: `trade must be one of ${TRADES.join(' | ')}` }, { status: 400 });
-  }
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json({ error: 'enter a valid email address, or leave it blank' }, { status: 400 });
   }
 
   try {
@@ -88,8 +85,10 @@ export async function POST(request: Request) {
     const data = await backendRes.json().catch(() => ({} as any));
 
     if (!backendRes.ok) {
+      const raw = data?.message ?? data?.error;
+      const message = Array.isArray(raw) ? raw.join('; ') : typeof raw === 'string' ? raw : 'could not create your account';
       return NextResponse.json(
-        { error: data?.message ?? data?.error ?? 'could not create your account' },
+        { error: message },
         { status: backendRes.status }
       );
     }
@@ -99,7 +98,7 @@ export async function POST(request: Request) {
     return NextResponse.json(data, { status: 201 });
   } catch (e: any) {
     console.error('plug signup failed (backend proxy)', e);
-    return NextResponse.json({ error: 'could not create your account' }, { status: 500 });
+    return NextResponse.json({ error: 'could not reach the server to create your account' }, { status: 500 });
   }
 }
 
