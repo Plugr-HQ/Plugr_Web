@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server';
 
 export async function POST(
   request: Request,
-  { params }: { params: { plugId: string } }
+  { params }: { params: Promise<{ plugId: string }> }
 ) {
   try {
-    const { plugId } = params;
+    const { plugId } = await params;
     const body = await request.json();
     const { pin } = body;
 

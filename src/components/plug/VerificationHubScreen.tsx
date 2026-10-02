@@ -35,7 +35,11 @@ import {
 import { Shell } from '@/src/components/Shell';
 import { cn } from '@/src/lib/utils';
 import { getPlugId } from '@/src/app/app/_lib/plugAuth';
-import { loadVerificationSnapshot } from '@/src/app/app/_lib/verificationItems';
+import {
+  loadVerificationSnapshot,
+  formatLagosTime,
+  type ServerItems,
+} from '@/src/app/app/_lib/verificationItems';
 import {
   VERIFICATION_ITEMS,
   SEEDS,
@@ -74,6 +78,7 @@ const GENERIC_PENDING = 'With our team for review. We’ll update this when ther
 
 export function VerificationHubScreen({ base }: { base: string }) {
   const [states, setStates] = useState<ItemStates | null>(null);
+  const [serverItems, setServerItems] = useState<ServerItems | null>(null);
 
   // localStorage is client-only, so state resolves after mount (a skeleton renders until then).
   useEffect(() => {
@@ -96,7 +101,10 @@ export function VerificationHubScreen({ base }: { base: string }) {
     // failure the last cached value stays on screen.
     if (!seeded) {
       loadVerificationSnapshot(plugId)
-        .then((snap) => setStates(snap.states))
+        .then((snap) => {
+          setStates(snap.states);
+          setServerItems(snap.items);
+        })
         .catch(() => {});
     }
   }, []);
@@ -108,12 +116,20 @@ export function VerificationHubScreen({ base }: { base: string }) {
       subtitle="Six items, in any order. Your account works while you finish them."
       back={`${base}/plug`}
     >
-      {states ? <HubBody base={base} states={states} /> : <HubSkeleton />}
+      {states ? <HubBody base={base} states={states} serverItems={serverItems} /> : <HubSkeleton />}
     </Shell>
   );
 }
 
-function HubBody({ base, states }: { base: string; states: ItemStates }) {
+function HubBody({
+  base,
+  states,
+  serverItems,
+}: {
+  base: string;
+  states: ItemStates;
+  serverItems: ServerItems | null;
+}) {
   const summary = summarize(states);
   const required = VERIFICATION_ITEMS.filter((i) => i.required);
   const optional = VERIFICATION_ITEMS.filter((i) => !i.required && !i.comingSoon);
@@ -130,7 +146,7 @@ function HubBody({ base, states }: { base: string; states: ItemStates }) {
         <ul className="space-y-2.5">
           {required.map((item, i) => (
             <li key={item.key} className={cn('rise', `rise-${Math.min(i + 1, 4)}`)}>
-              <ItemRow base={base} item={item} state={states[item.key]} />
+              <ItemRow base={base} item={item} state={states[item.key]} serverItems={serverItems} />
             </li>
           ))}
         </ul>
@@ -143,7 +159,7 @@ function HubBody({ base, states }: { base: string; states: ItemStates }) {
         <ul className="space-y-2.5">
           {optional.map((item) => (
             <li key={item.key}>
-              <ItemRow base={base} item={item} state={states[item.key]} />
+              <ItemRow base={base} item={item} state={states[item.key]} serverItems={serverItems} />
             </li>
           ))}
         </ul>
@@ -152,12 +168,12 @@ function HubBody({ base, states }: { base: string; states: ItemStates }) {
       {comingSoon.length > 0 && (
         <section className="mt-7" aria-labelledby="coming-soon-heading">
           <h2 id="coming-soon-heading" className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-slate">
-            Coming soon 
+            Coming soon
           </h2>
           <ul className="space-y-2.5">
             {comingSoon.map((item) => (
               <li key={item.key}>
-                <ItemRow base={base} item={item} state={states[item.key]} />
+                <ItemRow base={base} item={item} state={states[item.key]} serverItems={serverItems} />
               </li>
             ))}
           </ul>
@@ -230,12 +246,45 @@ function countWord(n: number): string {
   return ['zero', 'one', 'two', 'three', 'four', 'five', 'six'][n] ?? String(n);
 }
 
-function ItemRow({ base, item, state }: { base: string; item: VerificationItem; state: ItemState }) {
+function ItemRow({
+  base,
+  item,
+  state,
+  serverItems,
+}: {
+  base: string;
+  item: VerificationItem;
+  state: ItemState;
+  serverItems?: ServerItems | null;
+}) {
   if (item.comingSoon) return <ComingSoonRow item={item} />;
 
   const Icon = ICONS[item.key];
   const actionable = isActionable(state);
   const pending = state === 'pending_review';
+
+  // Skills assessment is special: as long as the assessment time hasn't been confirmed by ops,
+  // it remains clickable and provides a "View" button so the artisan can view or change their time.
+  const isSkillsUnconfirmed =
+    item.key === 'skills' && state === 'pending_review' && !serverItems?.skills?.confirmedTime;
+
+  const isClickable = actionable || isSkillsUnconfirmed;
+
+  let rowCopy = pending ? (PENDING_COPY[item.key] ?? GENERIC_PENDING) : item.summary;
+
+  if (isSkillsUnconfirmed) {
+    if (serverItems?.skills?.path === 'CALL' && serverItems?.skills?.meetingTime) {
+      rowCopy = `Call requested for ${formatLagosTime(serverItems.skills.meetingTime)}. Tap to view or change.`;
+    } else if (serverItems?.skills?.path === 'CALL') {
+      rowCopy = 'Call requested. Tap to view or choose a specific time.';
+    } else if (serverItems?.skills?.path === 'VOICE_NOTE') {
+      rowCopy = 'Voice note selected. Tap to view or change to a call.';
+    } else {
+      rowCopy = 'Pending review. Tap to view or change your scheduled time.';
+    }
+  } else if (item.key === 'skills' && state === 'pending_review' && serverItems?.skills?.confirmedTime) {
+    rowCopy = `Call confirmed for ${formatLagosTime(serverItems.skills.confirmedTime)}. Please keep your phone close.`;
+  }
 
   const body = (
     <div
@@ -246,7 +295,7 @@ function ItemRow({ base, item, state }: { base: string; item: VerificationItem; 
           : state === 'verified'
             ? 'border-emerald-500/20 bg-white'
             : 'border-pitch-black/[0.08] bg-white',
-        actionable && 'hover:border-gold/60 active:scale-[0.99]',
+        isClickable && 'hover:border-gold/60 active:scale-[0.99]',
       )}
     >
       <span
@@ -269,22 +318,28 @@ function ItemRow({ base, item, state }: { base: string; item: VerificationItem; 
           <p className="text-[15px] font-bold text-pitch-black">{item.title}</p>
           <StateChip state={state} />
         </div>
-        <p className="mt-1 text-[13px] leading-snug text-slate">
-          {pending ? (PENDING_COPY[item.key] ?? GENERIC_PENDING) : item.summary}
-        </p>
+        <p className="mt-1 text-[13px] leading-snug text-slate">{rowCopy}</p>
       </div>
 
-      {/* The chip already names the state; the arrow is the affordance. A text label here pushed
-          the chip under longer titles on a 375px screen. */}
-      {actionable && (
-        <ArrowRight className="h-4 w-4 shrink-0 text-pitch-black" aria-label={state === 'in_progress' ? 'Continue' : 'Start'} />
-      )}
+      {isSkillsUnconfirmed ? (
+        <span className="inline-flex items-center gap-1 rounded-pill bg-pitch-black px-2.5 py-1 text-xs font-bold text-white shadow-xs group-hover:bg-gold group-hover:text-pitch-black transition-colors shrink-0">
+          View
+          <ArrowRight className="h-3.5 w-3.5" />
+        </span>
+      ) : actionable ? (
+        <ArrowRight
+          className="h-4 w-4 shrink-0 text-pitch-black"
+          aria-label={state === 'in_progress' ? 'Continue' : 'Start'}
+        />
+      ) : null}
     </div>
   );
 
-  // Pending review and verified are read-only — there is nothing for the Plug to do there.
-  return actionable ? (
-    <Link href={`${base}/plug/verification/${item.slug}`} className="block rounded-[18px] focus-visible:outline-2 focus-visible:outline-gold">
+  return isClickable ? (
+    <Link
+      href={`${base}/plug/verification/${item.slug}`}
+      className="group block rounded-[18px] focus-visible:outline-2 focus-visible:outline-gold"
+    >
       {body}
     </Link>
   ) : (

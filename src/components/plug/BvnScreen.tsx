@@ -33,7 +33,7 @@ export function BvnScreen() {
 
   const load = useCallback(async () => {
     const snap = await loadVerificationSnapshot(getPlugId() ?? '');
-    setState(snap.items?.bvn.state ?? 'not_started');
+    setState(snap.items?.bvn.state ?? snap.states.bvn ?? 'not_started');
     setReviewNote(snap.items?.bvn.reviewNote ?? null);
   }, []);
 
