@@ -50,7 +50,7 @@ export function GuarantorScreen() {
 
   const load = useCallback(async () => {
     const snap = await loadVerificationSnapshot(getPlugId() ?? '');
-    setState(snap.items?.guarantor.state ?? 'not_started');
+    setState(snap.items?.guarantor.state ?? snap.states.guarantor ?? 'not_started');
     setReviewNote(snap.items?.guarantor.reviewNote ?? null);
   }, []);
 

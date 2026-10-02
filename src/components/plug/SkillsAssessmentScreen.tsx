@@ -385,11 +385,33 @@ export function SkillsAssessmentScreen() {
   // Load verification snapshot
   const load = useCallback(async () => {
     const snap = await loadVerificationSnapshot(getPlugId() ?? '');
-    setState(snap.items?.skills.state ?? 'not_started');
+    const skillState = snap.items?.skills.state ?? snap.states.skills ?? 'not_started';
+    setState(skillState);
     setPath(snap.items?.skills.path ?? null);
     setMeetingTime(snap.items?.skills.meetingTime ?? null);
     setConfirmedTime(snap.items?.skills.confirmedTime ?? null);
     setReviewNote(snap.items?.skills.reviewNote ?? null);
+
+    // Pre-fill selected date/window/slot if existing meeting time is stored
+    if (snap.items?.skills.meetingTime) {
+      const d = new Date(snap.items.skills.meetingTime);
+      if (!isNaN(d.getTime())) {
+        const lagosDate = getLagosDateStr(d);
+        const lagosHour = (d.getUTCHours() + 1) % 24;
+        const lagosMin = d.getUTCMinutes();
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const lagosTimeStr = `${pad(lagosHour)}:${pad(lagosMin)}`;
+
+        setSelectedDateStr(lagosDate);
+        if (lagosHour >= 14 && lagosHour < 16) {
+          setSelectedWindow('afternoon');
+          setSelectedTimeSlot(lagosTimeStr);
+        } else if (lagosHour >= 17 && lagosHour <= 21) {
+          setSelectedWindow('evening');
+          setSelectedTimeSlot(lagosTimeStr);
+        }
+      }
+    }
   }, []);
 
   useEffect(() => {

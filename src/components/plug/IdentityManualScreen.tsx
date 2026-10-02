@@ -62,7 +62,7 @@ export function IdentityManualScreen() {
 
   const load = useCallback(async () => {
     const snap = await loadVerificationSnapshot(getPlugId() ?? '');
-    setState(snap.items?.identity.state ?? 'not_started');
+    setState(snap.items?.identity.state ?? snap.states.nin_liveness ?? 'not_started');
     setReviewNote(snap.items?.identity.reviewNote ?? null);
   }, []);
 

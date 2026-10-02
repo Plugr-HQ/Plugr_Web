@@ -43,7 +43,7 @@ export function BackgroundInfoScreen() {
 
   const load = useCallback(async () => {
     const snap = await loadVerificationSnapshot(getPlugId() ?? '');
-    setState(snap.items?.background.state ?? 'not_started');
+    setState(snap.items?.background.state ?? snap.states.background ?? 'not_started');
     setReviewNote(snap.items?.background.reviewNote ?? null);
   }, []);
 
