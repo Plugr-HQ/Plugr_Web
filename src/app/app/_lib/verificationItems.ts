@@ -92,3 +92,26 @@ export async function loadVerificationSnapshot(plugId: string): Promise<Verifica
   saveItemStates(plugId, states);
   return { states, items };
 }
+
+/** Formats an ISO UTC timestamp into friendly Lagos time (WAT / UTC+1). */
+export function formatLagosTime(isoString: string | null | undefined): string {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return '';
+  try {
+    const formatted = new Intl.DateTimeFormat('en-NG', {
+      timeZone: 'Africa/Lagos',
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).format(date);
+    return `${formatted} (Lagos Time)`;
+  } catch {
+    return `${date.toLocaleString('en-NG')} (Lagos Time)`;
+  }
+}
+
