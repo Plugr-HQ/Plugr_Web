@@ -17,7 +17,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Loader2, Star, Check, Pencil, Plus, Share2, Quote, X, Camera, Briefcase,
-  MapPin, Clock, Zap, ShieldCheck,
+  MapPin, Clock, Zap, ShieldCheck, Mic, RotateCcw, Sparkles, Play, Pause, Square,
 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { Card, Divider, GoldButton, Label, TextInput } from '@/src/components/ui';
@@ -30,6 +30,7 @@ import { PlugProfileSkeleton } from '@/src/components/Skeleton';
 import { DigitalId } from '@/src/app/app/_components/DigitalId';
 import { withSource } from '@/src/lib/apiSource';
 import { authHeaders } from '@/src/lib/api';
+import { useVoiceRecorder } from './useVoiceRecorder';
 
 type WorkPost = { id: string; title: string; photos: string[]; createdAt: string };
 type ExperienceEntry = { id: string; title: string; org: string; period: string; note: string };
@@ -78,6 +79,17 @@ export function PlugProfileScreen({ base }: { base: string }) {
   const [postPhotos, setPostPhotos] = useState<string[]>([]);
   const postRef = useRef<HTMLInputElement>(null);
 
+  // Voice AI draft state & recorder hook
+  const [showConsentNotice, setShowConsentNotice] = useState(false);
+  const [showVoiceModal, setShowVoiceModal] = useState(false);
+  const [showFillModal, setShowFillModal] = useState(false);
+  const [pendingDraft, setPendingDraft] = useState<{ bio: string | null; skills: string[]; experience: Array<{ title: string; org: string; period: string; note: string }> } | null>(null);
+  const [aiSuggested, setAiSuggested] = useState(false);
+  const [drafting, setDrafting] = useState(false);
+  const [consentLoading, setConsentLoading] = useState(false);
+
+  const recorder = useVoiceRecorder();
+
   const plugId = typeof window !== 'undefined' ? getPlugId() : '';
 
   /** The API is inconsistent: the snapshot wraps the row, the profile PATCH returns it bare. */
@@ -114,10 +126,6 @@ export function PlugProfileScreen({ base }: { base: string }) {
       body: JSON.stringify(payload),
     }, { skipAuthRedirect: false });
 
-    // GET returns { plug }, PATCH returns the row itself — reading body.plug for both set the
-    // screen's state to undefined after every successful save, which is why an edit only appeared
-    // once the page was reloaded. Take whichever shape arrives, and refresh the editor fields from
-    // the saved row so what's on screen is what the server stored.
     const saved = unwrapPlug(body);
     applyPlug(saved);
     return saved;
@@ -126,8 +134,6 @@ export function PlugProfileScreen({ base }: { base: string }) {
   async function saveEdits() {
     setSaving(true); setError(null);
     try {
-      // Commit any skill still sitting in the input — losing it because they hit Save instead of
-      // Enter is exactly the kind of small betrayal that makes an editor feel unreliable.
       const pending = skillDraft.trim();
       const finalSkills = pending && !skills.some((k) => k.toLowerCase() === pending.toLowerCase())
         ? [...skills, pending]
@@ -136,20 +142,128 @@ export function PlugProfileScreen({ base }: { base: string }) {
         bio,
         photoUrl: photo,
         skills: finalSkills,
-        // Drop blank rows the Plug added but never filled in.
         experience: experience.filter((e) => e.title.trim()),
       });
       setSkillDraft('');
       setEditing(false);
+      setAiSuggested(false);
     }
     catch (e: any) { setError(e.message); }
     finally { setSaving(false); }
   }
 
+  function discardEdits() {
+    applyPlug(plug);
+    setEditing(false);
+    setAiSuggested(false);
+    setSkillDraft('');
+  }
+
+  async function handleVoiceClick() {
+    if (editing || consentLoading) return;
+    setConsentLoading(true);
+    setError(null);
+    try {
+      const res = await apiFetch(withSource(`/api/plugs/${plugId}/consent/voice`, base), {}, { skipAuthRedirect: false });
+      if (res?.hasConsent) {
+        recorder.resetRecorder();
+        setShowVoiceModal(true);
+      } else {
+        setShowConsentNotice(true);
+      }
+    } catch (e: any) {
+      setError(e?.message || 'Could not verify consent status.');
+    } finally {
+      setConsentLoading(false);
+    }
+  }
+
+  async function handleAgreeConsent() {
+    setConsentLoading(true);
+    try {
+      await apiFetch(withSource(`/api/plugs/${plugId}/consent/voice`, base), { method: 'POST' }, { skipAuthRedirect: false });
+      setShowConsentNotice(false);
+      recorder.resetRecorder();
+      setShowVoiceModal(true);
+    } catch (e: any) {
+      setError(e?.message || 'Could not record consent agreement.');
+    } finally {
+      setConsentLoading(false);
+    }
+  }
+
+  async function handleGenerateDraft() {
+    if (!recorder.wavBlob) return;
+    setDrafting(true);
+    setError(null);
+    try {
+      const form = new FormData();
+      form.append('audio', recorder.wavBlob, 'recording.wav');
+
+      const res = await fetch(withSource(`/api/plugs/${plugId}/profile/voice-draft`, base), {
+        method: 'POST',
+        headers: { ...authHeaders() },
+        body: form,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || data?.message || 'Could not process voice recording.');
+      }
+
+      const draft = {
+        bio: typeof data.bio === 'string' ? data.bio : null,
+        skills: Array.isArray(data.skills) ? data.skills : [],
+        experience: Array.isArray(data.experience) ? data.experience : [],
+      };
+
+      const hasExistingContent = Boolean(bio.trim() || skills.length > 0 || experience.length > 0);
+
+      if (hasExistingContent) {
+        setPendingDraft(draft);
+        setShowVoiceModal(false);
+        setShowFillModal(true);
+      } else {
+        applyDraftToEditor(draft, 'replace');
+        setShowVoiceModal(false);
+      }
+    } catch (e: any) {
+      setError(e?.message || 'Failed to process voice recording.');
+    } finally {
+      setDrafting(false);
+    }
+  }
+
+  function applyDraftToEditor(
+    draft: { bio: string | null; skills: string[]; experience: Array<{ title: string; org: string; period: string; note: string }> },
+    mode: 'empty_only' | 'replace'
+  ) {
+    if (mode === 'replace') {
+      if (draft.bio) setBio(draft.bio);
+      if (draft.skills.length) setSkills(draft.skills);
+      if (draft.experience.length) setExperience(draft.experience.map((e) => ({ ...e, id: crypto.randomUUID() })));
+    } else {
+      if (!bio.trim() && draft.bio) setBio(draft.bio);
+      if (draft.skills.length) {
+        setSkills((prev) => {
+          const existingLower = new Set(prev.map((s) => s.toLowerCase()));
+          const toAdd = draft.skills.filter((s) => !existingLower.has(s.toLowerCase()));
+          return [...prev, ...toAdd].slice(0, 20);
+        });
+      }
+      if (experience.length === 0 && draft.experience.length) {
+        setExperience(draft.experience.map((e) => ({ ...e, id: crypto.randomUUID() })));
+      }
+    }
+
+    setEditing(true);
+    setAiSuggested(true);
+    setPendingDraft(null);
+  }
+
   function addSkill() {
     const v = skillDraft.trim();
     if (!v || skills.length >= 20) return;
-    // Case-insensitive de-dupe, matching what the backend does on save.
     if (skills.some((k) => k.toLowerCase() === v.toLowerCase())) { setSkillDraft(''); return; }
     setSkills((prev) => [...prev, v]);
     setSkillDraft('');
@@ -195,27 +309,69 @@ export function PlugProfileScreen({ base }: { base: string }) {
   const rating = Number(plug.rating);
   const posts: WorkPost[] = Array.isArray(plug.work_posts) ? plug.work_posts : [];
   const trade = tradeLabel(plug);
-  // Reviews were three invented testimonials from invented clients, shown to any Plug with at
-  // least one job. There is no review data in this product yet, so the list is always empty and
-  // the honest empty state below is what renders. Wire this to real Rating rows when they exist.
   const reviews: Array<{ by: string; text: string }> = [];
   const memberSince = new Date(plug.created_at).toLocaleDateString('en-NG', { month: 'short', year: 'numeric' });
   const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/p/${plug.id}` : '';
 
   return (
     <PlugShell base={base} plug={plug}>
+      {/* AI Suggested Banner */}
+      {aiSuggested && (
+        <div className="mb-4 flex items-center justify-between rounded-2xl bg-gold/15 border border-gold/40 px-4 py-3 text-pitch-black rise">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-gold shrink-0" />
+            <span className="text-xs font-bold">AI-suggested, please check before saving</span>
+          </div>
+          <button
+            onClick={discardEdits}
+            className="text-xs font-bold text-slate hover:text-pitch-black underline"
+          >
+            Discard changes
+          </button>
+        </div>
+      )}
+
       {/* Cover + identity — the view clients see, owned */}
       <div className="rounded-3xl overflow-hidden border border-pitch-black/6 card-shadow bg-white rise">
         <div className="relative h-24 bg-linear-to-br from-pitch-black to-petrol">
           <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #E8A020 0, transparent 40%)' }} />
-          <div className="absolute top-3 right-3 flex gap-2">
-            <button onClick={() => setShowId(true)} className="inline-flex items-center gap-1.5 rounded-pill bg-white/15 hover:bg-white/25 backdrop-blur px-3 py-1.5 text-[12px] font-bold text-white transition-colors">
-              <Share2 className="w-3.5 h-3.5" /> Digital ID
-            </button>
-            <button onClick={() => (editing ? saveEdits() : setEditing(true))} disabled={saving} className="inline-flex items-center gap-1.5 rounded-pill bg-white/15 hover:bg-white/25 backdrop-blur px-3 py-1.5 text-[12px] font-bold text-white transition-colors disabled:opacity-60">
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Pencil className="w-3.5 h-3.5" />}
-              {editing ? 'Save' : 'Edit'}
-            </button>
+          <div className="absolute top-3 right-3 flex flex-wrap items-center gap-2">
+            {!editing ? (
+              <>
+                <button
+                  onClick={handleVoiceClick}
+                  disabled={consentLoading}
+                  className="inline-flex items-center gap-1.5 rounded-pill bg-white/15 hover:bg-white/25 backdrop-blur px-3 py-1.5 text-[12px] font-bold text-white transition-colors disabled:opacity-60"
+                >
+                  {consentLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mic className="w-3.5 h-3.5 text-gold" />}
+                  Describe yourself (voice)
+                </button>
+                <button onClick={() => setShowId(true)} className="inline-flex items-center gap-1.5 rounded-pill bg-white/15 hover:bg-white/25 backdrop-blur px-3 py-1.5 text-[12px] font-bold text-white transition-colors">
+                  <Share2 className="w-3.5 h-3.5" /> Digital ID
+                </button>
+                <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1.5 rounded-pill bg-white/15 hover:bg-white/25 backdrop-blur px-3 py-1.5 text-[12px] font-bold text-white transition-colors">
+                  <Pencil className="w-3.5 h-3.5" /> Edit
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={discardEdits}
+                  disabled={saving}
+                  className="inline-flex items-center gap-1.5 rounded-pill bg-white/15 hover:bg-white/25 backdrop-blur px-3 py-1.5 text-[12px] font-bold text-white transition-colors disabled:opacity-60"
+                >
+                  Discard changes
+                </button>
+                <button
+                  onClick={saveEdits}
+                  disabled={saving}
+                  className="inline-flex items-center gap-1.5 rounded-pill bg-gold hover:bg-gold-light px-3.5 py-1.5 text-[12px] font-bold text-pitch-black transition-colors disabled:opacity-60"
+                >
+                  {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                  Save
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -544,6 +700,194 @@ export function PlugProfileScreen({ base }: { base: string }) {
           profileUrl={profileUrl}
           onClose={() => setShowId(false)}
         />
+      )}
+
+      {/* Consent Notice Modal */}
+      {showConsentNotice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-pitch-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl rise">
+            <div className="flex items-center gap-3">
+              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-gold/15 text-gold shrink-0">
+                <Mic className="w-5 h-5" />
+              </span>
+              <div>
+                <h3 className="text-base font-bold text-pitch-black">Voice Profile Consent</h3>
+                <p className="text-xs text-slate">Notice for voice note processing</p>
+              </div>
+            </div>
+            <p className="mt-4 text-xs leading-relaxed text-slate">
+              Before recording your voice note, please review how your data is processed:
+            </p>
+            <ul className="mt-2 space-y-1.5 text-xs text-slate list-disc list-inside">
+              <li>Your voice note is recorded and transmitted to Google Gemini AI service outside Nigeria solely to transcribe and extract profile fields.</li>
+              <li>Your audio is processed in memory and immediately discarded. Plugr does NOT store or log your audio or transcript.</li>
+              <li>Nothing is saved to your profile until you review the AI draft and explicitly click <strong>Save</strong>.</li>
+              <li>You can decline now and type your profile details manually instead.</li>
+            </ul>
+            <div className="mt-6 flex gap-2 justify-end">
+              <button
+                onClick={() => setShowConsentNotice(false)}
+                className="rounded-pill border border-pitch-black/15 bg-white px-4 py-2 text-xs font-bold text-pitch-black hover:border-gold transition-colors"
+              >
+                No thanks
+              </button>
+              <button
+                onClick={handleAgreeConsent}
+                disabled={consentLoading}
+                className="inline-flex items-center gap-1.5 rounded-pill bg-gold px-5 py-2 text-xs font-bold text-pitch-black hover:bg-gold-light transition-colors disabled:opacity-50"
+              >
+                {consentLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                I agree
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Voice Recorder Modal */}
+      {showVoiceModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-pitch-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl rise">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Mic className="w-5 h-5 text-gold" />
+                <h3 className="text-base font-bold text-pitch-black">Describe yourself</h3>
+              </div>
+              <button
+                onClick={() => { recorder.resetRecorder(); setShowVoiceModal(false); }}
+                className="grid h-8 w-8 place-items-center rounded-full bg-pitch-black/5 text-slate hover:bg-pitch-black/10"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="mt-2 text-xs text-slate leading-relaxed">
+              Speak clearly about your trade experience, skills, and background (up to 90 seconds).
+            </p>
+
+            {/* Timer & Controls */}
+            <div className="mt-5 flex flex-col items-center justify-center rounded-2xl bg-bone/60 p-6 border border-pitch-black/6 text-center">
+              <div className="font-mono text-3xl font-bold text-pitch-black">
+                {Math.floor(recorder.durationSeconds / 60)}:{String(recorder.durationSeconds % 60).padStart(2, '0')}
+                <span className="text-xs font-normal text-slate ml-1">/ 1:30</span>
+              </div>
+
+              {recorder.recorderState === 'recording' && (
+                <div className="mt-2 flex items-center gap-2 text-xs font-bold text-red-600 animate-pulse">
+                  <span className="h-2.5 w-2.5 rounded-full bg-red-600" />
+                  Recording in progress...
+                </div>
+              )}
+
+              {recorder.recorderState === 'processing' && (
+                <div className="mt-2 flex items-center gap-2 text-xs font-bold text-gold">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Converting audio to WAV...
+                </div>
+              )}
+
+              <div className="mt-6 flex flex-wrap justify-center items-center gap-3">
+                {recorder.recorderState === 'idle' && (
+                  <button
+                    onClick={recorder.startRecording}
+                    className="inline-flex items-center gap-2 rounded-pill bg-gold px-6 py-3 text-sm font-bold text-pitch-black hover:bg-gold-light active:scale-95 transition-all"
+                  >
+                    <Mic className="w-4 h-4" /> Start recording
+                  </button>
+                )}
+
+                {recorder.recorderState === 'recording' && (
+                  <button
+                    onClick={recorder.stopRecording}
+                    className="inline-flex items-center gap-2 rounded-pill bg-red-600 px-6 py-3 text-sm font-bold text-white hover:bg-red-700 active:scale-95 transition-all"
+                  >
+                    <Square className="w-4 h-4" /> Stop recording
+                  </button>
+                )}
+
+                {(recorder.recorderState === 'recorded' || recorder.recorderState === 'processing') && (
+                  <>
+                    <button
+                      onClick={recorder.togglePlayback}
+                      disabled={recorder.recorderState === 'processing'}
+                      className="inline-flex items-center gap-1.5 rounded-pill border border-pitch-black/15 bg-white px-4 py-2 text-xs font-bold text-pitch-black hover:border-gold transition-colors disabled:opacity-50"
+                    >
+                      {recorder.isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                      {recorder.isPlaying ? 'Pause' : 'Listen'}
+                    </button>
+                    <button
+                      onClick={recorder.resetRecorder}
+                      disabled={recorder.recorderState === 'processing' || drafting}
+                      className="inline-flex items-center gap-1.5 rounded-pill border border-pitch-black/15 bg-white px-4 py-2 text-xs font-bold text-pitch-black hover:border-gold transition-colors disabled:opacity-50"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" /> Re-record
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {recorder.error && (
+              <p className="mt-3 text-xs font-bold text-red-600 text-center">{recorder.error}</p>
+            )}
+
+            {/* Submit button */}
+            {recorder.recorderState === 'recorded' && recorder.wavBlob && (
+              <div className="mt-6">
+                <button
+                  onClick={handleGenerateDraft}
+                  disabled={drafting}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-pill bg-gold px-6 py-3 text-sm font-bold text-pitch-black hover:bg-gold-light transition-all disabled:opacity-50"
+                >
+                  {drafting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                  {drafting ? 'Generating AI profile draft...' : 'Generate profile draft'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Fill Choice Modal */}
+      {showFillModal && pendingDraft && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-pitch-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl rise">
+            <h3 className="text-base font-bold text-pitch-black">Existing Profile Content</h3>
+            <p className="mt-2 text-xs text-slate leading-relaxed">
+              Your profile already has saved information. How would you like to apply the AI-generated draft?
+            </p>
+            <div className="mt-4 space-y-2">
+              <button
+                onClick={() => {
+                  applyDraftToEditor(pendingDraft, 'empty_only');
+                  setShowFillModal(false);
+                }}
+                className="w-full text-left rounded-2xl border border-pitch-black/15 bg-white p-3.5 hover:border-gold transition-colors"
+              >
+                <p className="text-xs font-bold text-pitch-black">Only fill empty fields (Default)</p>
+                <p className="text-[11px] text-slate mt-0.5">Keeps your existing bio and experience, adding only new skills and missing details.</p>
+              </button>
+              <button
+                onClick={() => {
+                  applyDraftToEditor(pendingDraft, 'replace');
+                  setShowFillModal(false);
+                }}
+                className="w-full text-left rounded-2xl border border-pitch-black/15 bg-white p-3.5 hover:border-gold transition-colors"
+              >
+                <p className="text-xs font-bold text-pitch-black">Replace everything</p>
+                <p className="text-[11px] text-slate mt-0.5">Overwrites bio, skills, and experience with the new AI draft.</p>
+              </button>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => { setPendingDraft(null); setShowFillModal(false); }}
+                className="text-xs font-bold text-slate hover:text-pitch-black"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </PlugShell>
   );

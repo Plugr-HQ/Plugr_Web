@@ -16,12 +16,13 @@ import { Section, SubSection, BulletList, Note, LegalHeader, ConsentItem } from 
  * item in a single transaction with account creation, per the plan in plugr-whatsapp-onboarding.
  */
 
-const DOC_VERSION = '2026-09';
+const DOC_VERSION = '2026-10-02';
 
 export default function DataConsentPage() {
   const [role, setRole] = useState<'client' | 'plug'>('client');
   const [accountCreation, setAccountCreation] = useState(false);
   const [identityVerification, setIdentityVerification] = useState(false);
+  const [voiceProcessing, setVoiceProcessing] = useState(false);
   const [dataSharing, setDataSharing] = useState(false);
   const [marketing, setMarketing] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -31,14 +32,13 @@ export default function DataConsentPage() {
 
   function handleSubmit() {
     if (!requiredComplete) return;
-    // TODO: replace with a real submission once ConsentRecord + the signup endpoint exist.
-    // Expected shape per item: { userId, consentType, agreed: true, docVersion: DOC_VERSION, channel: 'web_app' }
     console.log('[consent] would submit', {
       role,
       docVersion: DOC_VERSION,
       items: {
         ACCOUNT_CREATION: accountCreation,
         IDENTITY_VERIFICATION: role === 'plug' ? identityVerification : undefined,
+        VOICE_PROFILE_PROCESSING: role === 'plug' ? voiceProcessing : undefined,
         DATA_SHARING: dataSharing,
         MARKETING: marketing,
       },
@@ -181,13 +181,22 @@ export default function DataConsentPage() {
               label="I consent to the collection and processing of my personal data as necessary to create my account and use the Plugr platform."
             />
             {role === 'plug' && (
-              <ConsentItem
-                id="consent-identity"
-                checked={identityVerification}
-                onChange={setIdentityVerification}
-                required
-                label="I consent to identity verification, including submission of my NIN, BVN, liveness check, guarantor details, and skills assessment."
-              />
+              <>
+                <ConsentItem
+                  id="consent-identity"
+                  checked={identityVerification}
+                  onChange={setIdentityVerification}
+                  required
+                  label="I consent to identity verification, including submission of my NIN, BVN, liveness check, guarantor details, and skills assessment."
+                />
+                <ConsentItem
+                  id="consent-voice"
+                  checked={voiceProcessing}
+                  onChange={setVoiceProcessing}
+                  required={false}
+                  label="I consent to recording voice notes to generate AI-assisted profile drafts. Audio is processed by Google Gemini in memory outside Nigeria and is not retained by Plugr."
+                />
+              </>
             )}
             <ConsentItem
               id="consent-sharing"
