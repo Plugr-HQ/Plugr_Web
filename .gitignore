@@ -10,7 +10,3 @@ node_modules/
 
 # local secrets (e.g. DIDIT_API_KEY, DIDIT_WEBHOOK_SECRET) — never commit
 .env*.local
-
-# typescript build cache and auto-generated env types
-*.tsbuildinfo
-next-env.d.ts
