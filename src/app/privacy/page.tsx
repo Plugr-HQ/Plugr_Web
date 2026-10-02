@@ -35,7 +35,7 @@ export default function PrivacyPolicyPage() {
         eyebrow="Legal"
         title="Privacy"
         highlight="Policy"
-        version="Version 1.1 &nbsp;·&nbsp; Effective September 2026 &nbsp;·&nbsp; getplugr.com"
+        version="Version 1.2 &nbsp;·&nbsp; Effective October 2026 &nbsp;·&nbsp; getplugr.com"
       />
 
       <div className="max-w-3xl mx-auto px-5 py-12">
@@ -65,6 +65,7 @@ export default function PrivacyPolicyPage() {
               <><strong className="text-pitch-black font-semibold">Contact Information:</strong> Phone number, email address, WhatsApp number.</>,
               <><strong className="text-pitch-black font-semibold">Location Information:</strong> City and state of residence or service area.</>,
               <><strong className="text-pitch-black font-semibold">Professional Information (Plugs only):</strong> Trade/skill category (e.g., electrician, plumber), skills assessment responses, work history, years of experience, training background, certifications.</>,
+              <><strong className="text-pitch-black font-semibold">Voice Recordings (Plugs only, optional):</strong> Voice notes recorded on the profile screen to generate AI profile drafts. Audio is transmitted to Google Gemini outside Nigeria for in-memory extraction and is immediately discarded. Plugr does not store, log, or retain audio recordings or transcripts.</>,
               <><strong className="text-pitch-black font-semibold">Account Credentials:</strong> Password and authentication tokens, session data.</>,
               <><strong className="text-pitch-black font-semibold">Communications:</strong> Messages sent through our WhatsApp interface or in-app chat.</>,
             ]} />
@@ -102,6 +103,7 @@ export default function PrivacyPolicyPage() {
           <BulletList items={[
             <><strong className="text-pitch-black font-semibold">Account Creation and Management:</strong> To register, authenticate, and manage your Plugr account.</>,
             <><strong className="text-pitch-black font-semibold">Identity Verification:</strong> To verify the identity of Plugs using government-issued NIN, BVN, liveness checks, guarantor confirmation, and a trade skills assessment.</>,
+            <><strong className="text-pitch-black font-semibold">AI Profile Draft Generation (with consent):</strong> To transcribe voice notes and extract profile bio, skills, and work history for Plug review and manual saving.</>,
             <><strong className="text-pitch-black font-semibold">Service Matching:</strong> To connect Clients with verified Plugs based on location, trade, and availability.</>,
             <><strong className="text-pitch-black font-semibold">WhatsApp Communication:</strong> To send service notifications, onboarding flows, job updates, and support messages.</>,
             <><strong className="text-pitch-black font-semibold">Payment Processing:</strong> To facilitate secure transactions between Clients and Plugs.</>,
@@ -145,7 +147,7 @@ export default function PrivacyPolicyPage() {
           <SubSection title="4.2 With Service Providers">
             <BulletList items={[
               <><strong className="text-pitch-black font-semibold">Cloud Infrastructure:</strong> Render (hosting), Neon (database), Upstash (caching).</>,
-              <><strong className="text-pitch-black font-semibold">AI Services:</strong> Google Gemini for conversational AI features.</>,
+              <><strong className="text-pitch-black font-semibold">AI Services:</strong> Google Gemini for conversational AI features and voice profile draft extraction (processed in memory outside Nigeria).</>,
               <><strong className="text-pitch-black font-semibold">Identity Verification:</strong> Prembly and NIMC-accredited providers, for NIN, BVN, liveness, and guarantor verification.</>,
               <><strong className="text-pitch-black font-semibold">Payment Processing:</strong> Monnify for secure payment handling. Plugr may change its payment processing partner from time to time; the current partner is always disclosed here.</>,
               <><strong className="text-pitch-black font-semibold">Messaging:</strong> Meta Platforms for WhatsApp Business API services.</>,
