@@ -2,11 +2,11 @@
 // Verification Hub item: Skills assessment.
 //
 // Artisans choose between:
-//   1. Request an assessment call: they set their available time slot within the daily windows:
-//      - Afternoon: 2:00 PM – 3:00 PM
-//      - Evening: 5:30 PM – 9:00 PM
-//      The chosen time is stored under their account on the backend.
-//   2. Send a WhatsApp voice note answering trade questions.
+//   1. Request an assessment call: select available day and window (2-3pm or 5:30-9pm) via dropdowns.
+//      The specific time slot dropdown dynamically reveals upon selecting a window.
+//   2. Send a WhatsApp voice note.
+//
+// Compact modern design styled to fit within 80-100vh.
 
 'use client';
 
@@ -15,15 +15,14 @@ import {
   Calendar,
   Check,
   CheckCircle2,
-  ChevronRight,
+  ChevronDown,
   Clock,
   Hourglass,
   Loader2,
   Mic,
   PhoneCall,
   RefreshCw,
-  Sun,
-  Moon,
+  Sparkles,
 } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
 import { apiFetch } from '@/src/lib/api-client';
@@ -43,20 +42,18 @@ const VOICE_NOTE_PROMPT =
 // Defined call availability windows (every day)
 const TIME_WINDOWS = [
   {
-    id: 'afternoon',
-    title: 'Afternoon Window',
-    range: '2:00 PM – 3:00 PM',
-    icon: Sun,
+    id: 'afternoon' as const,
+    label: 'Afternoon (2:00 PM – 3:00 PM)',
+    shortLabel: '2:00 PM – 3:00 PM',
     slots: [
       { label: '2:00 PM', value: '14:00' },
       { label: '2:30 PM', value: '14:30' },
     ],
   },
   {
-    id: 'evening',
-    title: 'Evening Window',
-    range: '5:30 PM – 9:00 PM',
-    icon: Moon,
+    id: 'evening' as const,
+    label: 'Evening (5:30 PM – 9:00 PM)',
+    shortLabel: '5:30 PM – 9:00 PM',
     slots: [
       { label: '5:30 PM', value: '17:30' },
       { label: '6:00 PM', value: '18:00' },
@@ -116,13 +113,13 @@ export function SkillsAssessmentScreen() {
   const [error, setError] = useState<string | null>(null);
   const [resubmitting, setResubmitting] = useState(false);
 
-  // Call slot selection state
-  const [activeMethod, setActiveMethod] = useState<'CALL' | 'VOICE_NOTE' | null>(null);
+  // Dropdown schedule states
   const [selectedDateStr, setSelectedDateStr] = useState<string>('');
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('14:00');
+  const [selectedWindow, setSelectedWindow] = useState<'afternoon' | 'evening' | ''>('');
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   const [slotError, setSlotError] = useState<string | null>(null);
 
-  // Generate the next 7 days in Lagos
+  // Generate next 7 days in Lagos
   const availableDays = useMemo(() => {
     const days = [];
     const now = new Date();
@@ -141,12 +138,44 @@ export function SkillsAssessmentScreen() {
     return days;
   }, []);
 
-  // Initialize selected date to tomorrow (or today if slots available)
+  // Initialize selected date
   useEffect(() => {
-    if (availableDays.length > 1 && !selectedDateStr) {
-      setSelectedDateStr(availableDays[1].dateStr); // Default: Tomorrow
+    if (availableDays.length > 0 && !selectedDateStr) {
+      // Default to today or tomorrow
+      setSelectedDateStr(availableDays[0].dateStr);
     }
   }, [availableDays, selectedDateStr]);
+
+  // Compute valid slots for current selection
+  const validSlots = useMemo(() => {
+    if (!selectedWindow) return [];
+    const win = TIME_WINDOWS.find((w) => w.id === selectedWindow);
+    if (!win) return [];
+
+    const now = new Date();
+    const todayLagosStr = toLagosDateString(now);
+
+    if (selectedDateStr === todayLagosStr) {
+      return win.slots.filter((slot) => {
+        const iso = lagosSlotToUtcIso(selectedDateStr, slot.value);
+        const slotTime = new Date(iso).getTime();
+        return slotTime - now.getTime() >= 45 * 60 * 1000; // at least 45 mins buffer
+      });
+    }
+
+    return win.slots;
+  }, [selectedWindow, selectedDateStr]);
+
+  // Auto-sync selected time slot whenever valid slots change
+  useEffect(() => {
+    if (selectedWindow && validSlots.length > 0) {
+      if (!selectedTimeSlot || !validSlots.some((s) => s.value === selectedTimeSlot)) {
+        setSelectedTimeSlot(validSlots[0].value);
+      }
+    } else if (validSlots.length === 0) {
+      setSelectedTimeSlot('');
+    }
+  }, [selectedWindow, validSlots, selectedTimeSlot]);
 
   const load = useCallback(async () => {
     const snap = await loadVerificationSnapshot(getPlugId() ?? '');
@@ -161,7 +190,7 @@ export function SkillsAssessmentScreen() {
     load();
   }, [load]);
 
-  /** Record the choice with selected meeting time. */
+  /** Record choice with selected meeting time. */
   async function choose(
     which: 'CALL' | 'VOICE_NOTE',
     options?: { meetingTime?: string },
@@ -185,7 +214,6 @@ export function SkillsAssessmentScreen() {
       );
       handOff();
       setResubmitting(false);
-      setActiveMethod(null);
       await load();
     } catch (e: any) {
       const rawMsg = e?.message ?? e?.error;
@@ -201,8 +229,8 @@ export function SkillsAssessmentScreen() {
   }
 
   function handleConfirmCallSlot() {
-    if (!selectedDateStr || !selectedTimeSlot) {
-      setSlotError('Please select both a date and an available time slot.');
+    if (!selectedDateStr || !selectedWindow || !selectedTimeSlot) {
+      setSlotError('Please choose your window and time slot.');
       return;
     }
 
@@ -229,321 +257,269 @@ export function SkillsAssessmentScreen() {
     <Shell
       eyebrow="Verification"
       title="Skills assessment"
-      subtitle="A short check of your trade knowledge."
+      subtitle="A 15-min check of your trade knowledge."
       back={HUB}
     >
-      {state === null ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-gold" aria-label="Loading" />
-        </div>
-      ) : isPending ? (
-        <div className="rise mt-2 flex flex-col items-center rounded-[22px] border border-pitch-black/[0.08] bg-white px-6 py-10 text-center shadow-xs">
-          {path === 'CALL' && confirmedTime ? (
-            <>
-              <span className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-emerald-500/15 text-emerald-700">
-                <CheckCircle2 className="h-7 w-7" />
-              </span>
-              <p className="font-bold text-pitch-black text-lg">Assessment call confirmed</p>
-              <div className="mt-3 inline-flex items-center gap-2 rounded-pill bg-emerald-50 border border-emerald-200 px-4 py-1.5 text-xs font-bold text-emerald-800">
-                <Calendar className="h-3.5 w-3.5" />
-                {formatLagosTime(confirmedTime)}
-              </div>
-              <p className="mt-4 max-w-[320px] text-sm leading-relaxed text-slate">
-                Confirmed with our team. Please keep your phone close — someone from ops will ring your Plugr number at this time to run through a few questions about your trade.
-              </p>
-            </>
-          ) : path === 'CALL' && meetingTime ? (
-            <>
-              <span className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-gold/15 text-[#8a5a08]">
-                <Clock className="h-7 w-7" />
-              </span>
-              <p className="font-bold text-pitch-black text-lg">Call requested</p>
-              <div className="mt-3 inline-flex items-center gap-2 rounded-pill bg-gold/10 border border-gold/30 px-4 py-1.5 text-xs font-bold text-[#8a5a08]">
-                <Calendar className="h-3.5 w-3.5" />
-                Your availability: {formatLagosTime(meetingTime)}
-              </div>
-              <p className="mt-4 max-w-[320px] text-sm leading-relaxed text-slate">
-                We stored your selected available time. Our team will confirm this slot with you on WhatsApp (or agree another time), then ring your Plugr number.
-              </p>
-            </>
-          ) : path === 'CALL' ? (
-            <>
-              <span className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-gold/15 text-[#8a5a08]">
-                <Hourglass className="h-7 w-7" />
-              </span>
-              <p className="font-bold text-pitch-black text-lg">We’ll call you</p>
-              <p className="mt-2 max-w-[320px] text-sm leading-relaxed text-slate">
-                Someone from our team will ring you on your Plugr number to agree a time, then run through a few questions about your trade. We’ll update this once it’s done.
-              </p>
-            </>
-          ) : (
-            <>
-              <span className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-gold/15 text-[#8a5a08]">
-                <Hourglass className="h-7 w-7" />
-              </span>
-              <p className="font-bold text-pitch-black text-lg">Waiting on your voice note</p>
-              <p className="mt-2 max-w-[320px] text-sm leading-relaxed text-slate">
-                Send your voice note on WhatsApp whenever you’re ready. Our team reviews it and updates this item — this can take a few days.
-              </p>
-              {waHref && (
-                <a
-                  href={waHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-5 rounded-pill border border-pitch-black/15 bg-white px-5 py-2.5 text-[13px] font-bold text-pitch-black hover:border-gold hover:bg-gold/5 transition-colors"
-                >
-                  Open WhatsApp again
-                </a>
-              )}
-            </>
-          )}
-
-          <div className="mt-8 pt-6 border-t border-pitch-black/[0.06] w-full flex justify-center">
-            <button
-              onClick={() => setResubmitting(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate hover:text-pitch-black transition-colors"
-            >
-              <RefreshCw className="h-3.5 w-3.5" /> Change time or method
-            </button>
+      <div className="mx-auto w-full max-w-sm">
+        {state === null ? (
+          <div className="flex justify-center py-10">
+            <Loader2 className="h-6 w-6 animate-spin text-gold" aria-label="Loading" />
           </div>
-        </div>
-      ) : state === 'verified' ? (
-        <div className="rise mt-2 flex flex-col items-center rounded-[22px] border border-pitch-black/[0.08] bg-white px-6 py-10 text-center">
-          <span className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-emerald-500/12 text-emerald-700">
-            <CheckCircle2 className="h-6 w-6" />
-          </span>
-          <p className="font-bold text-pitch-black text-lg">Skills assessment passed</p>
-          <p className="mt-1.5 max-w-[300px] text-sm leading-relaxed text-slate">
-            Our team confirmed your trade knowledge. Nothing else to do here.
-          </p>
-        </div>
-      ) : (
-        <>
-          {reviewNote && (
-            <div className="rise rounded-[18px] border border-gold/50 bg-gold/[0.07] p-4" role="alert">
-              <p className="text-sm font-bold text-pitch-black">Let’s try that again</p>
-              <p className="mt-1 text-[13px] leading-relaxed text-slate">{reviewNote}</p>
+        ) : isPending ? (
+          <div className="rise flex flex-col items-center rounded-2xl border border-pitch-black/[0.08] bg-white p-5 text-center shadow-xs">
+            {path === 'CALL' && confirmedTime ? (
+              <>
+                <span className="mb-2.5 grid h-11 w-11 place-items-center rounded-2xl bg-emerald-500/15 text-emerald-700">
+                  <CheckCircle2 className="h-5 w-5" />
+                </span>
+                <p className="font-bold text-pitch-black text-sm">Assessment call confirmed</p>
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-pill bg-emerald-50 border border-emerald-200 px-3 py-0.5 text-xs font-bold text-emerald-800">
+                  <Calendar className="h-3 w-3" />
+                  {formatLagosTime(confirmedTime)}
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-slate">
+                  Confirmed with our ops team. Please keep your phone close — we’ll ring your Plugr number.
+                </p>
+              </>
+            ) : path === 'CALL' && meetingTime ? (
+              <>
+                <span className="mb-2.5 grid h-11 w-11 place-items-center rounded-2xl bg-gold/15 text-[#8a5a08]">
+                  <Clock className="h-5 w-5" />
+                </span>
+                <p className="font-bold text-pitch-black text-sm">Call requested</p>
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-pill bg-gold/10 border border-gold/30 px-3 py-0.5 text-xs font-bold text-[#8a5a08]">
+                  <Calendar className="h-3 w-3" />
+                  {formatLagosTime(meetingTime)}
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-slate">
+                  We stored your selected slot. Ops will confirm via WhatsApp, then call your Plugr number.
+                </p>
+              </>
+            ) : path === 'CALL' ? (
+              <>
+                <span className="mb-2.5 grid h-11 w-11 place-items-center rounded-2xl bg-gold/15 text-[#8a5a08]">
+                  <Hourglass className="h-5 w-5" />
+                </span>
+                <p className="font-bold text-pitch-black text-sm">We’ll call you</p>
+                <p className="mt-1.5 text-xs leading-relaxed text-slate">
+                  Someone from ops will ring your Plugr number to agree a time and run through trade questions.
+                </p>
+              </>
+            ) : (
+              <>
+                <span className="mb-2.5 grid h-11 w-11 place-items-center rounded-2xl bg-gold/15 text-[#8a5a08]">
+                  <Hourglass className="h-5 w-5" />
+                </span>
+                <p className="font-bold text-pitch-black text-sm">Waiting on your voice note</p>
+                <p className="mt-1.5 text-xs leading-relaxed text-slate">
+                  Send your voice note on WhatsApp whenever you’re ready. Ops reviews it and updates this item.
+                </p>
+                {waHref && (
+                  <a
+                    href={waHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 rounded-pill border border-pitch-black/15 bg-white px-3.5 py-1.5 text-xs font-bold text-pitch-black hover:border-gold hover:bg-gold/5 transition-colors"
+                  >
+                    Open WhatsApp again
+                  </a>
+                )}
+              </>
+            )}
+
+            <div className="mt-4 pt-3 border-t border-pitch-black/[0.06] w-full flex justify-center">
+              <button
+                onClick={() => setResubmitting(true)}
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-slate hover:text-pitch-black transition-colors"
+              >
+                <RefreshCw className="h-3 w-3" /> Change time or method
+              </button>
             </div>
-          )}
+          </div>
+        ) : state === 'verified' ? (
+          <div className="rise flex flex-col items-center rounded-2xl border border-pitch-black/[0.08] bg-white p-5 text-center shadow-xs">
+            <span className="mb-2.5 grid h-11 w-11 place-items-center rounded-2xl bg-emerald-500/12 text-emerald-700">
+              <CheckCircle2 className="h-5 w-5" />
+            </span>
+            <p className="font-bold text-pitch-black text-sm">Skills assessment passed</p>
+            <p className="mt-1 text-xs leading-relaxed text-slate">
+              Our team confirmed your trade knowledge. Nothing else to do here.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {reviewNote && (
+              <div className="rounded-xl border border-gold/50 bg-gold/[0.07] p-2.5 text-xs" role="alert">
+                <p className="font-bold text-pitch-black">Let’s try that again</p>
+                <p className="mt-0.5 text-slate leading-relaxed">{reviewNote}</p>
+              </div>
+            )}
 
-          <p className="rise mt-4 text-[13px] leading-relaxed text-slate">
-            A quick 15-minute conversation about your trade with our technical ops team. Choose your preferred method below:
-          </p>
+            {/* Main Option: Schedule Call with Chained Dropdowns */}
+            <div className="rounded-2xl border border-pitch-black/[0.08] bg-white p-3.5 shadow-xs">
+              <div className="flex items-center gap-2 mb-2.5">
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-gold/15 text-gold">
+                  <PhoneCall className="h-3.5 w-3.5" />
+                </span>
+                <div>
+                  <p className="text-xs font-bold text-pitch-black">Assessment Call</p>
+                  <p className="text-[10px] text-slate">Choose your day, window & time (Lagos WAT)</p>
+                </div>
+              </div>
 
-          <div className="rise rise-1 mt-5 space-y-4">
-            {/* Option 1: Assessment Call with Time Slots */}
-            <div className="rounded-[20px] border border-pitch-black/[0.08] bg-white p-5 shadow-xs transition-all">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gold/15 text-gold">
-                    <PhoneCall className="h-5 w-5" />
-                  </span>
-                  <div>
-                    <p className="text-[15px] font-bold text-pitch-black">Request assessment call</p>
-                    <p className="mt-1 text-[13px] leading-relaxed text-slate">
-                      Set a time you’re available for a 15-minute phone call.
-                    </p>
+              {/* Chained Dropdowns */}
+              <div className="space-y-2">
+                {/* 1. Day Selector */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate mb-1">
+                    1. Select Available Day
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={selectedDateStr}
+                      onChange={(e) => {
+                        setSelectedDateStr(e.target.value);
+                        setSlotError(null);
+                      }}
+                      className="w-full appearance-none rounded-xl border border-pitch-black/15 bg-bone/40 px-3 py-1.5 text-xs font-semibold text-pitch-black outline-none transition-colors focus:border-gold"
+                    >
+                      {availableDays.map((d) => (
+                        <option key={d.dateStr} value={d.dateStr}>
+                          {d.label} ({d.date.toLocaleDateString('en-NG', { month: 'short', day: 'numeric' })})
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate" />
                   </div>
                 </div>
 
-                {activeMethod !== 'CALL' && (
-                  <button
-                    onClick={() => setActiveMethod('CALL')}
-                    className="shrink-0 rounded-pill bg-gold px-4 py-2 text-xs font-bold text-pitch-black hover:bg-gold-light active:scale-95 transition-all"
-                  >
-                    Set time
-                  </button>
-                )}
-              </div>
-
-              {/* Step 2: Time Selection Interface */}
-              {activeMethod === 'CALL' && (
-                <div className="mt-5 border-t border-pitch-black/[0.06] pt-5 animate-in fade-in duration-300">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate">1. Choose Day</span>
-                    <span className="text-[11px] font-semibold text-[#8a5a08] bg-gold/15 px-2.5 py-0.5 rounded-full">
-                      Lagos time (WAT)
-                    </span>
+                {/* 2. Window Selector */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate mb-1">
+                    2. Select Time Window
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={selectedWindow}
+                      onChange={(e) => {
+                        const win = e.target.value as 'afternoon' | 'evening' | '';
+                        setSelectedWindow(win);
+                        setSlotError(null);
+                      }}
+                      className="w-full appearance-none rounded-xl border border-pitch-black/15 bg-bone/40 px-3 py-1.5 text-xs font-semibold text-pitch-black outline-none transition-colors focus:border-gold"
+                    >
+                      <option value="">-- Choose window (Afternoon / Evening) --</option>
+                      <option value="afternoon">Afternoon (2:00 PM – 3:00 PM)</option>
+                      <option value="evening">Evening (5:30 PM – 9:00 PM)</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate" />
                   </div>
+                </div>
 
-                  {/* Day Picker Chips */}
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-5">
-                    {availableDays.map((d) => {
-                      const isSelected = selectedDateStr === d.dateStr;
-                      return (
-                        <button
-                          key={d.dateStr}
-                          type="button"
-                          onClick={() => {
-                            setSelectedDateStr(d.dateStr);
+                {/* 3. Time Slot Selector (Appears once window is selected) */}
+                {selectedWindow && (
+                  <div className="animate-in fade-in slide-in-from-top-1 duration-150">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate mb-1 flex items-center justify-between">
+                      <span>3. Pick Specific Call Time</span>
+                      <span className="text-[9px] font-normal text-slate lowercase">15 min duration</span>
+                    </label>
+                    {validSlots.length > 0 ? (
+                      <div className="relative">
+                        <select
+                          value={selectedTimeSlot}
+                          onChange={(e) => {
+                            setSelectedTimeSlot(e.target.value);
                             setSlotError(null);
                           }}
-                          className={cn(
-                            'flex flex-col items-center justify-center p-2.5 rounded-xl border text-xs font-bold transition-all',
-                            isSelected
-                              ? 'border-gold bg-gold text-pitch-black shadow-xs'
-                              : 'border-pitch-black/10 bg-bone hover:border-gold/50 text-slate hover:text-pitch-black',
-                          )}
+                          className="w-full appearance-none rounded-xl border border-pitch-black/15 bg-bone/40 px-3 py-1.5 text-xs font-semibold text-pitch-black outline-none transition-colors focus:border-gold"
                         >
-                          <span>{d.label}</span>
-                          <span className="text-[10px] font-normal opacity-80 mt-0.5">
-                            {d.date.toLocaleDateString('en-NG', { month: 'short', day: 'numeric' })}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate">
-                      2. Select Available Window (2-3pm or 5:30-9pm)
-                    </span>
-                  </div>
-
-                  {/* Windows & Specific Slots */}
-                  <div className="space-y-3 mb-5">
-                    {TIME_WINDOWS.map((window) => {
-                      const Icon = window.icon;
-                      return (
-                        <div
-                          key={window.id}
-                          className="rounded-xl border border-pitch-black/[0.07] bg-bone/70 p-3.5"
-                        >
-                          <div className="flex items-center gap-2 mb-2.5">
-                            <Icon className="h-4 w-4 text-gold" />
-                            <span className="text-xs font-bold text-pitch-black">{window.title}</span>
-                            <span className="text-[11px] font-medium text-slate">({window.range})</span>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            {window.slots.map((slot) => {
-                              const isSelected = selectedTimeSlot === slot.value;
-                              return (
-                                <button
-                                  key={slot.value}
-                                  type="button"
-                                  onClick={() => {
-                                    setSelectedTimeSlot(slot.value);
-                                    setSlotError(null);
-                                  }}
-                                  className={cn(
-                                    'px-3.5 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-1.5',
-                                    isSelected
-                                      ? 'border-pitch-black bg-pitch-black text-white shadow-xs'
-                                      : 'border-pitch-black/10 bg-white text-pitch-black hover:border-gold',
-                                  )}
-                                >
-                                  {isSelected && <Check className="h-3 w-3 text-gold" />}
-                                  {slot.label}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Summary & Submit Call Slot */}
-                  {selectedDateStr && selectedTimeSlot && (
-                    <div className="rounded-xl bg-gold/10 border border-gold/30 p-3 mb-4 flex items-center justify-between">
-                      <div className="text-xs">
-                        <span className="text-slate font-medium">Selected Availability:</span>{' '}
-                        <span className="font-bold text-pitch-black">
-                          {availableDays.find((d) => d.dateStr === selectedDateStr)?.label ?? selectedDateStr} at{' '}
-                          {TIME_WINDOWS.flatMap((w) => w.slots).find((s) => s.value === selectedTimeSlot)?.label} (WAT)
-                        </span>
+                          {validSlots.map((slot) => (
+                            <option key={slot.value} value={slot.value}>
+                              {slot.label} (WAT)
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate" />
                       </div>
-                    </div>
-                  )}
-
-                  {slotError && (
-                    <p className="mb-3 text-xs font-semibold text-red-600">{slotError}</p>
-                  )}
-
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={handleConfirmCallSlot}
-                      disabled={busy !== null}
-                      className="inline-flex items-center justify-center gap-2 rounded-pill bg-gold px-6 py-2.5 text-xs font-bold text-pitch-black hover:bg-gold-light active:scale-98 transition-all disabled:opacity-50"
-                    >
-                      {busy === 'CALL' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-                      Confirm availability & request call
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveMethod(null)}
-                      className="text-xs font-bold text-slate hover:text-pitch-black"
-                    >
-                      Cancel
-                    </button>
+                    ) : (
+                      <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-2 text-[11px] text-amber-900">
+                        No remaining slots today for this window. Please pick tomorrow or choose another window.
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
-            </div>
+                )}
 
-            {/* Option 2: Record Voice Note on WhatsApp */}
-            <div
-              className={cn(
-                'rounded-[20px] border border-pitch-black/[0.08] bg-white p-5 shadow-xs transition-all',
-                !WHATSAPP_NUMBER && 'opacity-70',
-              )}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-pitch-black/[0.05] text-slate">
-                    <Mic className="h-5 w-5" />
-                  </span>
-                  <div>
-                    <p className="text-[15px] font-bold text-pitch-black">Record answers on WhatsApp</p>
-                    <p className="mt-1 text-[13px] leading-relaxed text-slate">
-                      {WHATSAPP_NUMBER
-                        ? 'Answer our trade questions via WhatsApp voice note at your convenience.'
-                        : 'Opens on WhatsApp — number switching on shortly.'}
-                    </p>
-                  </div>
-                </div>
+                {slotError && <p className="text-[10px] font-semibold text-red-600">{slotError}</p>}
 
                 <button
-                  onClick={() =>
-                    choose('VOICE_NOTE', undefined, () =>
-                      window.open(waHref, '_blank', 'noopener,noreferrer'),
-                    )
-                  }
-                  disabled={!WHATSAPP_NUMBER || busy !== null}
-                  className="shrink-0 rounded-pill bg-pitch-black px-4 py-2 text-xs font-bold text-white hover:bg-petrol active:scale-95 transition-all disabled:opacity-50"
+                  onClick={handleConfirmCallSlot}
+                  disabled={busy !== null || !selectedWindow || !selectedTimeSlot}
+                  className="mt-1 w-full inline-flex items-center justify-center gap-1.5 rounded-pill bg-gold py-2 text-xs font-bold text-pitch-black hover:bg-gold-light active:scale-98 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  {busy === 'VOICE_NOTE' ? (
+                  {busy === 'CALL' ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   ) : (
-                    'Open WhatsApp'
+                    <Check className="h-3.5 w-3.5" />
                   )}
+                  Confirm & Request Call
                 </button>
               </div>
             </div>
-          </div>
 
-          {resubmitting && (
-            <div className="mt-4 flex justify-center">
+            {/* Secondary Option: Voice Note (Ultra-compact strip) */}
+            <div
+              className={cn(
+                'rounded-2xl border border-pitch-black/[0.08] bg-white px-3 py-2.5 shadow-xs flex items-center justify-between gap-2.5',
+                !WHATSAPP_NUMBER && 'opacity-70',
+              )}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-pitch-black/[0.05] text-slate">
+                  <Mic className="h-3.5 w-3.5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-pitch-black truncate">Voice Note Option</p>
+                  <p className="text-[10px] text-slate truncate">Answer questions on WhatsApp</p>
+                </div>
+              </div>
+
               <button
-                onClick={() => {
-                  setResubmitting(false);
-                  setActiveMethod(null);
-                }}
-                className="text-xs font-semibold text-slate hover:text-pitch-black underline"
+                onClick={() =>
+                  choose('VOICE_NOTE', undefined, () =>
+                    window.open(waHref, '_blank', 'noopener,noreferrer'),
+                  )
+                }
+                disabled={!WHATSAPP_NUMBER || busy !== null}
+                className="shrink-0 rounded-pill bg-pitch-black px-3 py-1 text-[11px] font-bold text-white hover:bg-petrol active:scale-95 transition-all disabled:opacity-40"
               >
-                Cancel and keep existing request
+                {busy === 'VOICE_NOTE' ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  'WhatsApp'
+                )}
               </button>
             </div>
-          )}
 
-          {error && (
-            <div className="mt-4 rounded-xl bg-red-50 border border-red-200 p-3.5 text-[13px] font-medium text-red-700" role="alert">
-              {error}
-            </div>
-          )}
-        </>
-      )}
+            {resubmitting && (
+              <div className="pt-0.5 flex justify-center">
+                <button
+                  onClick={() => setResubmitting(false)}
+                  className="text-[10px] font-semibold text-slate hover:text-pitch-black underline"
+                >
+                  Cancel and keep existing request
+                </button>
+              </div>
+            )}
+
+            {error && (
+              <div className="rounded-xl bg-red-50 border border-red-200 p-2 text-xs font-medium text-red-700" role="alert">
+                {error}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </Shell>
   );
 }
+
