@@ -2,15 +2,17 @@
 // Verification Hub item: Skills assessment.
 //
 // Artisans choose between:
-//   1. Request an assessment call: select available day and window (2-3pm or 5:30-9pm) via dropdowns.
-//      The specific time slot dropdown dynamically reveals upon selecting a window.
+//   1. Request an assessment call: Custom chained selectors pulling a live 7-day schedule from the backend.
+//      - Step 1: Available Day selector (synced with backend clock)
+//      - Step 2: Time Window selector (Afternoon 2-3pm or Evening 5:30-9pm)
+//      - Step 3: Specific Call Time selector (revealed dynamically once window is picked)
 //   2. Send a WhatsApp voice note.
 //
-// Compact modern design styled to fit within 80-100vh.
+// Compact modern design styled to fit within 80-100vh with custom animated selectors.
 
 'use client';
 
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, useMemo } from 'react';
 import {
   Calendar,
   Check,
@@ -33,38 +35,42 @@ import type { ItemState } from '@/src/app/app/_lib/verificationHub';
 
 const HUB = '/app/plug/verification';
 const START_URL = '/api/plug/verification/skills';
+const SCHEDULE_URL = '/api/plug/verification/skills/schedule';
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_SKILLS_WHATSAPP ?? '';
 
 const VOICE_NOTE_PROMPT =
   'Hi — I’d like to do my Plugr skills assessment by voice note. Please send me the questions.';
 
-// Defined call availability windows (every day)
-const TIME_WINDOWS = [
-  {
-    id: 'afternoon' as const,
-    label: 'Afternoon (2:00 PM – 3:00 PM)',
-    shortLabel: '2:00 PM – 3:00 PM',
-    slots: [
-      { label: '2:00 PM', value: '14:00' },
-      { label: '2:30 PM', value: '14:30' },
-    ],
-  },
-  {
-    id: 'evening' as const,
-    label: 'Evening (5:30 PM – 9:00 PM)',
-    shortLabel: '5:30 PM – 9:00 PM',
-    slots: [
-      { label: '5:30 PM', value: '17:30' },
-      { label: '6:00 PM', value: '18:00' },
-      { label: '6:30 PM', value: '18:30' },
-      { label: '7:00 PM', value: '19:00' },
-      { label: '7:30 PM', value: '19:30' },
-      { label: '8:00 PM', value: '20:00' },
-      { label: '8:30 PM', value: '20:30' },
-    ],
-  },
-];
+// Types for backend schedule payload
+export type ScheduleSlot = {
+  label: string;
+  value: string;
+  isoUtc: string;
+  available: boolean;
+};
+
+export type ScheduleWindow = {
+  id: 'afternoon' | 'evening';
+  label: string;
+  shortLabel: string;
+  slots: ScheduleSlot[];
+  hasAvailableSlots: boolean;
+};
+
+export type ScheduleDay = {
+  dateStr: string;
+  label: string;
+  formattedFull: string;
+  hasAnySlots: boolean;
+  windows: ScheduleWindow[];
+};
+
+export type ScheduleResponse = {
+  serverTime: string;
+  timezone: string;
+  days: ScheduleDay[];
+};
 
 /** Formats an ISO UTC timestamp into Lagos time (WAT / UTC+1). */
 function formatLagosTime(isoString: string | null | undefined): string {
@@ -88,19 +94,188 @@ function formatLagosTime(isoString: string | null | undefined): string {
   }
 }
 
-/** Formats a Date to YYYY-MM-DD in Lagos time */
-function toLagosDateString(d: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
 /** Converts a Lagos date ('YYYY-MM-DD') and slot ('HH:mm') into a UTC ISO string. */
 function lagosSlotToUtcIso(dateStr: string, timeStr: string): string {
   const [year, month, day] = dateStr.split('-').map(Number);
   const [hour, minute] = timeStr.split(':').map(Number);
-  // Lagos is UTC+1 (WAT) all year round, so UTC hour = Lagos hour - 1
+  // Lagos is UTC+1 (WAT) all year round: UTC hour = Lagos hour - 1
   const utcDate = new Date(Date.UTC(year, month - 1, day, hour - 1, minute, 0, 0));
   return utcDate.toISOString();
+}
+
+/** Custom Dropdown Option */
+export type CustomSelectOption = {
+  value: string;
+  label: string;
+  sublabel?: string;
+  badge?: string;
+  disabled?: boolean;
+};
+
+/**
+ * Custom modern selector replacing native select
+ */
+function CustomSelect({
+  label,
+  icon: Icon,
+  value,
+  placeholder,
+  options,
+  onChange,
+  disabled = false,
+  badge,
+}: {
+  label: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  value: string;
+  placeholder: string;
+  options: CustomSelectOption[];
+  onChange: (val: string) => void;
+  disabled?: boolean;
+  badge?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const menuId = useId();
+
+  const selectedOption = options.find((o) => o.value === value) ?? null;
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false);
+    }
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className="relative">
+      <div className="flex items-center justify-between mb-1">
+        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate">
+          {label}
+        </label>
+        {badge && <span className="text-[9px] font-medium text-slate">{badge}</span>}
+      </div>
+
+      {/* Trigger Button */}
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={menuId}
+        className={cn(
+          'group relative flex w-full items-center justify-between gap-2 rounded-xl border bg-bone/40 px-3 py-2 text-left text-xs font-semibold transition-all',
+          open
+            ? 'border-gold bg-white ring-3 ring-gold/15 shadow-xs'
+            : 'border-pitch-black/15 hover:border-pitch-black/30 hover:bg-white',
+          disabled && 'opacity-50 cursor-not-allowed hover:bg-bone/40 hover:border-pitch-black/15',
+        )}
+      >
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          {Icon && (
+            <Icon
+              className={cn(
+                'h-3.5 w-3.5 shrink-0 transition-colors',
+                open || selectedOption ? 'text-gold' : 'text-slate',
+              )}
+            />
+          )}
+          {selectedOption ? (
+            <div className="min-w-0 flex-1 truncate">
+              <span className="text-pitch-black">{selectedOption.label}</span>
+              {selectedOption.sublabel && (
+                <span className="ml-1.5 text-[10px] font-normal text-slate">
+                  {selectedOption.sublabel}
+                </span>
+              )}
+            </div>
+          ) : (
+            <span className="text-slate/70 font-normal truncate">{placeholder}</span>
+          )}
+        </div>
+
+        <ChevronDown
+          className={cn(
+            'h-3.5 w-3.5 shrink-0 text-slate transition-transform duration-200',
+            open && 'rotate-180 text-pitch-black',
+          )}
+        />
+      </button>
+
+      {/* Dropdown Menu */}
+      {open && !disabled && (
+        <div
+          id={menuId}
+          role="listbox"
+          className="absolute left-0 right-0 top-full z-40 mt-1 max-h-52 overflow-y-auto rounded-xl border border-pitch-black/10 bg-white p-1 shadow-lg backdrop-blur-md animate-in fade-in zoom-in-95 duration-150"
+        >
+          {options.length === 0 ? (
+            <div className="px-3 py-2.5 text-center text-xs text-slate">No options available</div>
+          ) : (
+            options.map((opt) => {
+              const isSelected = opt.value === value;
+              const isOptDisabled = !!opt.disabled;
+
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
+                  disabled={isOptDisabled}
+                  onClick={() => {
+                    if (!isOptDisabled) {
+                      onChange(opt.value);
+                      setOpen(false);
+                    }
+                  }}
+                  className={cn(
+                    'flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors',
+                    isSelected
+                      ? 'bg-gold/15 text-pitch-black font-bold'
+                      : isOptDisabled
+                        ? 'opacity-40 cursor-not-allowed text-slate'
+                        : 'text-pitch-black hover:bg-gold/10 active:bg-gold/20 font-medium',
+                  )}
+                >
+                  <div className="min-w-0 flex-1 truncate">
+                    <span className={cn(isSelected && 'font-bold')}>{opt.label}</span>
+                    {opt.sublabel && (
+                      <span className="ml-1.5 text-[10px] font-normal text-slate">
+                        {opt.sublabel}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {opt.badge && (
+                      <span className="rounded-full bg-pitch-black/5 px-1.5 py-0.5 text-[9px] font-semibold text-slate">
+                        {opt.badge}
+                      </span>
+                    )}
+                    {isSelected && <Check className="h-3.5 w-3.5 text-gold" />}
+                  </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function SkillsAssessmentScreen() {
@@ -113,70 +288,39 @@ export function SkillsAssessmentScreen() {
   const [error, setError] = useState<string | null>(null);
   const [resubmitting, setResubmitting] = useState(false);
 
-  // Dropdown schedule states
+  // Backend Live 1-Week Schedule State
+  const [schedule, setSchedule] = useState<ScheduleResponse | null>(null);
+  const [loadingSchedule, setLoadingSchedule] = useState<boolean>(true);
+
+  // Custom Selector States
   const [selectedDateStr, setSelectedDateStr] = useState<string>('');
   const [selectedWindow, setSelectedWindow] = useState<'afternoon' | 'evening' | ''>('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   const [slotError, setSlotError] = useState<string | null>(null);
 
-  // Generate next 7 days in Lagos
-  const availableDays = useMemo(() => {
-    const days = [];
-    const now = new Date();
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(now);
-      d.setDate(d.getDate() + i);
-      const dateStr = toLagosDateString(d);
-      let label = '';
-      if (i === 0) label = 'Today';
-      else if (i === 1) label = 'Tomorrow';
-      else {
-        label = d.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' });
+  // 1. Fetch live 1-week schedule from backend
+  const loadSchedule = useCallback(async () => {
+    try {
+      setLoadingSchedule(true);
+      const res = await fetch(SCHEDULE_URL, { cache: 'no-store' });
+      if (res.ok) {
+        const data: ScheduleResponse = await res.json();
+        setSchedule(data);
+
+        // Pick initial valid day: today if it has available slots, otherwise tomorrow
+        if (data.days && data.days.length > 0) {
+          const firstAvailableDay = data.days.find((d) => d.hasAnySlots) || data.days[0];
+          setSelectedDateStr(firstAvailableDay.dateStr);
+        }
       }
-      days.push({ dateStr, label, date: d });
+    } catch (e) {
+      console.error('Failed to load schedule from backend', e);
+    } finally {
+      setLoadingSchedule(false);
     }
-    return days;
   }, []);
 
-  // Initialize selected date
-  useEffect(() => {
-    if (availableDays.length > 0 && !selectedDateStr) {
-      // Default to today or tomorrow
-      setSelectedDateStr(availableDays[0].dateStr);
-    }
-  }, [availableDays, selectedDateStr]);
-
-  // Compute valid slots for current selection
-  const validSlots = useMemo(() => {
-    if (!selectedWindow) return [];
-    const win = TIME_WINDOWS.find((w) => w.id === selectedWindow);
-    if (!win) return [];
-
-    const now = new Date();
-    const todayLagosStr = toLagosDateString(now);
-
-    if (selectedDateStr === todayLagosStr) {
-      return win.slots.filter((slot) => {
-        const iso = lagosSlotToUtcIso(selectedDateStr, slot.value);
-        const slotTime = new Date(iso).getTime();
-        return slotTime - now.getTime() >= 45 * 60 * 1000; // at least 45 mins buffer
-      });
-    }
-
-    return win.slots;
-  }, [selectedWindow, selectedDateStr]);
-
-  // Auto-sync selected time slot whenever valid slots change
-  useEffect(() => {
-    if (selectedWindow && validSlots.length > 0) {
-      if (!selectedTimeSlot || !validSlots.some((s) => s.value === selectedTimeSlot)) {
-        setSelectedTimeSlot(validSlots[0].value);
-      }
-    } else if (validSlots.length === 0) {
-      setSelectedTimeSlot('');
-    }
-  }, [selectedWindow, validSlots, selectedTimeSlot]);
-
+  // 2. Load verification snapshot
   const load = useCallback(async () => {
     const snap = await loadVerificationSnapshot(getPlugId() ?? '');
     setState(snap.items?.skills.state ?? 'not_started');
@@ -188,9 +332,72 @@ export function SkillsAssessmentScreen() {
 
   useEffect(() => {
     load();
-  }, [load]);
+    loadSchedule();
+  }, [load, loadSchedule]);
 
-  /** Record choice with selected meeting time. */
+  // Derived options for Custom Day Selector
+  const dayOptions: CustomSelectOption[] = useMemo(() => {
+    if (!schedule?.days) return [];
+    return schedule.days.map((d) => ({
+      value: d.dateStr,
+      label: d.label,
+      sublabel: `(${d.formattedFull})`,
+      badge: d.hasAnySlots ? undefined : 'No slots',
+      disabled: !d.hasAnySlots,
+    }));
+  }, [schedule]);
+
+  // Derived current day from selection
+  const currentDay = useMemo(() => {
+    if (!schedule?.days) return null;
+    return schedule.days.find((d) => d.dateStr === selectedDateStr) ?? null;
+  }, [schedule, selectedDateStr]);
+
+  // Derived options for Custom Window Selector
+  const windowOptions: CustomSelectOption[] = useMemo(() => {
+    if (!currentDay) return [];
+    return currentDay.windows.map((w) => ({
+      value: w.id,
+      label: w.label,
+      badge: w.hasAvailableSlots ? undefined : 'Passed',
+      disabled: !w.hasAvailableSlots,
+    }));
+  }, [currentDay]);
+
+  // Derived current window from selection
+  const currentWindow = useMemo(() => {
+    if (!currentDay || !selectedWindow) return null;
+    return currentDay.windows.find((w) => w.id === selectedWindow) ?? null;
+  }, [currentDay, selectedWindow]);
+
+  // Derived options for Custom Time Slot Selector
+  const slotOptions: CustomSelectOption[] = useMemo(() => {
+    if (!currentWindow) return [];
+    return currentWindow.slots.map((s) => ({
+      value: s.value,
+      label: `${s.label} (WAT)`,
+      badge: s.available ? undefined : 'Passed',
+      disabled: !s.available,
+    }));
+  }, [currentWindow]);
+
+  // Auto-sync selected time slot whenever window or day changes
+  useEffect(() => {
+    if (currentWindow) {
+      const firstAvailableSlot = currentWindow.slots.find((s) => s.available);
+      if (firstAvailableSlot) {
+        if (!selectedTimeSlot || !currentWindow.slots.some((s) => s.value === selectedTimeSlot && s.available)) {
+          setSelectedTimeSlot(firstAvailableSlot.value);
+        }
+      } else {
+        setSelectedTimeSlot('');
+      }
+    } else {
+      setSelectedTimeSlot('');
+    }
+  }, [currentWindow, selectedTimeSlot]);
+
+  /** Record the choice with selected meeting time. */
   async function choose(
     which: 'CALL' | 'VOICE_NOTE',
     options?: { meetingTime?: string },
@@ -215,6 +422,7 @@ export function SkillsAssessmentScreen() {
       handOff();
       setResubmitting(false);
       await load();
+      await loadSchedule();
     } catch (e: any) {
       const rawMsg = e?.message ?? e?.error;
       const msg = Array.isArray(rawMsg)
@@ -261,7 +469,7 @@ export function SkillsAssessmentScreen() {
       back={HUB}
     >
       <div className="mx-auto w-full max-w-sm">
-        {state === null ? (
+        {state === null || loadingSchedule ? (
           <div className="flex justify-center py-10">
             <Loader2 className="h-6 w-6 animate-spin text-gold" aria-label="Loading" />
           </div>
@@ -355,7 +563,7 @@ export function SkillsAssessmentScreen() {
               </div>
             )}
 
-            {/* Main Option: Schedule Call with Chained Dropdowns */}
+            {/* Main Option: Schedule Call with Custom Chained Selectors */}
             <div className="rounded-2xl border border-pitch-black/[0.08] bg-white p-3.5 shadow-xs">
               <div className="flex items-center gap-2 mb-2.5">
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-gold/15 text-gold">
@@ -363,89 +571,53 @@ export function SkillsAssessmentScreen() {
                 </span>
                 <div>
                   <p className="text-xs font-bold text-pitch-black">Assessment Call</p>
-                  <p className="text-[10px] text-slate">Choose your day, window & time (Lagos WAT)</p>
+                  <p className="text-[10px] text-slate">1-week live schedule (Lagos WAT)</p>
                 </div>
               </div>
 
-              {/* Chained Dropdowns */}
+              {/* Custom Chained Selectors Stack */}
               <div className="space-y-2">
-                {/* 1. Day Selector */}
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate mb-1">
-                    1. Select Available Day
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={selectedDateStr}
-                      onChange={(e) => {
-                        setSelectedDateStr(e.target.value);
-                        setSlotError(null);
-                      }}
-                      className="w-full appearance-none rounded-xl border border-pitch-black/15 bg-bone/40 px-3 py-1.5 text-xs font-semibold text-pitch-black outline-none transition-colors focus:border-gold"
-                    >
-                      {availableDays.map((d) => (
-                        <option key={d.dateStr} value={d.dateStr}>
-                          {d.label} ({d.date.toLocaleDateString('en-NG', { month: 'short', day: 'numeric' })})
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate" />
-                  </div>
-                </div>
+                {/* 1. Custom Day Selector (Synced from backend) */}
+                <CustomSelect
+                  label="1. Available Day (1-Week)"
+                  icon={Calendar}
+                  value={selectedDateStr}
+                  placeholder="Select day…"
+                  options={dayOptions}
+                  onChange={(val) => {
+                    setSelectedDateStr(val);
+                    setSlotError(null);
+                  }}
+                />
 
-                {/* 2. Window Selector */}
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate mb-1">
-                    2. Select Time Window
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={selectedWindow}
-                      onChange={(e) => {
-                        const win = e.target.value as 'afternoon' | 'evening' | '';
-                        setSelectedWindow(win);
-                        setSlotError(null);
-                      }}
-                      className="w-full appearance-none rounded-xl border border-pitch-black/15 bg-bone/40 px-3 py-1.5 text-xs font-semibold text-pitch-black outline-none transition-colors focus:border-gold"
-                    >
-                      <option value="">-- Choose window (Afternoon / Evening) --</option>
-                      <option value="afternoon">Afternoon (2:00 PM – 3:00 PM)</option>
-                      <option value="evening">Evening (5:30 PM – 9:00 PM)</option>
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate" />
-                  </div>
-                </div>
+                {/* 2. Custom Window Selector */}
+                <CustomSelect
+                  label="2. Time Window"
+                  icon={Clock}
+                  value={selectedWindow}
+                  placeholder="Choose window (Afternoon / Evening)…"
+                  options={windowOptions}
+                  onChange={(val) => {
+                    setSelectedWindow(val as 'afternoon' | 'evening' | '');
+                    setSlotError(null);
+                  }}
+                />
 
-                {/* 3. Time Slot Selector (Appears once window is selected) */}
+                {/* 3. Custom Call Time Selector (Revealed dynamically) */}
                 {selectedWindow && (
                   <div className="animate-in fade-in slide-in-from-top-1 duration-150">
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate mb-1 flex items-center justify-between">
-                      <span>3. Pick Specific Call Time</span>
-                      <span className="text-[9px] font-normal text-slate lowercase">15 min duration</span>
-                    </label>
-                    {validSlots.length > 0 ? (
-                      <div className="relative">
-                        <select
-                          value={selectedTimeSlot}
-                          onChange={(e) => {
-                            setSelectedTimeSlot(e.target.value);
-                            setSlotError(null);
-                          }}
-                          className="w-full appearance-none rounded-xl border border-pitch-black/15 bg-bone/40 px-3 py-1.5 text-xs font-semibold text-pitch-black outline-none transition-colors focus:border-gold"
-                        >
-                          {validSlots.map((slot) => (
-                            <option key={slot.value} value={slot.value}>
-                              {slot.label} (WAT)
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate" />
-                      </div>
-                    ) : (
-                      <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-2 text-[11px] text-amber-900">
-                        No remaining slots today for this window. Please pick tomorrow or choose another window.
-                      </div>
-                    )}
+                    <CustomSelect
+                      label="3. Call Time Slot"
+                      badge="15 min duration"
+                      icon={Sparkles}
+                      value={selectedTimeSlot}
+                      placeholder="Pick specific call time…"
+                      options={slotOptions}
+                      onChange={(val) => {
+                        setSelectedTimeSlot(val);
+                        setSlotError(null);
+                      }}
+                    />
                   </div>
                 )}
 
@@ -522,4 +694,3 @@ export function SkillsAssessmentScreen() {
     </Shell>
   );
 }
-
