@@ -2,17 +2,17 @@
 // Verification Hub item: Skills assessment.
 //
 // Artisans choose between:
-//   1. Request an assessment call: Custom chained selectors pulling a live 7-day schedule from the backend.
-//      - Step 1: Available Day selector (synced with backend clock)
-//      - Step 2: Time Window selector (Afternoon 2-3pm or Evening 5:30-9pm)
-//      - Step 3: Specific Call Time selector (revealed dynamically once window is picked)
+//   1. Request an assessment call: Custom chained selectors with real-time 1-week Lagos schedule:
+//      - Step 1: Available Day selector (dynamically generated 7-day rolling week in Lagos Time)
+//      - Step 2: Time Window selector (Afternoon 2:00 PM – 3:00 PM or Evening 5:30 PM – 9:00 PM Lagos Time)
+//      - Step 3: Specific Call Time selector (revealed dynamically once window is chosen)
 //   2. Send a WhatsApp voice note.
 //
-// Compact modern design styled to fit within 80-100vh with custom animated selectors.
+// Compact modern design styled to fit within 80-100vh with custom animated selectors and pure Lagos time display.
 
 'use client';
 
-import { useCallback, useEffect, useId, useRef, useState, useMemo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   Calendar,
   Check,
@@ -35,42 +35,38 @@ import type { ItemState } from '@/src/app/app/_lib/verificationHub';
 
 const HUB = '/app/plug/verification';
 const START_URL = '/api/plug/verification/skills';
-const SCHEDULE_URL = '/api/plug/verification/skills/schedule';
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_SKILLS_WHATSAPP ?? '';
 
 const VOICE_NOTE_PROMPT =
   'Hi — I’d like to do my Plugr skills assessment by voice note. Please send me the questions.';
 
-// Types for backend schedule payload
-export type ScheduleSlot = {
-  label: string;
-  value: string;
-  isoUtc: string;
-  available: boolean;
-};
-
-export type ScheduleWindow = {
-  id: 'afternoon' | 'evening';
-  label: string;
-  shortLabel: string;
-  slots: ScheduleSlot[];
-  hasAvailableSlots: boolean;
-};
-
-export type ScheduleDay = {
-  dateStr: string;
-  label: string;
-  formattedFull: string;
-  hasAnySlots: boolean;
-  windows: ScheduleWindow[];
-};
-
-export type ScheduleResponse = {
-  serverTime: string;
-  timezone: string;
-  days: ScheduleDay[];
-};
+// Defined call availability windows in Lagos time (WAT)
+const TIME_WINDOWS_CONFIG = [
+  {
+    id: 'afternoon' as const,
+    label: 'Afternoon (2:00 PM – 3:00 PM Lagos Time)',
+    shortLabel: '2:00 PM – 3:00 PM',
+    slots: [
+      { label: '2:00 PM (Lagos Time)', value: '14:00' },
+      { label: '2:30 PM (Lagos Time)', value: '14:30' },
+    ],
+  },
+  {
+    id: 'evening' as const,
+    label: 'Evening (5:30 PM – 9:00 PM Lagos Time)',
+    shortLabel: '5:30 PM – 9:00 PM',
+    slots: [
+      { label: '5:30 PM (Lagos Time)', value: '17:30' },
+      { label: '6:00 PM (Lagos Time)', value: '18:00' },
+      { label: '6:30 PM (Lagos Time)', value: '18:30' },
+      { label: '7:00 PM (Lagos Time)', value: '19:00' },
+      { label: '7:30 PM (Lagos Time)', value: '19:30' },
+      { label: '8:00 PM (Lagos Time)', value: '20:00' },
+      { label: '8:30 PM (Lagos Time)', value: '20:30' },
+    ],
+  },
+];
 
 /** Formats an ISO UTC timestamp into Lagos time (WAT / UTC+1). */
 function formatLagosTime(isoString: string | null | undefined): string {
@@ -88,9 +84,9 @@ function formatLagosTime(isoString: string | null | undefined): string {
       minute: '2-digit',
       hour12: true,
     }).format(date);
-    return `${formatted} (WAT)`;
+    return `${formatted} (Lagos Time)`;
   } catch {
-    return `${date.toLocaleString('en-NG')} (WAT)`;
+    return `${date.toLocaleString('en-NG')} (Lagos Time)`;
   }
 }
 
@@ -101,6 +97,21 @@ function lagosSlotToUtcIso(dateStr: string, timeStr: string): string {
   // Lagos is UTC+1 (WAT) all year round: UTC hour = Lagos hour - 1
   const utcDate = new Date(Date.UTC(year, month - 1, day, hour - 1, minute, 0, 0));
   return utcDate.toISOString();
+}
+
+/** Formats a Date into YYYY-MM-DD in Lagos time. */
+function getLagosDateStr(date: Date): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Africa/Lagos',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(date);
+  } catch {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  }
 }
 
 /** Custom Dropdown Option */
@@ -215,7 +226,7 @@ function CustomSelect({
         />
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Dropdown Menu Panel */}
       {open && !disabled && (
         <div
           id={menuId}
@@ -288,39 +299,90 @@ export function SkillsAssessmentScreen() {
   const [error, setError] = useState<string | null>(null);
   const [resubmitting, setResubmitting] = useState(false);
 
-  // Backend Live 1-Week Schedule State
-  const [schedule, setSchedule] = useState<ScheduleResponse | null>(null);
-  const [loadingSchedule, setLoadingSchedule] = useState<boolean>(true);
-
   // Custom Selector States
   const [selectedDateStr, setSelectedDateStr] = useState<string>('');
   const [selectedWindow, setSelectedWindow] = useState<'afternoon' | 'evening' | ''>('');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   const [slotError, setSlotError] = useState<string | null>(null);
 
-  // 1. Fetch live 1-week schedule from backend
-  const loadSchedule = useCallback(async () => {
-    try {
-      setLoadingSchedule(true);
-      const res = await fetch(SCHEDULE_URL, { cache: 'no-store' });
-      if (res.ok) {
-        const data: ScheduleResponse = await res.json();
-        setSchedule(data);
+  // Real-time 1-Week Schedule in Lagos Time (Generated directly in React)
+  const scheduleDays = useMemo(() => {
+    const days = [];
+    const now = new Date();
+    const todayLagosStr = getLagosDateStr(now);
 
-        // Pick initial valid day: today if it has available slots, otherwise tomorrow
-        if (data.days && data.days.length > 0) {
-          const firstAvailableDay = data.days.find((d) => d.hasAnySlots) || data.days[0];
-          setSelectedDateStr(firstAvailableDay.dateStr);
-        }
+    for (let i = 0; i < 7; i++) {
+      const targetDate = new Date(now.getTime() + i * 24 * 60 * 60 * 1000);
+      const dateStr = getLagosDateStr(targetDate);
+
+      let label = '';
+      if (i === 0) label = 'Today';
+      else if (i === 1) label = 'Tomorrow';
+      else {
+        label = new Intl.DateTimeFormat('en-NG', {
+          timeZone: 'Africa/Lagos',
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+        }).format(targetDate);
       }
-    } catch (e) {
-      console.error('Failed to load schedule from backend', e);
-    } finally {
-      setLoadingSchedule(false);
+
+      const formattedFull = new Intl.DateTimeFormat('en-NG', {
+        timeZone: 'Africa/Lagos',
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+      }).format(targetDate);
+
+      const windows = TIME_WINDOWS_CONFIG.map((win) => {
+        const slots = win.slots.map((slot) => {
+          const isoUtc = lagosSlotToUtcIso(dateStr, slot.value);
+          const slotTimestamp = new Date(isoUtc).getTime();
+          // At least 45 minutes in the future from current time
+          const available = slotTimestamp - now.getTime() >= 45 * 60 * 1000;
+          return {
+            label: slot.label,
+            value: slot.value,
+            isoUtc,
+            available,
+          };
+        });
+
+        const hasAvailableSlots = slots.some((s) => s.available);
+
+        return {
+          id: win.id,
+          label: win.label,
+          shortLabel: win.shortLabel,
+          slots,
+          hasAvailableSlots,
+        };
+      });
+
+      const hasAnySlots = windows.some((w) => w.hasAvailableSlots);
+
+      days.push({
+        dateStr,
+        label,
+        formattedFull,
+        isToday: dateStr === todayLagosStr,
+        hasAnySlots,
+        windows,
+      });
     }
+
+    return days;
   }, []);
 
-  // 2. Load verification snapshot
+  // Initialize selected date to today (if slots available) or tomorrow
+  useEffect(() => {
+    if (scheduleDays.length > 0 && !selectedDateStr) {
+      const firstAvailableDay = scheduleDays.find((d) => d.hasAnySlots) || scheduleDays[0];
+      setSelectedDateStr(firstAvailableDay.dateStr);
+    }
+  }, [scheduleDays, selectedDateStr]);
+
+  // Load verification snapshot
   const load = useCallback(async () => {
     const snap = await loadVerificationSnapshot(getPlugId() ?? '');
     setState(snap.items?.skills.state ?? 'not_started');
@@ -332,50 +394,47 @@ export function SkillsAssessmentScreen() {
 
   useEffect(() => {
     load();
-    loadSchedule();
-  }, [load, loadSchedule]);
+  }, [load]);
 
-  // Derived options for Custom Day Selector
+  // Day Options for Custom Day Selector
   const dayOptions: CustomSelectOption[] = useMemo(() => {
-    if (!schedule?.days) return [];
-    return schedule.days.map((d) => ({
+    return scheduleDays.map((d) => ({
       value: d.dateStr,
       label: d.label,
       sublabel: `(${d.formattedFull})`,
       badge: d.hasAnySlots ? undefined : 'No slots',
       disabled: !d.hasAnySlots,
     }));
-  }, [schedule]);
+  }, [scheduleDays]);
 
-  // Derived current day from selection
+  // Currently selected day
   const currentDay = useMemo(() => {
-    if (!schedule?.days) return null;
-    return schedule.days.find((d) => d.dateStr === selectedDateStr) ?? null;
-  }, [schedule, selectedDateStr]);
+    return scheduleDays.find((d) => d.dateStr === selectedDateStr) ?? null;
+  }, [scheduleDays, selectedDateStr]);
 
-  // Derived options for Custom Window Selector
+  // Window Options for Custom Window Selector
   const windowOptions: CustomSelectOption[] = useMemo(() => {
     if (!currentDay) return [];
     return currentDay.windows.map((w) => ({
       value: w.id,
       label: w.label,
-      badge: w.hasAvailableSlots ? undefined : 'Passed',
+      badge: w.hasAvailableSlots ? undefined : 'Passed for today',
       disabled: !w.hasAvailableSlots,
     }));
   }, [currentDay]);
 
-  // Derived current window from selection
+  // Currently selected window
   const currentWindow = useMemo(() => {
     if (!currentDay || !selectedWindow) return null;
     return currentDay.windows.find((w) => w.id === selectedWindow) ?? null;
   }, [currentDay, selectedWindow]);
 
-  // Derived options for Custom Time Slot Selector
+  // Time Slot Options for Custom Time Slot Selector
   const slotOptions: CustomSelectOption[] = useMemo(() => {
     if (!currentWindow) return [];
     return currentWindow.slots.map((s) => ({
       value: s.value,
-      label: `${s.label} (WAT)`,
+      label: s.label,
       badge: s.available ? undefined : 'Passed',
       disabled: !s.available,
     }));
@@ -422,7 +481,6 @@ export function SkillsAssessmentScreen() {
       handOff();
       setResubmitting(false);
       await load();
-      await loadSchedule();
     } catch (e: any) {
       const rawMsg = e?.message ?? e?.error;
       const msg = Array.isArray(rawMsg)
@@ -469,7 +527,7 @@ export function SkillsAssessmentScreen() {
       back={HUB}
     >
       <div className="mx-auto w-full max-w-sm">
-        {state === null || loadingSchedule ? (
+        {state === null ? (
           <div className="flex justify-center py-10">
             <Loader2 className="h-6 w-6 animate-spin text-gold" aria-label="Loading" />
           </div>
@@ -571,13 +629,13 @@ export function SkillsAssessmentScreen() {
                 </span>
                 <div>
                   <p className="text-xs font-bold text-pitch-black">Assessment Call</p>
-                  <p className="text-[10px] text-slate">1-week live schedule (Lagos WAT)</p>
+                  <p className="text-[10px] text-slate">Available 1-week schedule in Lagos Time (WAT)</p>
                 </div>
               </div>
 
               {/* Custom Chained Selectors Stack */}
               <div className="space-y-2">
-                {/* 1. Custom Day Selector (Synced from backend) */}
+                {/* 1. Custom Day Selector (Live 1-Week Lagos Date) */}
                 <CustomSelect
                   label="1. Available Day (1-Week)"
                   icon={Calendar}
@@ -603,15 +661,15 @@ export function SkillsAssessmentScreen() {
                   }}
                 />
 
-                {/* 3. Custom Call Time Selector (Revealed dynamically) */}
+                {/* 3. Custom Call Time Selector (Revealed dynamically once window is selected) */}
                 {selectedWindow && (
                   <div className="animate-in fade-in slide-in-from-top-1 duration-150">
                     <CustomSelect
-                      label="3. Call Time Slot"
+                      label="3. Call Time Slot (Lagos Time)"
                       badge="15 min duration"
                       icon={Sparkles}
                       value={selectedTimeSlot}
-                      placeholder="Pick specific call time…"
+                      placeholder="Pick call time in Lagos Time…"
                       options={slotOptions}
                       onChange={(val) => {
                         setSelectedTimeSlot(val);
