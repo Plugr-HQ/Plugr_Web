@@ -91,7 +91,6 @@ const btnGold =
   'inline-flex items-center justify-center gap-2 rounded-pill bg-gold text-pitch-black font-bold px-7 py-4 hover:bg-gold-light active:scale-[0.98] transition-all shadow-[0_14px_32px_-16px_rgba(232,160,32,0.75)]';
 const btnAlt =
   'inline-flex items-center justify-center gap-2 rounded-pill bg-pitch-black text-white font-bold px-7 py-4 hover:bg-petrol active:scale-[0.98] transition-all';
-
 /**
  * Section label. A bordered pill rather than a rule-and-caps line: it reads as a tag on the
  * section, gives every section the same visible starting point, and survives on both the bone
@@ -102,7 +101,7 @@ function Eyebrow({ children, tone = 'light' }: { children: React.ReactNode; tone
     <span
       className={
         'inline-flex items-center gap-2 rounded-pill border px-3.5 py-1.5 text-[10.5px] font-bold uppercase tracking-[0.16em] ' +
-        (tone === 'dark' ? 'border-white/15 bg-white/5 text-white/75' : 'border-pitch-black/10 bg-white text-pitch-black/70')
+        (tone === 'dark' ? 'border-white/15 bg-white/[0.05] text-white/75' : 'border-pitch-black/10 bg-white text-pitch-black/70')
       }
     >
       <span className="h-1.5 w-1.5 rounded-full bg-gold" />
@@ -162,52 +161,6 @@ function SectionHead({
   );
 }
 
-function Navbar() {
-  const [open, setOpen] = useState(false);
-  return (
-    <nav className="sticky top-0 z-50 border-b border-pitch-black/[0.08] bg-bone/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-        <Link href="/" aria-label="Plugr home">
-          <PlugrWordmark />
-        </Link>
-
-        <div className="hidden items-center gap-8 md:flex">
-          {NAV_LINKS.map((l) => (
-            <a key={l.href} href={l.href} className="text-[14px] font-semibold text-slate transition-colors hover:text-pitch-black">
-              {l.label}
-            </a>
-          ))}
-          <Link href="/app" className={btnGold + ' !px-5 !py-2.5 text-[14px]'}>
-            Use Plugr
-          </Link>
-        </div>
-
-        <button
-          className="md:hidden"
-          onClick={() => setOpen((o) => !o)}
-          aria-label={open ? 'Close menu' : 'Open menu'}
-          aria-expanded={open}
-        >
-          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
-      </div>
-
-      {open && (
-        <div className="space-y-1 border-t border-pitch-black/[0.08] bg-bone px-5 pb-5 md:hidden">
-          {NAV_LINKS.map((l) => (
-            <a key={l.href} href={l.href} onClick={() => setOpen(false)} className="block py-3 text-[15px] font-semibold text-pitch-black">
-              {l.label}
-            </a>
-          ))}
-          <Link href="/app" className={btnGold + ' mt-2 w-full'}>
-            Use Plugr
-          </Link>
-        </div>
-      )}
-    </nav>
-  );
-}
-
 const heroContainer: Variants = { hidden: {}, show: { transition: { staggerChildren: 0.09 } } };
 const heroItem: Variants = {
   hidden: { opacity: 0, y: 22 },
@@ -216,6 +169,7 @@ const heroItem: Variants = {
 
 export default function LandingPage() {
   const reduce = useReducedMotion();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [openReason, setOpenReason] = useState(0);
   // The payment card overlaps the hero photo from md up and stacks beneath it below that; the
@@ -230,34 +184,75 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-bone font-sans">
-      <Navbar />
+    <div className="min-h-screen bg-bone text-pitch-black font-body antialiased overflow-x-hidden">
+      {/* ---------------------------------------------------------------- Nav */}
+      <nav className="fixed inset-x-0 top-0 z-50 border-b border-pitch-black/[0.08] bg-bone">
+        <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+          {/* Plain anchor (not next/link) so every click does a full reload of the main page */}
+          <a href="/" className="flex items-center">
+            <PlugrWordmark className="h-6 text-pitch-black" />
+          </a>
+          <div className="hidden md:flex items-center gap-9 text-sm font-semibold text-pitch-black/80">
+            {NAV_LINKS.map((l) => (
+              <a key={l.href} href={l.href} className="hover:text-gold transition-colors">
+                {l.label}
+              </a>
+            ))}
+          </div>
+          <div className="flex items-center gap-4">
+            <Link href="/app" className="inline-flex items-center gap-1.5 rounded-pill bg-gold text-pitch-black text-sm font-bold px-4 sm:px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all">
+              Use Plugr <ArrowRight className="w-4 h-4" />
+            </Link>
+            <button className="md:hidden text-pitch-black" onClick={() => setMenuOpen((o) => !o)} aria-label="Menu">
+              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
+        {menuOpen && (
+          <div className="fixed right-5 top-18.25 z-40 flex h-fit w-45 flex-col gap-2 rounded-3xl border border-pitch-black/10 bg-white p-6 md:hidden animate-in slide-in-from-top-10 duration-500">
+            <Link href="#how" onClick={() => setMenuOpen(false)} className="text-md font-bold text-pitch-black">How it Works</Link>
+            <Link href="#why" onClick={() => setMenuOpen(false)} className="text-md font-bold text-pitch-black">Why Plugr</Link>
+            <Link href="#trades" onClick={() => setMenuOpen(false)} className="text-md font-bold text-pitch-black">Trades</Link>
+            <Link href="#faq" onClick={() => setMenuOpen(false)} className="text-md font-bold text-pitch-black">FAQ</Link>
+          </div>
+        )}
+      </nav>
 
-      {/* ------------------------------------------------------------------ Hero */}
-      <header className="mx-auto max-w-6xl bg-bone px-5 pb-16 pt-16 md:pt-24">
+      {/* --------------------------------------------------------------- Hero */}
+      {/* Centred, with the proof image spanning full width beneath it rather than beside the
+          copy — the headline gets the whole measure, and the photograph then acts as evidence
+          for the claim above it. Flat bone ground, no pattern: the page uses no gradients and
+          no background texture anywhere. */}
+      <header className="relative overflow-hidden px-5 pb-20 pt-32 md:pt-40">
         <motion.div
+          className="mx-auto max-w-3xl text-center"
           variants={heroContainer}
-          initial={reduce ? false : 'hidden'}
-          animate="show"
-          className="mx-auto max-w-4xl text-center"
+          initial={reduce ? undefined : 'hidden'}
+          animate={reduce ? undefined : 'show'}
         >
+          {/* No eyebrow pill. A full sentence set inside a pill is a shape nothing on a real
+              site uses — it reads as decoration looking for a job. The headline carries the
+              opening on its own, the way the reference's does. */}
           <motion.h1
             variants={heroItem}
-            className="font-display text-[2.2rem] font-bold leading-[1.05] tracking-[-0.02em] text-pitch-black md:text-7xl"
+            className="font-display text-[3.25rem] leading-[0.95] tracking-[-0.03em] text-pitch-black md:text-[4.75rem]"
           >
-            Hire verified artisans you can actually <span className="text-gold">trust.</span>
+            Know exactly <span className="text-gold">who&rsquo;s</span> fixing your home.
           </motion.h1>
 
-          <motion.p variants={heroItem} className="mx-auto mt-6 max-w-xl text-lg font-medium text-slate md:text-xl">
-            Plugr connects clients with verified artisans across Ikeja, using secure payments,
-            professional identity verification and a WhatsApp-native job flow.
+          <motion.p
+            variants={heroItem}
+            className="mx-auto mt-7 max-w-xl text-[17px] leading-relaxed text-slate md:text-[19px]"
+          >
+            NIN-verified electricians and plumbers in Yaba. Your payment is held securely until the
+            job&rsquo;s done right — booked on WhatsApp, no app to install.
           </motion.p>
 
-          <motion.div variants={heroItem} className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link href="/find" className={btnGold + ' w-full sm:w-auto'}>
-              Find a Plug
+          <motion.div variants={heroItem} className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link href="/app/browse" className={btnGold}>
+              Book a Plug <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link href="/app/signup" className={btnAlt + ' w-full sm:w-auto'}>
+            <Link href="/app/signup" className={btnAlt}>
               Become a Plug
             </Link>
           </motion.div>
@@ -304,7 +299,7 @@ export default function LandingPage() {
                 <PlugrMark className="h-4 w-4" />
                 <span className="font-display text-base">Payment</span>
               </div>
-              <span className="inline-flex items-center gap-1.5 rounded-pill border border-gold/30 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-[#8a5a08]">
+              <span className="inline-flex items-center gap-1.5 rounded-pill border border-gold/30 px-2.5 py-1 text-10 font-bold uppercase tracking-widest text-[#8a5a08]">
                 <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" /> Held
               </span>
             </div>
@@ -473,7 +468,7 @@ export default function LandingPage() {
           <SectionHead
             eyebrow="What we fix"
             title={<>Your trade, covered.</>}
-            aside="Electricians and plumbers first, in Ikeja. More trades as we verify them."
+            aside="Electricians and plumbers first, in Yaba. More trades as we verify them."
           />
           <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
@@ -659,10 +654,10 @@ export default function LandingPage() {
         <Reveal className="mx-auto max-w-6xl">
           <div className="relative overflow-hidden rounded-[32px] bg-pitch-black px-6 py-20 text-center md:py-24">
             <div className="relative">
-              <Eyebrow tone="dark">Launching in Ikeja</Eyebrow>
+              <Eyebrow tone="dark">Launching in Yaba</Eyebrow>
               <h2 className="mx-auto mt-7 max-w-3xl font-display text-[2.6rem] leading-[1.02] tracking-[-0.02em] text-white md:text-[4rem]">
                 Know your Plug —<br className="sm:hidden" />{' '}
-                <span className="text-gold">starting in Ikeja.</span>
+                <span className="text-gold">starting in Yaba.</span>
               </h2>
               <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Link href="/app/browse" className={btnGold}>
