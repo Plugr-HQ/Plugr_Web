@@ -184,6 +184,7 @@ export default function LandingPage() {
   }, []);
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-bone text-pitch-black font-body antialiased overflow-x-hidden">
       {/* ---------------------------------------------------------------- Nav */}
       <nav className="fixed inset-x-0 top-0 z-50 border-b border-pitch-black/[0.08] bg-bone">
@@ -251,6 +252,23 @@ export default function LandingPage() {
           <motion.div variants={heroItem} className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/app/browse" className={btnGold}>
               Book a Plug <ArrowRight className="h-4 w-4" />
+=======
+    <div className="min-h-screen font-sans" style={{ backgroundColor: colors.bone }}>
+      <Navbar />
+      {/* Hero Section */}
+      <section className="px-6 py-8 max-w-4xl mx-auto text-left" style={{ backgroundColor: colors.bone }}>
+        <div className="space-y-6 pt-16 pb-10">
+          <h1 className="text-[32px] font-bold md:text-7xl font-black text-[#162952]">
+            Hire Verified Artisans you can actually <br></br>
+            <span className="text-[#DBA134]">trust.</span>
+          </h1>
+          <p className="text-gray-400 text-lg md:text-xl max-w-xl mx-auto font-medium">
+            Plugr helps clients connect with verified artisans, across Ikeja using secure payments, proffessional identity verification and whatsapp-native job flow.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <Link href="/find" className="w-full sm:w-auto px-10 py-5 bg-[#DBA134] text-white rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-xl shadow-yellow-900/20 text-center">
+              Find a Plug
+>>>>>>> apex
             </Link>
             <Link href="/app/signup" className={btnAlt}>
               Become a Plug

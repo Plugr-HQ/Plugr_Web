@@ -15,9 +15,14 @@ export function Navbar() {
 
           <Image src="/logo.svg" alt="Plugr Logo" fill className="bg-cover" />
         </Link>
-        <div className="flex items-center gap-4 text-sm font-semibold text-pitch-black">
-          <Link href="/privacy" className="hover:text-gold transition-colors hidden md:inline">Privacy</Link>
-          <Link href="/app" className="bg-gold text-white px-4 py-2 rounded-full hover:text-gold hover:bg-pitch-black/90 transition-colors">Use Plugr</Link>
+        <div className="hidden md:flex flex-row items-center gap-12 text-sm font-semibold text-[#0A1529]">
+          <Link href="#how-it-works" className="hover:text-[#DBA134] transition-colors">How it Works</Link>
+          <Link href="#trades" className="hover:text-[#DBA134] transition-colors">Trades</Link>
+          <Link href="#faq" className="hover:text-[#DBA134] transition-colors">FAQ</Link>
+          <div className="flex flex-row items-center gap-6 ml-24">
+            <Link href="/auth" className="text-[#DBA134] px-6 py-3 rounded-full hover:bg-[#0A1529]/90 hover:text-white transition-colors">Log in</Link>
+            <Link href="/auth" className="bg-[#DBA134] text-white px-6 py-3 rounded-full hover:bg-[#0A1529]/90 transition-colors">Sign up</Link>
+          </div>
         </div>
         <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           {isMobileMenuOpen ? <X className="w-6 h-6 text-pitch-black" /> : <Menu className="w-6 h-6 text-pitch-black" />}
