@@ -184,75 +184,6 @@ export default function LandingPage() {
   }, []);
 
   return (
-<<<<<<< HEAD
-    <div className="min-h-screen bg-bone text-pitch-black font-body antialiased overflow-x-hidden">
-      {/* ---------------------------------------------------------------- Nav */}
-      <nav className="fixed inset-x-0 top-0 z-50 border-b border-pitch-black/[0.08] bg-bone">
-        <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
-          {/* Plain anchor (not next/link) so every click does a full reload of the main page */}
-          <a href="/" className="flex items-center">
-            <PlugrWordmark className="h-6 text-pitch-black" />
-          </a>
-          <div className="hidden md:flex items-center gap-9 text-sm font-semibold text-pitch-black/80">
-            {NAV_LINKS.map((l) => (
-              <a key={l.href} href={l.href} className="hover:text-gold transition-colors">
-                {l.label}
-              </a>
-            ))}
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/app" className="inline-flex items-center gap-1.5 rounded-pill bg-gold text-pitch-black text-sm font-bold px-4 sm:px-5 py-2.5 hover:bg-gold-light active:scale-95 transition-all">
-              Use Plugr <ArrowRight className="w-4 h-4" />
-            </Link>
-            <button className="md:hidden text-pitch-black" onClick={() => setMenuOpen((o) => !o)} aria-label="Menu">
-              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
-        {menuOpen && (
-          <div className="fixed right-5 top-18.25 z-40 flex h-fit w-45 flex-col gap-2 rounded-3xl border border-pitch-black/10 bg-white p-6 md:hidden animate-in slide-in-from-top-10 duration-500">
-            <Link href="#how" onClick={() => setMenuOpen(false)} className="text-md font-bold text-pitch-black">How it Works</Link>
-            <Link href="#why" onClick={() => setMenuOpen(false)} className="text-md font-bold text-pitch-black">Why Plugr</Link>
-            <Link href="#trades" onClick={() => setMenuOpen(false)} className="text-md font-bold text-pitch-black">Trades</Link>
-            <Link href="#faq" onClick={() => setMenuOpen(false)} className="text-md font-bold text-pitch-black">FAQ</Link>
-          </div>
-        )}
-      </nav>
-
-      {/* --------------------------------------------------------------- Hero */}
-      {/* Centred, with the proof image spanning full width beneath it rather than beside the
-          copy — the headline gets the whole measure, and the photograph then acts as evidence
-          for the claim above it. Flat bone ground, no pattern: the page uses no gradients and
-          no background texture anywhere. */}
-      <header className="relative overflow-hidden px-5 pb-20 pt-32 md:pt-40">
-        <motion.div
-          className="mx-auto max-w-3xl text-center"
-          variants={heroContainer}
-          initial={reduce ? undefined : 'hidden'}
-          animate={reduce ? undefined : 'show'}
-        >
-          {/* No eyebrow pill. A full sentence set inside a pill is a shape nothing on a real
-              site uses — it reads as decoration looking for a job. The headline carries the
-              opening on its own, the way the reference's does. */}
-          <motion.h1
-            variants={heroItem}
-            className="font-display text-[3.25rem] leading-[0.95] tracking-[-0.03em] text-pitch-black md:text-[4.75rem]"
-          >
-            Know exactly <span className="text-gold">who&rsquo;s</span> fixing your home.
-          </motion.h1>
-
-          <motion.p
-            variants={heroItem}
-            className="mx-auto mt-7 max-w-xl text-[17px] leading-relaxed text-slate md:text-[19px]"
-          >
-            NIN-verified electricians and plumbers in Yaba. Your payment is held securely until the
-            job&rsquo;s done right — booked on WhatsApp, no app to install.
-          </motion.p>
-
-          <motion.div variants={heroItem} className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/app/browse" className={btnGold}>
-              Book a Plug <ArrowRight className="h-4 w-4" />
-=======
     <div className="min-h-screen font-sans" style={{ backgroundColor: colors.bone }}>
       <Navbar />
       {/* Hero Section */}
@@ -268,7 +199,6 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <Link href="/find" className="w-full sm:w-auto px-10 py-5 bg-[#DBA134] text-white rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-xl shadow-yellow-900/20 text-center">
               Find a Plug
->>>>>>> apex
             </Link>
             <Link href="/app/signup" className={btnAlt}>
               Become a Plug
