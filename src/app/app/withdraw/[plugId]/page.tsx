@@ -3,7 +3,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Clock, Check } from 'lucide-react';
 import { Shell } from '@/src/components/Shell';
@@ -23,12 +23,26 @@ export default function AppWithdraw() {
     jsonFetch(`/api/plugs/${plugId}?source=core`).then((d) => { const a = Number(d.plug?.wallet_balance_available ?? 0); setAvailable(a); setAmount(String(a)); }).catch((e) => setError(e.message));
   }, [plugId]);
 
+  // One key per withdrawal attempt, reused on every retry of it (see WalletScreen). Note this
+  // legacy page has no PIN field, which the backend requires, so it can't complete a withdrawal;
+  // WalletScreen is the live one.
+  const attemptKey = useRef<string | null>(null);
+
   async function withdraw() {
     setError(null);
     const amt = Number(amount);
     if (!Number.isFinite(amt) || amt <= 0 || amt > available) return setError('Enter an amount within your available balance.');
+    attemptKey.current ??= `wd_${crypto.randomUUID().replace(/-/g, '')}`;
     setBusy(true);
-    try { await jsonFetch(`/api/plugs/${plugId}/withdraw?source=core`, { method: 'POST', body: JSON.stringify({ amount: amt }) }); setDone(true); }
+    try {
+      await jsonFetch(`/api/plugs/${plugId}/withdraw?source=core`, {
+        method: 'POST',
+        headers: { 'Idempotency-Key': attemptKey.current },
+        body: JSON.stringify({ amount: amt }),
+      });
+      attemptKey.current = null;
+      setDone(true);
+    }
     catch (e: any) { setError(e.message); } finally { setBusy(false); }
   }
 

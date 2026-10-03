@@ -482,6 +482,10 @@ function Withdraw({
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // One key per withdrawal attempt, kept across retries of that attempt (a double-tap, a timeout,
+  // a dropped response) so the backend debits at most once. Only cleared once the attempt has
+  // definitely succeeded; a failed attempt doesn't spend it, so retrying with it is safe.
+  const attemptKey = useRef<string | null>(null);
 
   async function submit() {
     setError(null);
@@ -489,13 +493,15 @@ function Withdraw({
     if (!Number.isFinite(amt) || amt <= 0 || amt > available) return setError('Enter an amount within your available balance.');
     if (pin.length !== 4) return setError('Enter your 4-digit PIN.');
 
+    attemptKey.current ??= `wd_${crypto.randomUUID().replace(/-/g, '')}`;
     setBusy(true);
     try {
       await apiFetch(withSource(`/api/plugs/${plugId}/withdraw`, base), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': attemptKey.current, ...authHeaders() },
         body: JSON.stringify({ amount: amt, pin }),
       }, { skipAuthRedirect: false });
+      attemptKey.current = null;
       setDone(true);
       reload();
     } catch (e: any) {

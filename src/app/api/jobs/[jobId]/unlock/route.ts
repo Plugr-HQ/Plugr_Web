@@ -1,28 +1,20 @@
 // src/app/api/jobs/[jobId]/unlock/route.ts
-// Called by the client-side countdown when it hits zero (Screen 5 -> wallet). The UI owns
-// the timer — no server-side setTimeout. Idempotency guard prevents a double-credit.
+// Called by the client-side countdown when it hits zero (the Plug's dashboard and wallet both do):
+// the job's money moves from the Plug's locked balance to available.
+//
+// A thin proxy. This route used to write to the database itself with NO authentication, and its
+// "already unlocked?" check compared the Plug's TOTAL locked balance with this job's amount — so
+// money locked by a different job let a repeated call credit twice. It now forwards to the backend
+// (POST /escrow/:jobId/unlock), which requires a party to the job and moves the money only if THIS
+// job hasn't been unlocked yet, so a repeat is a no-op.
+// Response shape is unchanged: { unlocked: true } or { unlocked: true, note: 'already unlocked' }.
+import { proxyToBackend } from '@/src/lib/backendProxy';
 
-import { NextResponse } from 'next/server';
-import { getRepo, resolveSource } from '@/src/lib/repo';
-
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ jobId: string }> }
-) {
+export async function POST(request: Request, { params }: { params: Promise<{ jobId: string }> }) {
   const { jobId } = await params;
-  const repo = getRepo(resolveSource(request));
-
-  const job = await repo.getJob(jobId);
-  if (!job || job.status !== 'released' || !job.plug_id) {
-    return NextResponse.json({ error: 'job not eligible for unlock' }, { status: 400 });
-  }
-
-  // If this job's amount is no longer in the Plug's locked balance, it already unlocked.
-  const plug = await repo.getPlug(job.plug_id);
-  if (!plug || Number(plug.wallet_balance_locked) < Number(job.amount)) {
-    return NextResponse.json({ unlocked: true, note: 'already unlocked' });
-  }
-
-  await repo.unlockFunds(job.plug_id, Number(job.amount));
-  return NextResponse.json({ unlocked: true });
+  return proxyToBackend(request, {
+    path: `/escrow/${encodeURIComponent(jobId)}/unlock`,
+    method: 'POST',
+    fallbackError: 'could not unlock these funds',
+  });
 }
