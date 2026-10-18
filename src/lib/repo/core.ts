@@ -305,6 +305,30 @@ export async function setJobAmount(jobId: string, amount: number): Promise<void>
   await q(`update "Job" set "escrowAmount" = $2, "updatedAt" = now() where id = $1`, [jobId, amount]);
 }
 
+// Anchor collection: one DepositAccount per job (src/lib/anchor.ts createJobDepositAccount).
+// Both columns come from section 5 of sql/core_schema_additions.sql — until they exist in the
+// live DB these two queries throw "column does not exist".
+
+export async function setJobAnchorAccount(
+  jobId: string,
+  depositAccountId: string,
+  virtualAccountNumber: string
+): Promise<void> {
+  await q(
+    `update "Job"
+     set "anchorDepositAccountId" = $2, "anchorVirtualAccountNumber" = $3, "updatedAt" = now()
+     where id = $1`,
+    [jobId, depositAccountId, virtualAccountNumber]
+  );
+}
+
+/** The Anchor webhook only carries the DepositAccount id — this is how it finds the job. */
+export async function getJobByAnchorDepositAccountId(depositAccountId: string): Promise<JobRow | null> {
+  return one<JobRow>(`select ${JOB_COLS} ${JOB_FROM} and j."anchorDepositAccountId" = $1`, [
+    depositAccountId,
+  ]);
+}
+
 // ---------------------------------------------------------------- transactions
 
 export async function txnsForJob(jobId: string): Promise<TxnRow[]> {
@@ -377,6 +401,47 @@ export async function upsertCollection(input: {
       input.status.toUpperCase(),
       input.raw ?? null,
     ]
+  );
+}
+
+// "transactions" has no Anchor column, so an Anchor collection is keyed on the InboundNIPTransfer
+// id inside its stored event. Anchor's docs show events both wrapped in { data } and bare, hence
+// both paths. nip.inbound.received and nip.inbound.completed share that transfer id, so the
+// completed event promotes the pending row rather than adding a second one.
+const ANCHOR_TRANSFER_ID_SQL = `coalesce(
+  "rawWebhookPayload" #>> '{data,relationships,transfer,data,id}',
+  "rawWebhookPayload" #>> '{relationships,transfer,data,id}')`;
+
+export async function findTxnByAnchorTransferId(anchorTransferId: string): Promise<TxnRow | null> {
+  return one<TxnRow>(
+    `select ${TXN_COLS} from transactions
+     where type = 'COLLECTION' and ${ANCHOR_TRANSFER_ID_SQL} = $1
+     order by "createdAt" desc limit 1`,
+    [anchorTransferId]
+  );
+}
+
+export async function upsertAnchorCollection(input: {
+  anchorTransferId: string;
+  jobId: string | null;
+  amount: number;
+  status: 'pending' | 'successful';
+  raw: unknown;
+}): Promise<void> {
+  await q(
+    `with updated as (
+       update transactions
+          set status              = $4::"TransactionStatus",
+              "jobId"             = coalesce($2::uuid, "jobId"),
+              amount              = $3::double precision,
+              "rawWebhookPayload" = $5::jsonb
+        where type = 'COLLECTION' and ${ANCHOR_TRANSFER_ID_SQL} = $1
+        returning id
+     )
+     insert into transactions (id, "jobId", amount, type, status, "rawWebhookPayload", "createdAt")
+     select gen_random_uuid(), $2::uuid, $3::double precision, 'COLLECTION', $4::"TransactionStatus", $5::jsonb, now()
+     where not exists (select 1 from updated)`,
+    [input.anchorTransferId, input.jobId, input.amount, input.status.toUpperCase(), input.raw ?? null]
   );
 }
 

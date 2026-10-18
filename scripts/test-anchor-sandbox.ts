@@ -58,7 +58,8 @@ async function main() {
         country: 'NG',
       },
       email: `sandbox-test+${Date.now()}@getplugr.com`,
-      phoneNumber: '08000000000',
+      // Anchor rejects a phone number already used in the organisation, so vary it per run.
+      phoneNumber: `080${String(Date.now()).slice(-8)}`,
       metadata: { source: 'anchor-sandbox-connectivity-test' },
     });
     console.log('  OK — customer created:', JSON.stringify(customer).slice(0, 300));

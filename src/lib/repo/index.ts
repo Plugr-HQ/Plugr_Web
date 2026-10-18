@@ -106,6 +106,8 @@ export interface Repo {
     opts?: { completedAt?: Date; escrowReleasedAt?: Date }
   ): Promise<void>;
   setJobAmount(jobId: string, amount: number): Promise<void>;
+  setJobAnchorAccount(jobId: string, depositAccountId: string, virtualAccountNumber: string): Promise<void>;
+  getJobByAnchorDepositAccountId(depositAccountId: string): Promise<JobRow | null>;
 
   // transactions
   txnsForJob(jobId: string): Promise<TxnRow[]>;
@@ -121,6 +123,14 @@ export interface Repo {
   }): Promise<void>;
   upsertCollection(input: {
     alatpayTransactionId: string;
+    jobId: string | null;
+    amount: number;
+    status: 'pending' | 'successful';
+    raw: unknown;
+  }): Promise<void>;
+  findTxnByAnchorTransferId(anchorTransferId: string): Promise<TxnRow | null>;
+  upsertAnchorCollection(input: {
+    anchorTransferId: string;
     jobId: string | null;
     amount: number;
     status: 'pending' | 'successful';

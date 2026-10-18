@@ -13,9 +13,14 @@
 //    bank account that must belong to an already-KYC'd Customer. There is no per-transaction
 //    "virtual account scoped to a job id" primitive here. createDepositAccount() below creates
 //    a fresh DepositAccount (and therefore a fresh virtual account number) per call, which is
-//    the closest equivalent — but confirm this is actually the intended pattern (one Customer,
-//    fresh DepositAccount per job) before wiring it into the job flow. See the note left in
-//    the PR / chat for the open question this raised.
+//    the closest equivalent. DECIDED: one Plugr-owned master Customer (created once by
+//    scripts/create-anchor-master-customer.ts, id in ANCHOR_MASTER_CUSTOMER_ID) and a fresh
+//    DepositAccount per job — see createJobDepositAccount() at the bottom of this file.
+//
+// 3. A DepositAccount's own attributes.accountNumber is MASKED ("*****1146" — confirmed live
+//    against the sandbox, Oct 18 2026). The number a payer actually transfers into is a separate
+//    AccountNumber resource, listed by GET /api/v1/account-numbers?AccountId=<depositAccountId>,
+//    and it is generated asynchronously after the DepositAccount (accountNumber.created event).
 
 const ANCHOR_ENV = process.env.ANCHOR_ENV === 'production' ? 'production' : 'sandbox';
 const ANCHOR_BASE_URL =
@@ -125,6 +130,36 @@ export async function createIndividualCustomer(params: CreateIndividualCustomerP
       data: {
         type: 'IndividualCustomer',
         attributes: params,
+      },
+    }),
+  });
+}
+
+/** GET /api/v1/customers/{customerId} — attributes.verification.status reads "unverified" until
+ *  KYC is approved (confirmed live against the sandbox). */
+export async function fetchCustomer(customerId: string) {
+  return anchorRequest(`/api/v1/customers/${customerId}`);
+}
+
+/**
+ * POST /api/v1/customers/{customerId}/verification/individual
+ * Passing identificationLevel2 to createIndividualCustomer only STORES the details — the customer
+ * stays "unverified" (and createDepositAccount fails with "Customer does not have kyc
+ * verification") until this is called. The result arrives asynchronously as a
+ * customer.identification.approved / .rejected / .error event. The name and phone number on the
+ * customer must match the BVN record. Anchor bills each check against the organisation's balance,
+ * sandbox included — an unfunded org gets 400 "Insufficient balance" here.
+ */
+export async function verifyIndividualCustomerKyc(
+  customerId: string,
+  level2: { dateOfBirth: string; gender: 'Male' | 'Female'; bvn: string }
+) {
+  return anchorRequest(`/api/v1/customers/${customerId}/verification/individual`, {
+    method: 'POST',
+    body: JSON.stringify({
+      data: {
+        type: 'Verification',
+        attributes: { level: 'TIER_2', level2 },
       },
     }),
   });
@@ -248,4 +283,151 @@ export function verifyAnchorWebhookSignature(
   } catch {
     return false;
   }
+}
+
+// ── Account numbers (what a payer actually transfers into) ────────────────────────────────
+
+export type AnchorAccountNumber = {
+  id: string;
+  type: 'AccountNumber';
+  attributes: {
+    accountNumber: string;
+    accountName?: string;
+    bank?: { id?: string; name?: string; nipCode?: string };
+    isDefault?: boolean;
+    permanent?: boolean;
+    status?: string;
+  };
+  relationships?: { settlementAccount?: { data?: { id: string; type: 'DepositAccount' } } };
+};
+
+/** GET /api/v1/account-numbers?AccountId={depositAccountId} — endpoint and its {data: [], meta}
+ *  envelope confirmed live against the sandbox. The AccountNumber attributes typed above are from
+ *  Anchor's docs (no sandbox account had a number yet to inspect — see createJobDepositAccount). */
+export async function listAccountNumbers(depositAccountId: string): Promise<AnchorAccountNumber[]> {
+  return anchorRequest<AnchorAccountNumber[]>(
+    `/api/v1/account-numbers?AccountId=${encodeURIComponent(depositAccountId)}`
+  );
+}
+
+// ── Inbound transfers (money landing in a DepositAccount) ─────────────────────────────────
+
+export type AnchorInboundTransfer = {
+  id: string;
+  type: 'InboundNIPTransfer';
+  attributes: {
+    amount: number; // minor units (kobo) — DepositAccount balances read the same way (decimalPlaces: 2)
+    currency: string;
+    status: string; // "COMPLETED" once settled
+    reference?: string;
+    sessionId?: string;
+    description?: string;
+    sourceAccountNumber?: string;
+    sourceAccountName?: string;
+    sourceBank?: { name?: string };
+  };
+  relationships?: { account?: { data?: { id: string; type: 'DepositAccount' } } };
+};
+
+/** GET /api/v1/inbound-transfers/{inboundTransferId} — per the "Account Numbers → Fund Deposit
+ *  Account" docs. The webhook route uses it when an event arrives without `included`. */
+export async function fetchInboundTransfer(inboundTransferId: string): Promise<AnchorInboundTransfer> {
+  return anchorRequest<AnchorInboundTransfer>(`/api/v1/inbound-transfers/${inboundTransferId}`);
+}
+
+// ── Per-job collection account ──────────────────────────────────────────────────────────
+
+const NUBAN_RE = /^\d{10}$/;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** The DepositAccount exists but no usable account number came back in time. Carries the id so
+ *  the caller can persist it and resume with fetchJobVirtualAccount() instead of opening a
+ *  second DepositAccount for the same job. */
+export class AnchorAccountNumberPendingError extends Error {
+  depositAccountId: string;
+  lastResponse: unknown;
+
+  constructor(depositAccountId: string, lastResponse: unknown) {
+    super(`No usable account number yet for Anchor DepositAccount ${depositAccountId}`);
+    this.depositAccountId = depositAccountId;
+    this.lastResponse = lastResponse;
+  }
+}
+
+export type JobVirtualAccount = {
+  accountNumberId: string;
+  virtualAccountNumber: string;
+  bankName: string;
+  accountName: string | null;
+};
+
+/**
+ * Resolve the payable account number for a DepositAccount. Account numbers are generated
+ * asynchronously after the DepositAccount, so this polls briefly. Only a real 10-digit NUBAN with
+ * a bank name is accepted — never the masked DepositAccount.accountNumber, and never the
+ * DepositAccount's own bank (the account number's bank is the one the payer sends to).
+ */
+export async function fetchJobVirtualAccount(
+  depositAccountId: string,
+  { attempts = 6, delayMs = 1500 }: { attempts?: number; delayMs?: number } = {}
+): Promise<JobVirtualAccount> {
+  let last: AnchorAccountNumber[] = [];
+  for (let i = 0; i < attempts; i++) {
+    last = await listAccountNumbers(depositAccountId);
+    const usable = (Array.isArray(last) ? last : []).filter(
+      (n) =>
+        NUBAN_RE.test(n?.attributes?.accountNumber ?? '') &&
+        !!n.attributes.bank?.name &&
+        (n.attributes.status ?? 'ACTIVE') === 'ACTIVE'
+    );
+    const pick = usable.find((n) => n.attributes.isDefault) ?? usable[0];
+    if (pick) {
+      return {
+        accountNumberId: pick.id,
+        virtualAccountNumber: pick.attributes.accountNumber,
+        bankName: pick.attributes.bank!.name!,
+        accountName: pick.attributes.accountName ?? null,
+      };
+    }
+    if (i < attempts - 1) await sleep(delayMs);
+  }
+  throw new AnchorAccountNumberPendingError(depositAccountId, last);
+}
+
+/**
+ * Open a fresh DepositAccount under the Plugr master Customer for one job and return the account
+ * number the client transfers into. The Anchor equivalent of alatpay.ts's generateVirtualAccount:
+ * the caller stores depositAccountId on the job (repo.setJobAnchorAccount) so the
+ * nip.inbound.completed webhook — which only carries the DepositAccount id — can find it again.
+ *
+ * NOT YET CONFIRMED LIVE: the AccountNumber field names (attributes.accountNumber / bank.name).
+ * The sandbox org had no KYC'd customer to open an account for (KYC needs a funded sandbox
+ * balance), so these follow Anchor's docs. The NUBAN/bank checks above make a different shape fail
+ * loudly with the raw response attached rather than hand a client a wrong number. Run
+ * scripts/test-anchor-job-account.ts once ANCHOR_MASTER_CUSTOMER_ID is set to confirm.
+ */
+export async function createJobDepositAccount(jobId: string) {
+  const customerId = process.env.ANCHOR_MASTER_CUSTOMER_ID;
+  if (!customerId) {
+    throw new Error('ANCHOR_MASTER_CUSTOMER_ID is not set — run scripts/create-anchor-master-customer.ts');
+  }
+  if (!ANCHOR_API_KEY) {
+    throw new Error('ANCHOR_API_KEY is not set');
+  }
+
+  const created = await createDepositAccount({ customerId });
+  const depositAccountId: string | undefined = created?.id;
+  if (!depositAccountId) {
+    throw new AnchorError(502, { note: `no DepositAccount id returned for job ${jobId}`, created });
+  }
+
+  // Re-read before handing the number out: the account must exist and be ACTIVE (not frozen).
+  const account = await fetchDepositAccount(depositAccountId);
+  const status = account?.attributes?.status;
+  if ((status && status !== 'ACTIVE') || account?.attributes?.frozen) {
+    throw new AnchorError(409, { note: `DepositAccount ${depositAccountId} for job ${jobId} is not usable`, account });
+  }
+
+  const va = await fetchJobVirtualAccount(depositAccountId);
+  return { depositAccountId, ...va };
 }

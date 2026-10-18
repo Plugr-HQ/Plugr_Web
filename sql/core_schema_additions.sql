@@ -79,3 +79,22 @@ $$ language plpgsql;
 --    core.ts reconstructs the demo status from both columns on read, so our writes stay
 --    legible to the CTO's WhatsApp/AI backend (which checks escrowStatus for locked/released).
 -- ---------------------------------------------------------------------------
+
+-- ---------------------------------------------------------------------------
+-- 5. Anchor collection: one Anchor DepositAccount per job, under a single Plugr-owned master
+--    Anchor Customer (src/lib/anchor.ts createJobDepositAccount). Mirrors the per-job Monnify
+--    reserved-account columns already on "Job".
+--    - anchorDepositAccountId     : the DepositAccount id (e.g. "1791814073501198-anc_acc").
+--                                   Anchor's nip.inbound.completed webhook carries ONLY this, so
+--                                   it is the correlation key back to the job — hence unique.
+--    - anchorVirtualAccountNumber : the 10-digit account number the client transfers into (an
+--                                   Anchor AccountNumber; the DepositAccount's own number is masked).
+--
+--    PRISMA — add to the Job model in schema.prisma so `prisma migrate status` stays in sync:
+--      anchorDepositAccountId     String?  @unique
+--      anchorVirtualAccountNumber String?
+--    The index below uses Prisma's own @unique name, so it matches what Prisma would create.
+-- ---------------------------------------------------------------------------
+alter table "Job" add column if not exists "anchorDepositAccountId" text;
+alter table "Job" add column if not exists "anchorVirtualAccountNumber" text;
+create unique index if not exists "Job_anchorDepositAccountId_key" on "Job" ("anchorDepositAccountId");
