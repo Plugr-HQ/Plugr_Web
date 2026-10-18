@@ -79,6 +79,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   // their image back with no change here.
   const previewImage = plug.photo_url && /^https?:\/\//i.test(plug.photo_url) ? plug.photo_url : null;
 
+  // Without the Plug's own photo, fall back to the site's card (src/app/opengraph-image.tsx) rather
+  // than no image. This page has to name it explicitly: its openGraph and twitter objects REPLACE the
+  // root layout's, so the root's file-convention image isn't inherited here — and a profile link
+  // shared on WhatsApp is the most common share there is.
+  const image = previewImage
+    ? { url: previewImage }
+    : { url: '/opengraph-image', width: 1200, height: 630, alt: 'Plugr — Know exactly who’s fixing your home.' };
+
   return {
     title,
     description,
@@ -86,9 +94,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       title,
       description,
       type: 'profile',
-      images: previewImage ? [{ url: previewImage }] : undefined,
+      images: [image],
     },
-    twitter: { card: 'summary', title, description },
+    // A Plug's own photo suits the small square card; the site's card is designed for the large one.
+    twitter: { card: previewImage ? 'summary' : 'summary_large_image', title, description, images: [image.url] },
   };
 }
 
