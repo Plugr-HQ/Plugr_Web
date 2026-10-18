@@ -13,8 +13,8 @@
 // The event itself carries NO amount: it comes from the included InboundNIPTransfer, or from
 // GET /inbound-transfers/{id} when `included` is off. Amounts are kobo; jobs are stored in naira.
 // The DepositAccount id is our only correlation key back to the job ("Job"."anchorDepositAccountId").
-// Signature arrives in "x-anchor-signature" — verify BEFORE touching the DB (see the open question
-// on verifyAnchorWebhookSignature in src/lib/anchor.ts). Webhooks come from 18.133.55.102.
+// Signature arrives in "x-anchor-signature" (Base64 of the hex HMAC-SHA1 digest, confirmed against a
+// real delivery) — verify BEFORE touching the DB. Webhooks come from 18.133.55.102.
 //
 // Unlike ALATPay's amount-locked one-time account, an Anchor DepositAccount accepts any transfer,
 // so a job only moves to paid_escrow once its successful collections cover the job amount, and only

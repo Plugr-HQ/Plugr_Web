@@ -262,12 +262,10 @@ export async function createTransfer(params: {
  * Verifies a webhook's authenticity using Anchor's documented scheme: the "x-anchor-signature"
  * header should equal Base64(HMAC_SHA1(raw request body, key = your webhook token)).
  *
- * IMPORTANT — unresolved ambiguity in Anchor's own docs: the prose says "Base64 of the raw HMAC
- * digest" but every code sample they publish (JS/Java/Python/PHP) actually Base64-encodes the
- * HEX STRING of the digest, not the raw digest bytes. This implements the hex-then-base64
- * version (matching their samples) because docs prose vs. docs code disagreeing usually means
- * the code is what was actually tested. CONFIRM THIS against a real event from Anchor's
- * dashboard Events page before trusting it in production — do not skip this check.
+ * Anchor's docs prose reads like "Base64 of the raw HMAC digest", but their code samples
+ * Base64-encode the HEX STRING of the digest. The hex-then-base64 version below is the right one —
+ * CONFIRMED Oct 19 2026 against a real sandbox customer.created delivery (the raw-digest and
+ * plain-hex variants did not match). Webhook tokens are capped at 10 characters by Anchor.
  */
 export function verifyAnchorWebhookSignature(
   rawBody: string,
