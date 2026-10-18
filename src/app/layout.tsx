@@ -1,12 +1,34 @@
 import type { Metadata } from 'next'
 import './globals.css'
 
+const title = 'Plugr | Verified Skills Identity for Artisans';
+const description = "Nigeria's first verified skills identity platform for artisans.";
+
 export const metadata: Metadata = {
-  title: 'Plugr | Verified Skills Identity for Artisans',
-  description: "Nigeria's first verified skills identity platform for artisans.",
+  // Resolves the relative og:image / twitter:image URLs into absolute ones, which scrapers require.
+  // The www host, not the apex: getplugr.com 308-redirects to www, and a redirect on the image URL
+  // is a common reason a preview silently doesn't appear.
+  metadataBase: new URL('https://www.getplugr.com'),
+  title,
+  description,
   icons: {
     icon: '/plugr.svg'
-  }
+  },
+  // No `images` here on purpose: opengraph-image.tsx and twitter-image.tsx (same directory) are
+  // picked up by Next's file convention, which adds the image, its size, alt and type itself.
+  openGraph: {
+    title,
+    description,
+    url: '/',
+    siteName: 'Plugr',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title,
+    description,
+  },
 }
 
 export default function RootLayout({
