@@ -22,7 +22,7 @@
 //    AccountNumber resource, listed by GET /api/v1/account-numbers?AccountId=<depositAccountId>,
 //    and it is generated asynchronously after the DepositAccount (accountNumber.created event).
 
-const ANCHOR_ENV = process.env.ANCHOR_ENV === 'production' ? 'production' : 'sandbox';
+export const ANCHOR_ENV = process.env.ANCHOR_ENV === 'production' ? 'production' : 'sandbox';
 const ANCHOR_BASE_URL =
   process.env.ANCHOR_BASE_URL ||
   (ANCHOR_ENV === 'production' ? 'https://api.getanchor.co' : 'https://api.sandbox.getanchor.co');

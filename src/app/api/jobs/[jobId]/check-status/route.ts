@@ -8,7 +8,7 @@
 import { NextResponse } from 'next/server';
 import { getRepo, resolveSource } from '@/src/lib/repo';
 import { confirmTransaction, AlatPayError } from '@/src/lib/alatpay';
-import { AnchorError } from '@/src/lib/anchor';
+import { AnchorError, ANCHOR_ENV } from '@/src/lib/anchor';
 import { syncAnchorCollections } from '@/src/lib/anchorCollections';
 
 export async function GET(
@@ -28,6 +28,9 @@ export async function GET(
 
   const { searchParams } = new URL(request.url);
   const simulate = searchParams.get('simulate') === 'true';
+  if (simulate && ANCHOR_ENV === 'production') {
+    return NextResponse.json({ error: 'simulate is only available in sandbox' }, { status: 403 });
+  }
 
   if (simulate) {
     const mockTxId = `sim_${job.id}_${Date.now()}`;

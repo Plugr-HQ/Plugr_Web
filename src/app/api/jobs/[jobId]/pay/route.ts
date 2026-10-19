@@ -15,7 +15,11 @@ import {
   fetchJobVirtualAccount,
   AnchorAccountNumberPendingError,
   AnchorError,
+  ANCHOR_ENV,
 } from '@/src/lib/anchor';
+
+// Sent to the pay page so it only shows the 'simulate transfer' shortcut in sandbox.
+const sandbox = ANCHOR_ENV !== 'production';
 
 // Map ALATPay's numeric bank code to a display name. ALATPay's VA response has no
 // bankName field — only virtualBankCode — so we derive the name from the code.
@@ -96,7 +100,7 @@ export async function POST(
       if (!job.anchor_virtual_account_number) {
         await repo.setJobAnchorAccount(job.id, job.anchor_deposit_account_id, va.virtualAccountNumber);
       }
-      return NextResponse.json({ virtualAccount: anchorAccount(va), reused: true });
+      return NextResponse.json({ virtualAccount: anchorAccount(va), sandbox, reused: true });
     } catch (err) {
       if (err instanceof AnchorAccountNumberPendingError) {
         return NextResponse.json({ error: 'your account number is still being set up — try again in a moment' }, { status: 503 });
@@ -110,7 +114,7 @@ export async function POST(
   if (legacy?.alatpay_virtual_account) {
     const va = normalizeAlatpayAccount(legacy.raw_webhook_payload);
     if (va.expiresAt && new Date(va.expiresAt).getTime() > Date.now()) {
-      return NextResponse.json({ virtualAccount: va, reused: true });
+      return NextResponse.json({ virtualAccount: va, sandbox, reused: true });
     }
   }
 
@@ -135,7 +139,7 @@ export async function POST(
     if (current?.anchor_deposit_account_id) {
       try {
         const va = await fetchJobVirtualAccount(current.anchor_deposit_account_id);
-        return NextResponse.json({ virtualAccount: anchorAccount(va), reused: true });
+        return NextResponse.json({ virtualAccount: anchorAccount(va), sandbox, reused: true });
       } catch (err) {
         return anchorFailure(err);
       }
@@ -143,5 +147,5 @@ export async function POST(
     return NextResponse.json({ error: 'could not attach a payment account' }, { status: 409 });
   }
 
-  return NextResponse.json({ virtualAccount: anchorAccount(created), reused: false });
+  return NextResponse.json({ virtualAccount: anchorAccount(created), sandbox, reused: false });
 }
