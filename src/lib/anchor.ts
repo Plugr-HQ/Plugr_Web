@@ -290,18 +290,21 @@ export type AnchorAccountNumber = {
   type: 'AccountNumber';
   attributes: {
     accountNumber: string;
-    accountName?: string;
-    bank?: { id?: string; name?: string; nipCode?: string };
+    name?: string; // the live API's field (Oct 19 2026)
+    accountName?: string; // what the docs sample shows
+    bank?: { name?: string; code?: string; provider?: string; id?: string; nipCode?: string };
     isDefault?: boolean;
-    permanent?: boolean;
     status?: string;
   };
-  relationships?: { settlementAccount?: { data?: { id: string; type: 'DepositAccount' } } };
+  relationships?: {
+    account?: { data?: { id: string; type: 'DepositAccount' } }; // live
+    settlementAccount?: { data?: { id: string; type: 'DepositAccount' } }; // docs
+  };
 };
 
 /** GET /api/v1/account-numbers?AccountId={depositAccountId} — endpoint and its {data: [], meta}
- *  envelope confirmed live against the sandbox. The AccountNumber attributes typed above are from
- *  Anchor's docs (no sandbox account had a number yet to inspect — see createJobDepositAccount). */
+ *  envelope confirmed live against the sandbox, as are the AccountNumber attributes typed above
+ *  (where the docs sample differs from the live API, both spellings are kept). */
 export async function listAccountNumbers(depositAccountId: string): Promise<AnchorAccountNumber[]> {
   return anchorRequest<AnchorAccountNumber[]>(
     `/api/v1/account-numbers?AccountId=${encodeURIComponent(depositAccountId)}`
@@ -384,7 +387,7 @@ export async function fetchJobVirtualAccount(
         accountNumberId: pick.id,
         virtualAccountNumber: pick.attributes.accountNumber,
         bankName: pick.attributes.bank!.name!,
-        accountName: pick.attributes.accountName ?? null,
+        accountName: pick.attributes.name ?? pick.attributes.accountName ?? null,
       };
     }
     if (i < attempts - 1) await sleep(delayMs);
@@ -398,11 +401,10 @@ export async function fetchJobVirtualAccount(
  * the caller stores depositAccountId on the job (repo.setJobAnchorAccount) so the
  * nip.inbound.completed webhook — which only carries the DepositAccount id — can find it again.
  *
- * NOT YET CONFIRMED LIVE: the AccountNumber field names (attributes.accountNumber / bank.name).
- * The sandbox org had no KYC'd customer to open an account for (KYC needs a funded sandbox
- * balance), so these follow Anchor's docs. The NUBAN/bank checks above make a different shape fail
- * loudly with the raw response attached rather than hand a client a wrong number. Run
- * scripts/test-anchor-job-account.ts once ANCHOR_MASTER_CUSTOMER_ID is set to confirm.
+ * Confirmed live against the sandbox (Oct 19 2026): a fresh DepositAccount came back with its
+ * AccountNumber already ACTIVE on the first read (Providus, unmasked 10 digits, holder name in
+ * attributes.name). The NUBAN/bank checks above still make an unexpected shape fail loudly with
+ * the raw response attached rather than hand a client a wrong number.
  */
 export async function createJobDepositAccount(jobId: string) {
   const customerId = process.env.ANCHOR_MASTER_CUSTOMER_ID;
