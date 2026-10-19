@@ -1,58 +1,112 @@
 // scripts/create-anchor-master-customer.ts
-// ONE-TIME setup: creates the single Plugr-owned "master" Anchor Customer that every per-job
-// DepositAccount hangs off (see createJobDepositAccount in src/lib/anchor.ts), then triggers its
-// KYC. Run it once per environment (sandbox, then again for production) — not per job.
+// ONE-TIME setup: creates the single Plugr-owned "master" Anchor BusinessCustomer that every per-job
+// DepositAccount hangs off (see createJobDepositAccount in src/lib/anchor.ts), then starts its KYB.
+// It is a business (not an individual) so payers see the company's name on every job account.
+// Run it once per environment (sandbox now, production at go-live) — not per job.
 //
-// Run with: npx tsx scripts/create-anchor-master-customer.ts
+// Sandbox, with Anchor's published test values (no real company or personal data):
+//   npx tsx scripts/create-anchor-master-customer.ts --sandbox-test-data
+// Production, with the real company details filled into MASTER_CUSTOMER below:
+//   npx tsx scripts/create-anchor-master-customer.ts
 //
-// Needs in .env (or .env.local): ANCHOR_API_KEY, and optionally ANCHOR_ENV=sandbox|production.
+// Needs in .env (or .env.local): ANCHOR_API_KEY, and ANCHOR_ENV=sandbox|production.
 //
-// BEFORE RUNNING: replace every "__FILL_ME__" value in MASTER_CUSTOMER below with the real
-// business / director details. The script refuses to run while any placeholder is left. Anchor
-// matches the name AND phone number against the BVN record, so they must be exactly what the BVN
-// holder registered with. Each KYC check is billed to the Anchor organisation's balance (sandbox
-// included) — an unfunded org gets 400 "Insufficient balance" on the verification step.
+// KYB is not instant. Anchor checks the officers' BVNs straight away, but the customer stays
+// "pending" until the company documents it asks for (CAC forms, RC number, certificate of
+// incorporation, proof of address — they vary by registration type and date) are uploaded at
+// app.getanchor.co/document-upload and reviewed. Job accounts can only be opened once it's approved.
 //
 // When it finishes, set the printed id as ANCHOR_MASTER_CUSTOMER_ID in .env.
 
 import 'dotenv/config';
 import {
-  createIndividualCustomer,
-  verifyIndividualCustomerKyc,
+  createBusinessCustomer,
+  verifyBusinessCustomerKyb,
   fetchCustomer,
   AnchorError,
-  type CreateIndividualCustomerParams,
+  type CreateBusinessCustomerParams,
+  type BusinessOfficer,
 } from '../src/lib/anchor';
 
 const PLACEHOLDER = '__FILL_ME__';
 
-// ── FILL THESE IN — real business/director details only. Do not commit the filled-in values. ──
-const MASTER_CUSTOMER: CreateIndividualCustomerParams & {
-  identificationLevel2: NonNullable<CreateIndividualCustomerParams['identificationLevel2']>;
-} = {
-  fullName: {
-    firstName: PLACEHOLDER, // director's first name, exactly as on the BVN
-    lastName: PLACEHOLDER, // director's last name, exactly as on the BVN
-    // middleName: PLACEHOLDER, // uncomment if the BVN record has one
-  },
-  address: {
-    addressLine_1: PLACEHOLDER, // registered business address, line 1
-    // addressLine_2: PLACEHOLDER,
-    city: PLACEHOLDER,
-    state: PLACEHOLDER, // e.g. the state name as written on the address
-    postalCode: PLACEHOLDER,
+// ── FILL THESE IN at go-live — the real company and its officers. Do not commit the filled-in values. ──
+const MASTER_ADDRESS = {
+  addressLine_1: PLACEHOLDER, // registered business address, line 1
+  city: PLACEHOLDER,
+  state: PLACEHOLDER, // upper case, e.g. LAGOS
+  postalCode: PLACEHOLDER,
+  country: 'NG',
+};
+
+const MASTER_CUSTOMER: CreateBusinessCustomerParams = {
+  address: { country: 'NG', state: PLACEHOLDER }, // same state as above
+  basicDetail: {
+    businessName: PLACEHOLDER, // the registered company name — this is what payers see on every job account
+    registrationType: PLACEHOLDER, // e.g. Private_Incorporated (see Anchor docs: Create Business Customer)
+    industry: PLACEHOLDER, // one of Anchor's industry codes (same docs page)
+    dateOfRegistration: PLACEHOLDER, // YYYY-MM-DD, from the CAC certificate
+    description: PLACEHOLDER, // one or two sentences on what the business does
+    website: 'https://getplugr.com',
     country: 'NG',
   },
-  email: PLACEHOLDER, // a monitored Plugr ops/finance inbox
-  phoneNumber: PLACEHOLDER, // the phone number registered on the BVN, e.g. 080XXXXXXXX
-  identificationLevel2: {
-    bvn: PLACEHOLDER, // director's 11-digit BVN
-    dateOfBirth: PLACEHOLDER, // YYYY-MM-DD, as on the BVN
-    gender: PLACEHOLDER as 'Male' | 'Female', // 'Male' or 'Female', as on the BVN
+  contact: {
+    email: { general: PLACEHOLDER, support: PLACEHOLDER, dispute: PLACEHOLDER }, // monitored Plugr inboxes
+    address: { main: MASTER_ADDRESS, registered: MASTER_ADDRESS },
+    phoneNumber: PLACEHOLDER, // company phone, e.g. 080XXXXXXXX
   },
+  // At least one DIRECTOR and the OWNER(s). Name, phone and DOB must match each person's BVN record.
+  officers: [
+    {
+      role: 'DIRECTOR',
+      fullName: { firstName: PLACEHOLDER, lastName: PLACEHOLDER },
+      nationality: 'NG',
+      address: MASTER_ADDRESS,
+      dateOfBirth: PLACEHOLDER, // YYYY-MM-DD
+      email: PLACEHOLDER,
+      phoneNumber: PLACEHOLDER, // the phone registered on this person's BVN
+      bvn: PLACEHOLDER, // 11 digits
+      title: PLACEHOLDER, // e.g. CEO
+      percentageOwned: 0, // their shareholding, 0–100
+    },
+  ],
   metadata: { role: 'plugr-master-collection-customer' },
 };
 // ─────────────────────────────────────────────────────────────────────────────────────────
+
+// Anchor's published sandbox sample values (officer BVNs 22222222226 / 22222222016 pass sandbox KYC).
+// Email and phone must be unique per Anchor org, so they're varied per run.
+function sandboxTestCustomer(): CreateBusinessCustomerParams {
+  const uniq = String(Date.now()).slice(-8);
+  const address = { addressLine_1: '1 James street', city: 'Ikeja', state: 'LAGOS', postalCode: '100032', country: 'NG' };
+  const officer = (role: BusinessOfficer['role'], firstName: string, lastName: string, bvn: string, percentageOwned: number, title: string): BusinessOfficer => ({
+    role, fullName: { firstName, lastName }, nationality: 'NG', address, dateOfBirth: '1994-06-25',
+    email: `${role.toLowerCase()}+${uniq}@getplugr.com`, phoneNumber: `070${uniq}`, bvn, title, percentageOwned,
+  });
+  return {
+    address: { country: 'NG', state: 'LAGOS' },
+    basicDetail: {
+      businessName: 'Plugr Sandbox Test Limited',
+      registrationType: 'Private_Incorporated',
+      industry: 'Agriculture-AgriculturalCooperatives',
+      businessBvn: '12345678901',
+      dateOfRegistration: '1999-06-25',
+      description: 'Sandbox-only test business for Plugr job collection accounts',
+      website: 'https://getplugr.com',
+      country: 'NG',
+    },
+    contact: {
+      email: { general: `general+${uniq}@getplugr.com`, support: `support+${uniq}@getplugr.com`, dispute: `dispute+${uniq}@getplugr.com` },
+      address: { main: address, registered: address },
+      phoneNumber: `070${uniq}`,
+    },
+    officers: [
+      officer('DIRECTOR', 'Josh', 'Steve', '22222222226', 0, 'CEO'),
+      officer('OWNER', 'Graham', 'Bell', '22222222016', 100, 'COO'),
+    ],
+    metadata: { role: 'plugr-master-collection-customer', source: 'sandbox-test-data' },
+  };
+}
 
 function findPlaceholders(value: unknown, path = ''): string[] {
   if (value === PLACEHOLDER) return [path];
@@ -77,63 +131,67 @@ async function main() {
     process.exit(1);
   }
 
-  const unfilled = findPlaceholders(MASTER_CUSTOMER);
-  if (unfilled.length) {
-    console.error('Refusing to run — these fields still hold placeholders:');
-    for (const p of unfilled) console.error(`  - ${p}`);
-    console.error('Edit MASTER_CUSTOMER in scripts/create-anchor-master-customer.ts with the real details first.');
+  const useSandboxData = process.argv.includes('--sandbox-test-data');
+  if (useSandboxData && process.env.ANCHOR_ENV === 'production') {
+    console.error('--sandbox-test-data is for the sandbox only. Fill in MASTER_CUSTOMER for production.');
     process.exit(1);
   }
 
-  if (process.env.ANCHOR_MASTER_CUSTOMER_ID) {
+  const customer = useSandboxData ? sandboxTestCustomer() : MASTER_CUSTOMER;
+  if (!useSandboxData) {
+    const unfilled = findPlaceholders(customer);
+    if (unfilled.length) {
+      console.error('Refusing to run — these fields still hold placeholders:');
+      for (const p of unfilled) console.error(`  - ${p}`);
+      console.error('Fill in MASTER_CUSTOMER in scripts/create-anchor-master-customer.ts, or use --sandbox-test-data in the sandbox.');
+      process.exit(1);
+    }
+  }
+
+  if (process.env.ANCHOR_MASTER_CUSTOMER_ID?.endsWith('-anc_bus_cst')) {
     console.error(
-      `ANCHOR_MASTER_CUSTOMER_ID is already set (${process.env.ANCHOR_MASTER_CUSTOMER_ID}). ` +
-        'There should be exactly one master customer per environment — unset it only if you really mean to create another.'
+      `ANCHOR_MASTER_CUSTOMER_ID is already a business customer (${process.env.ANCHOR_MASTER_CUSTOMER_ID}). ` +
+        'There should be one master per environment — unset it only if you really mean to create another.'
     );
     process.exit(1);
   }
 
-  console.log(`Creating master customer against: ${process.env.ANCHOR_BASE_URL || (process.env.ANCHOR_ENV === 'production' ? 'https://api.getanchor.co' : 'https://api.sandbox.getanchor.co')}`);
+  console.log(`Creating master business customer${useSandboxData ? ' (sandbox test data)' : ''} against: ${process.env.ANCHOR_BASE_URL || (process.env.ANCHOR_ENV === 'production' ? 'https://api.getanchor.co' : 'https://api.sandbox.getanchor.co')}`);
 
-  console.log('\n[1/3] Creating the individual customer...');
+  console.log('\n[1/3] Creating the business customer...');
   let customerId: string;
   try {
-    const customer = await createIndividualCustomer(MASTER_CUSTOMER);
-    customerId = customer.id;
+    const created = await createBusinessCustomer(customer);
+    customerId = created.id;
     console.log(`  OK — customer id: ${customerId}`);
   } catch (err) {
     reportAnchorError('Create customer', err);
     process.exit(1);
   }
 
-  // Creating the customer only stores the BVN/DOB/gender — KYC has to be triggered separately,
-  // and a DepositAccount can't be opened until it's approved.
-  console.log('\n[2/3] Triggering KYC verification...');
+  console.log('\n[2/3] Starting KYB...');
   try {
-    const res = await verifyIndividualCustomerKyc(customerId, MASTER_CUSTOMER.identificationLevel2);
+    const res = await verifyBusinessCustomerKyb(customerId);
     console.log(`  OK — ${res?.attributes?.message ?? JSON.stringify(res).slice(0, 200)}`);
   } catch (err) {
-    reportAnchorError('KYC verification', err);
-    console.error(
-      `  The customer WAS created (${customerId}). Fix the cause above, then re-trigger KYC for that id ` +
-        'instead of creating a second customer.'
-    );
+    reportAnchorError('KYB', err);
+    console.error(`  The customer WAS created (${customerId}). Re-trigger KYB for that id instead of creating another.`);
   }
 
   console.log('\n[3/3] Reading back verification status...');
   try {
     await new Promise((r) => setTimeout(r, 5000));
     const latest = await fetchCustomer(customerId);
-    console.log(`  verification.status: ${latest?.attributes?.verification?.status ?? 'unknown'}`);
-    console.log(
-      '  (KYC resolves asynchronously — listen for customer.identification.approved, or check the ' +
-        'customer in the Anchor dashboard, before opening any job accounts.)'
-    );
+    console.log(`  verification: ${JSON.stringify(latest?.attributes?.verification ?? 'unknown')}`);
   } catch (err) {
     reportAnchorError('Fetch customer', err);
   }
 
-  console.log(`\nDone. Add this to .env:\n\n  ANCHOR_MASTER_CUSTOMER_ID=${customerId}\n`);
+  console.log(`\nAdd this to .env:\n\n  ANCHOR_MASTER_CUSTOMER_ID=${customerId}\n`);
+  console.log(
+    'Next: upload the documents Anchor asks for at https://app.getanchor.co/document-upload, then wait for\n' +
+      'customer.identification.approved (or "approved" on the customer in the dashboard) before opening job accounts.'
+  );
 }
 
 main();

@@ -13,7 +13,7 @@
 //    bank account that must belong to an already-KYC'd Customer. There is no per-transaction
 //    "virtual account scoped to a job id" primitive here. createDepositAccount() below creates
 //    a fresh DepositAccount (and therefore a fresh virtual account number) per call, which is
-//    the closest equivalent. DECIDED: one Plugr-owned master Customer (created once by
+//    the closest equivalent. DECIDED: one Plugr-owned master BusinessCustomer (created once by
 //    scripts/create-anchor-master-customer.ts, id in ANCHOR_MASTER_CUSTOMER_ID) and a fresh
 //    DepositAccount per job — see createJobDepositAccount() at the bottom of this file.
 //
@@ -163,6 +163,62 @@ export async function verifyIndividualCustomerKyc(
       },
     }),
   });
+}
+
+// Anchor's business samples upper-case the state, e.g. "LAGOS".
+
+export type BusinessOfficer = {
+  role: 'DIRECTOR' | 'OWNER';
+  fullName: FullName;
+  nationality: string; // "NG"
+  address: Address;
+  dateOfBirth: string; // YYYY-MM-DD
+  email: string;
+  phoneNumber: string;
+  bvn: string;
+  title: string; // e.g. "CEO"
+  percentageOwned: number;
+};
+
+export type CreateBusinessCustomerParams = {
+  address: { country: string; state: string };
+  basicDetail: {
+    industry: string; // one of Anchor's industry codes, e.g. "Agriculture-AgriculturalCooperatives"
+    registrationType: string; // e.g. "Private_Incorporated"
+    country: string;
+    businessName: string; // what payers see as the account name on every job account
+    businessBvn?: string;
+    dateOfRegistration: string; // YYYY-MM-DD
+    description: string;
+    website?: string;
+  };
+  contact: {
+    email: { general: string; support?: string; dispute?: string };
+    address: { main: Address; registered: Address };
+    phoneNumber: string;
+  };
+  officers: BusinessOfficer[];
+  metadata?: Record<string, string>;
+};
+
+/** POST /api/v1/customers with type BusinessCustomer — shape per the "Create Business Customer"
+ *  docs, confirmed live against the sandbox (Oct 19 2026). */
+export async function createBusinessCustomer(params: CreateBusinessCustomerParams) {
+  return anchorRequest('/api/v1/customers', {
+    method: 'POST',
+    body: JSON.stringify({ data: { type: 'BusinessCustomer', attributes: params } }),
+  });
+}
+
+/**
+ * POST /api/v1/customers/{customerId}/verification/business — starts KYB. Officer BVNs are checked
+ * automatically, but the customer stays "pending" until the requested company documents (CAC forms,
+ * RC number, certificate of incorporation, proof of address — they vary by registrationType and
+ * date) are uploaded and reviewed, at app.getanchor.co/document-upload or via the documents API.
+ * Approval arrives as customer.identification.approved; no DepositAccount can be opened before it.
+ */
+export async function verifyBusinessCustomerKyb(customerId: string) {
+  return anchorRequest(`/api/v1/customers/${customerId}/verification/business`, { method: 'POST' });
 }
 
 // ── Deposit accounts (the Reserved Account equivalent) ────────────────────────────────────
@@ -405,6 +461,11 @@ export async function fetchJobVirtualAccount(
  * AccountNumber already ACTIVE on the first read (Providus, unmasked 10 digits, holder name in
  * attributes.name). The NUBAN/bank checks above still make an unexpected shape fail loudly with
  * the raw response attached rather than hand a client a wrong number.
+ *
+ * The master customer is meant to be a BusinessCustomer, so payers see the company's name on every
+ * job account rather than a director's. Anchor only allows CURRENT accounts for business customers
+ * and SAVINGS for individual ones, so the type and product are read off the id's suffix — an
+ * individual master (e.g. a sandbox test customer) still works.
  */
 export async function createJobDepositAccount(jobId: string) {
   const customerId = process.env.ANCHOR_MASTER_CUSTOMER_ID;
@@ -415,7 +476,16 @@ export async function createJobDepositAccount(jobId: string) {
     throw new Error('ANCHOR_API_KEY is not set');
   }
 
-  const created = await createDepositAccount({ customerId });
+  const isBusiness = customerId.endsWith('-anc_bus_cst');
+  if (!isBusiness && !customerId.endsWith('-anc_ind_cst')) {
+    throw new Error(`ANCHOR_MASTER_CUSTOMER_ID "${customerId}" is not an Anchor customer id`);
+  }
+
+  const created = await createDepositAccount(
+    isBusiness
+      ? { customerId, customerType: 'BusinessCustomer', productName: 'CURRENT' }
+      : { customerId, customerType: 'IndividualCustomer', productName: 'SAVINGS' }
+  );
   const depositAccountId: string | undefined = created?.id;
   if (!depositAccountId) {
     throw new AnchorError(502, { note: `no DepositAccount id returned for job ${jobId}`, created });
