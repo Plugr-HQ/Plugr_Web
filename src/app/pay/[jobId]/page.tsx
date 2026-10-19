@@ -1,7 +1,7 @@
 // src/app/pay/[jobId]/page.tsx
 // Public, login-free escrow payment page — the target of the WhatsApp pay-link. A client who
 // booked through the bot lands here, confirms the agreed amount (bot-booked jobs carry no
-// price), and pays into a real ALATPay virtual account. Reuses the same /pay + /check-status
+// price), and pays into a dedicated per-job account (Anchor; legacy ALATPay). Reuses the same /pay + /check-status
 // endpoints and webhook as the in-app flow; nothing here needs an app session.
 
 'use client';

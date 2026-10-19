@@ -1,5 +1,5 @@
 // src/app/app/pay/[jobId]/page.tsx
-// Client pays into escrow — real ALATPay virtual account, polled until confirmed.
+// Client pays into escrow — a dedicated per-job account (Anchor; legacy ALATPay), polled until confirmed.
 // Disconnected: after payment the client waits for the Plug (separate tab) to complete,
 // then confirms. A sandbox "simulate" affordance is available in test environments.
 
@@ -63,8 +63,8 @@ export default function AppPayPage() {
     setCopied(true); setTimeout(() => setCopied(false), 1500);
   }
 
-  // Manual "I've sent the transfer" — forces an immediate re-query of ALATPay instead of
-  // waiting for the next 3s tick, and reports back what ALATPay actually says.
+  // Manual "I've sent the transfer" — forces an immediate payment re-check instead of
+  // waiting for the next 3s tick, and reports back what the payment provider actually says.
   async function checkNow() {
     if (checking) return;
     setChecking(true); setCheckMsg(null);

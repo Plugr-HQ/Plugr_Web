@@ -1,12 +1,15 @@
 // src/app/api/jobs/[jobId]/check-status/route.ts
-// GET — poll-based fallback for the ALATPay webhook. Pulls the transaction status directly
-// from ALATPay via confirmTransaction() and performs the same transition the webhook would:
-// on 'completed', flip the job -> 'paid_escrow' and upsert the collection tx to 'successful'.
-// The webhook route stays intact — both are idempotent. Next 16: await params.
+// GET — poll-based fallback for the payment webhooks. Anchor jobs (anchorDepositAccountId set) run
+// the shared ledger sync in src/lib/anchorCollections.ts, the same one the Anchor webhook runs.
+// Legacy ALATPay jobs pull the transaction status from ALATPay via confirmTransaction() and perform
+// the same transition the ALATPay webhook would: on 'completed', flip the job -> 'paid_escrow' and
+// upsert the collection tx to 'successful'. All paths are idempotent. Next 16: await params.
 
 import { NextResponse } from 'next/server';
 import { getRepo, resolveSource } from '@/src/lib/repo';
 import { confirmTransaction, AlatPayError } from '@/src/lib/alatpay';
+import { AnchorError } from '@/src/lib/anchor';
+import { syncAnchorCollections } from '@/src/lib/anchorCollections';
 
 export async function GET(
   request: Request,
@@ -37,6 +40,28 @@ export async function GET(
     });
     await repo.setJobStatus(job.id, 'paid_escrow');
     return NextResponse.json({ status: 'paid_escrow', verified: true, simulated: true });
+  }
+
+  // Anchor job: read the account's ledger — the same sync the Anchor webhook runs, so whichever
+  // sees the payment first records it. The `alatpay` field name is kept because the pay pages read
+  // it as a generic "transfer seen" flag: 'pending' = money has landed but doesn't cover the job yet.
+  if (job.anchor_deposit_account_id) {
+    try {
+      const r = await syncAnchorCollections(repo, job, job.anchor_deposit_account_id, { source: 'check-status' });
+      if (r.credited) {
+        return NextResponse.json({ status: 'paid_escrow', verified: true, provider: 'anchor' });
+      }
+      return NextResponse.json({
+        status: job.status,
+        provider: 'anchor',
+        alatpay: r.credits ? 'pending' : 'unknown',
+        paid: r.paidNaira,
+        amount: Number(job.amount ?? 0),
+      });
+    } catch (err) {
+      console.warn('check-status: Anchor ledger read failed', err instanceof AnchorError ? err.context : String(err));
+      return NextResponse.json({ status: job.status, provider: 'anchor', alatpay: 'unknown' });
+    }
   }
 
   const tx = await repo.latestAlatpayTxnForJob(job.id);

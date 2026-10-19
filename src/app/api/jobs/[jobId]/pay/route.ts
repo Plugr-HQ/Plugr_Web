@@ -1,22 +1,27 @@
 // src/app/api/jobs/[jobId]/pay/route.ts
-// POST — Screen 3 "Pay Now". Generates a one-time ALATPay virtual account for this job's
-// amount (the REAL money-movement leg). orderId = job id so the webhook / check-status can
-// flip the job to 'paid_escrow'. Records a pending 'collection' row now.
+// POST — Screen 3 "Pay Now". Gives the client an account number to transfer this job's amount into.
+//
+// Anchor (default): one dedicated Anchor DepositAccount per job (createJobDepositAccount), stored
+// on the job so the Anchor webhook and /check-status can tie incoming money back to it. The same
+// account is returned on every revisit — never a second one — so a payment can't be orphaned.
+//
+// ALATPay (legacy): jobs that were given an ALATPay virtual account before the switch keep it while
+// it's still valid (24h), so a client mid-payment isn't moved to a different account number.
 
 import { NextResponse } from 'next/server';
 import { getRepo, resolveSource } from '@/src/lib/repo';
-import { generateVirtualAccount, AlatPayError } from '@/src/lib/alatpay';
+import {
+  createJobDepositAccount,
+  fetchJobVirtualAccount,
+  AnchorAccountNumberPendingError,
+  AnchorError,
+} from '@/src/lib/anchor';
 
 // Map ALATPay's numeric bank code to a display name. ALATPay's VA response has no
 // bankName field — only virtualBankCode — so we derive the name from the code.
 const BANK_CODES: Record<string, string> = { '035': 'Wema Bank' };
 
-function splitName(full: string): { firstName: string; lastName: string } {
-  const parts = full.trim().split(/\s+/);
-  return { firstName: parts[0] || 'Plugr', lastName: parts.slice(1).join(' ') || 'Client' };
-}
-
-function normalizeVirtualAccount(data: any) {
+function normalizeAlatpayAccount(data: any) {
   const d = data?.data ?? data ?? {};
   return {
     accountNumber: d.virtualBankAccountNumber ?? null,
@@ -28,7 +33,23 @@ function normalizeVirtualAccount(data: any) {
     transactionId: d.transactionId ?? d.id ?? null,
     amount: d.amount ?? null,
     expiresAt: d.expiredAt ?? d.expiresAt ?? null,
+    provider: 'alatpay' as const,
   };
+}
+
+function anchorAccount(va: { virtualAccountNumber: string; bankName: string; accountName: string | null }) {
+  return {
+    accountNumber: va.virtualAccountNumber,
+    bankName: va.bankName,
+    accountName: va.accountName,
+    provider: 'anchor' as const,
+  };
+}
+
+function anchorFailure(err: unknown) {
+  const context = err instanceof AnchorError ? err.context : String(err);
+  console.error('Anchor account setup failed', context);
+  return NextResponse.json({ error: 'could not set up a payment account', detail: context }, { status: 502 });
 }
 
 export async function POST(
@@ -53,12 +74,13 @@ export async function POST(
   if (!job) {
     return NextResponse.json({ error: 'job not found' }, { status: 404 });
   }
-  if (job.status === 'paid_escrow') {
+  // paid_escrow and every later state (accepted, completed, released) mean the money is in.
+  if (job.status !== 'requested') {
     return NextResponse.json({ error: 'job is already paid' }, { status: 409 });
   }
 
-  // If the job has no amount yet, persist the client-confirmed one before minting the VA, so
-  // the webhook and the eventual release move the correct sum. Never overwrite a set amount.
+  // If the job has no amount yet, persist the client-confirmed one before handing out an account, so
+  // the payment check and the eventual release move the correct sum. Never overwrite a set amount.
   if (!(Number(job.amount) > 0)) {
     if (!bodyAmount) {
       return NextResponse.json({ error: 'an amount is required to start payment' }, { status: 400 });
@@ -67,50 +89,59 @@ export async function POST(
     job = { ...job, amount: bodyAmount };
   }
 
-  // Reuse an existing pending virtual account for this job instead of minting a new one on
-  // revisit — otherwise a genuine payment to the first VA could be orphaned.
-  const existing = await repo.findReusableCollection(job.id);
-  if (existing?.alatpay_virtual_account) {
-    return NextResponse.json({
-      virtualAccount: normalizeVirtualAccount(existing.raw_webhook_payload),
-      raw: existing.raw_webhook_payload,
-      reused: true,
-    });
+  // Revisit of a job that already has its Anchor account: hand back the same number.
+  if (job.anchor_deposit_account_id) {
+    try {
+      const va = await fetchJobVirtualAccount(job.anchor_deposit_account_id);
+      if (!job.anchor_virtual_account_number) {
+        await repo.setJobAnchorAccount(job.id, job.anchor_deposit_account_id, va.virtualAccountNumber);
+      }
+      return NextResponse.json({ virtualAccount: anchorAccount(va), reused: true });
+    } catch (err) {
+      if (err instanceof AnchorAccountNumberPendingError) {
+        return NextResponse.json({ error: 'your account number is still being set up — try again in a moment' }, { status: 503 });
+      }
+      return anchorFailure(err);
+    }
   }
 
-  const { firstName, lastName } = splitName(job.client_name);
+  // Legacy: an ALATPay account handed out before the switch, still within its 24h validity.
+  const legacy = await repo.findReusableCollection(job.id);
+  if (legacy?.alatpay_virtual_account) {
+    const va = normalizeAlatpayAccount(legacy.raw_webhook_payload);
+    if (va.expiresAt && new Date(va.expiresAt).getTime() > Date.now()) {
+      return NextResponse.json({ virtualAccount: va, reused: true });
+    }
+  }
 
-  let result: any;
+  let created: Awaited<ReturnType<typeof createJobDepositAccount>>;
   try {
-    result = await generateVirtualAccount({
-      amount: Number(job.amount),
-      orderId: job.id,
-      description: job.job_description || `Plugr payment for job ${job.id}`,
-      customer: {
-        email: 'noreply@getplugr.com',
-        phone: job.client_phone || '08000000000',
-        firstName,
-        lastName,
-      },
-    });
+    created = await createJobDepositAccount(job.id);
   } catch (err) {
-    const context = err instanceof AlatPayError ? err.context : String(err);
-    console.error('generateVirtualAccount failed', context);
-    return NextResponse.json(
-      { error: 'could not generate virtual account', detail: context },
-      { status: 502 }
-    );
+    if (err instanceof AnchorAccountNumberPendingError) {
+      // The account exists; its number just isn't ready. Keep the account on the job so the next
+      // attempt picks it up instead of opening another.
+      await repo.setJobAnchorAccount(job.id, err.depositAccountId, null);
+      return NextResponse.json({ error: 'your account number is still being set up — try again in a moment' }, { status: 503 });
+    }
+    return anchorFailure(err);
   }
 
-  const va = normalizeVirtualAccount(result);
+  const attached = await repo.setJobAnchorAccount(job.id, created.depositAccountId, created.virtualAccountNumber);
+  if (!attached) {
+    // A concurrent request attached its account first — give the client that one, not ours.
+    const current = await repo.getJob(job.id);
+    console.warn(`pay: job ${job.id} already had an Anchor account; discarding ${created.depositAccountId}`);
+    if (current?.anchor_deposit_account_id) {
+      try {
+        const va = await fetchJobVirtualAccount(current.anchor_deposit_account_id);
+        return NextResponse.json({ virtualAccount: anchorAccount(va), reused: true });
+      } catch (err) {
+        return anchorFailure(err);
+      }
+    }
+    return NextResponse.json({ error: 'could not attach a payment account' }, { status: 409 });
+  }
 
-  await repo.insertPendingCollection({
-    jobId: job.id,
-    alatpayTransactionId: va.transactionId,
-    virtualAccount: va.accountNumber,
-    amount: Number(job.amount),
-    raw: result ?? null,
-  });
-
-  return NextResponse.json({ virtualAccount: va, raw: result });
+  return NextResponse.json({ virtualAccount: anchorAccount(created), reused: false });
 }

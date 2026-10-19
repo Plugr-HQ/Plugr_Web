@@ -51,8 +51,8 @@ export default function AppReceiptPage() {
           <Divider className="my-6" />
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate mb-3">Payment reference</p>
           <div className="space-y-2">
-            <RefRow label="Virtual account" value={collection?.alatpay_virtual_account} />
-            <RefRow label="Transaction ID" value={collection?.alatpay_transaction_id} />
+            <RefRow label="Virtual account" value={collection?.account_number ?? collection?.alatpay_virtual_account} />
+            <RefRow label="Transaction ID" value={collection?.reference ?? collection?.alatpay_transaction_id} />
             <RefRow label="Order ID" value={job.id} mono />
           </div>
         </Card>

@@ -367,29 +367,35 @@ export async function listAccountNumbers(depositAccountId: string): Promise<Anch
   );
 }
 
-// ── Inbound transfers (money landing in a DepositAccount) ─────────────────────────────────
+// ── Account ledger (what actually landed in a DepositAccount) ─────────────────────────────
 
-export type AnchorInboundTransfer = {
-  id: string;
-  type: 'InboundNIPTransfer';
+export type AnchorLedgerTransaction = {
+  id: string; // e.g. "1792369832968498-anc_txn" — the idempotency key for a collection row
+  type: string; // e.g. "NIPTransaction"
   attributes: {
-    amount: number; // minor units (kobo) — DepositAccount balances read the same way (decimalPlaces: 2)
-    currency: string;
-    status: string; // "COMPLETED" once settled
-    reference?: string;
-    sessionId?: string;
-    description?: string;
-    sourceAccountNumber?: string;
-    sourceAccountName?: string;
-    sourceBank?: { name?: string };
+    amount: number; // minor units (kobo)
+    direction: 'Credit' | 'Debit';
+    transactionType?: string; // e.g. "Settlement"
+    summary?: string;
+    balanceBefore?: number;
+    balanceAfter?: number;
+    createdAt?: string;
+    transactionDate?: string;
   };
-  relationships?: { account?: { data?: { id: string; type: 'DepositAccount' } } };
+  relationships?: Record<string, { data?: { id: string; type: string } }>;
 };
 
-/** GET /api/v1/inbound-transfers/{inboundTransferId} — per the "Account Numbers → Fund Deposit
- *  Account" docs. The webhook route uses it when an event arrives without `included`. */
-export async function fetchInboundTransfer(inboundTransferId: string): Promise<AnchorInboundTransfer> {
-  return anchorRequest<AnchorInboundTransfer>(`/api/v1/inbound-transfers/${inboundTransferId}`);
+/**
+ * GET /api/v1/transactions?accountId={depositAccountId} — the account's ledger. accountId is
+ * required since Anchor's Apr 2026 change (without it the list comes back empty). Shape confirmed
+ * live (Oct 19 2026). A sandbox "Simulate Transfer" lands here as a Settlement credit for a Payment
+ * resource, not as an InboundNIPTransfer, so payment detection reads this ledger rather than
+ * depending on which webhook event type a given transfer produces.
+ */
+export async function listAccountTransactions(depositAccountId: string): Promise<AnchorLedgerTransaction[]> {
+  return anchorRequest<AnchorLedgerTransaction[]>(
+    `/api/v1/transactions?accountId=${encodeURIComponent(depositAccountId)}&size=100`
+  );
 }
 
 // ── Per-job collection account ──────────────────────────────────────────────────────────
