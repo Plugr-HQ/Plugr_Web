@@ -45,6 +45,9 @@ export interface JobRow {
   created_at: string;
   completed_at: string | null;
   escrow_released_at: string | null;
+  /** Anchor DepositAccount opened for this job's payment, if any. */
+  anchor_deposit_account_id: string | null;
+  anchor_virtual_account_number: string | null;
 }
 
 export interface TxnRow {
@@ -57,6 +60,10 @@ export interface TxnRow {
   status: 'pending' | 'successful' | 'failed';
   raw_webhook_payload: unknown;
   created_at: string;
+  /** Provider-neutral: the ALATPay transaction id or the Anchor ledger transaction id. */
+  reference: string | null;
+  /** Provider-neutral: the account number the client paid into. */
+  account_number: string | null;
 }
 
 export interface CreateJobInput {
@@ -106,7 +113,7 @@ export interface Repo {
     opts?: { completedAt?: Date; escrowReleasedAt?: Date }
   ): Promise<void>;
   setJobAmount(jobId: string, amount: number): Promise<void>;
-  setJobAnchorAccount(jobId: string, depositAccountId: string, virtualAccountNumber: string): Promise<void>;
+  setJobAnchorAccount(jobId: string, depositAccountId: string, virtualAccountNumber: string | null): Promise<boolean>;
   getJobByAnchorDepositAccountId(depositAccountId: string): Promise<JobRow | null>;
 
   // transactions
@@ -128,14 +135,13 @@ export interface Repo {
     status: 'pending' | 'successful';
     raw: unknown;
   }): Promise<void>;
-  findTxnByAnchorTransferId(anchorTransferId: string): Promise<TxnRow | null>;
+  findTxnByAnchorTransactionId(anchorTransactionId: string): Promise<TxnRow | null>;
   upsertAnchorCollection(input: {
-    anchorTransferId: string;
+    anchorTransactionId: string;
     jobId: string | null;
     amount: number;
-    status: 'pending' | 'successful';
-    raw: unknown;
-  }): Promise<void>;
+    raw: Record<string, unknown>;
+  }): Promise<boolean>;
   insertOrphanPayload(raw: unknown): Promise<void>;
   insertRelease(jobId: string, amount: number): Promise<void>;
   insertWithdrawal(amount: number): Promise<TxnRow | null>;

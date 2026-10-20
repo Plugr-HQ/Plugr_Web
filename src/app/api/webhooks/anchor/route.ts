@@ -1,59 +1,51 @@
 // src/app/api/webhooks/anchor/route.ts
-// Register this URL in the Anchor Dashboard > Developers > Webhooks, subscribed to
-// nip.inbound.received and nip.inbound.completed, with "include related resources" enabled (saves
-// a round trip per event). The webhook token chosen there goes in ANCHOR_WEBHOOK_TOKEN.
+// Register this URL in the Anchor Dashboard > Settings > Developers > Webhooks, subscribed to the
+// money-in events — Nip "Inbound Received" / "Inbound Completed" (what Anchor's docs say a bank
+// transfer to an account number produces) and Payment "Settled" (what a sandbox Simulate Transfer
+// produced). The secret code chosen there (max 10 characters) goes in ANCHOR_WEBHOOK_TOKEN.
 //
-// Confirmed against Anchor's docs (Oct 18 2026). nip.inbound.completed = funds settled into the
-// DepositAccount ("listen to this event to give value"); nip.inbound.received = transfer still
-// pending. Payload shape (docs show it both wrapped in { data } and bare, so both are accepted):
-//   { data: { id, type, attributes: { createdAt },
-//             relationships: { transfer: { data: { id, type: 'InboundNIPTransfer' } },
-//                              account:  { data: { id, type: 'DepositAccount' } } } },
-//     included?: [ { type: 'InboundNIPTransfer', id, attributes: { amount, status, ... } }, ... ] }
-// The event itself carries NO amount: it comes from the included InboundNIPTransfer, or from
-// GET /inbound-transfers/{id} when `included` is off. Amounts are kobo; jobs are stored in naira.
-// The DepositAccount id is our only correlation key back to the job ("Job"."anchorDepositAccountId").
+// The webhook is a TRIGGER, not the source of truth. Anchor events are minimal (no amount) and the
+// event type depends on how the money arrived, so this route only works out which job's account
+// the event is about, then reads that account's ledger via syncAnchorCollections — exactly what
+// /api/jobs/[jobId]/check-status does — and records any new settled credits there.
+//
 // Signature arrives in "x-anchor-signature" (Base64 of the hex HMAC-SHA1 digest, confirmed against a
 // real delivery) — verify BEFORE touching the DB. Webhooks come from 18.133.55.102.
-//
-// Unlike ALATPay's amount-locked one-time account, an Anchor DepositAccount accepts any transfer,
-// so a job only moves to paid_escrow once its successful collections cover the job amount, and only
-// from 'requested' — a late top-up must not drag an accepted job back to paid_escrow.
 
 import { NextResponse } from 'next/server';
-import { getRepo, type JobRow, type Repo } from '@/src/lib/repo';
-import {
-  verifyAnchorWebhookSignature,
-  fetchInboundTransfer,
-  type AnchorInboundTransfer,
-} from '@/src/lib/anchor';
+import { getRepo, type JobRow } from '@/src/lib/repo';
+import { verifyAnchorWebhookSignature } from '@/src/lib/anchor';
+import { syncAnchorCollections } from '@/src/lib/anchorCollections';
 
-const INBOUND_EVENTS = new Set(['nip.inbound.received', 'nip.inbound.completed']);
+// Events that mean money is moving into an account. If one of these can't be tied to a job, its raw
+// payload is kept (insertOrphanPayload) so nothing silently drops.
+const MONEY_IN_EVENTS = new Set([
+  'nip.inbound.received',
+  'nip.inbound.completed',
+  'nip.incomingTransfer.received',
+  'payment.received',
+  'payment.settled',
+  'payin.received',
+]);
 
-/** Find the job. Returns the repo that owns it (or nulls if not found). */
-async function locateJob(depositAccountId: string | null) {
-  if (!depositAccountId) return { repo: null as Repo | null, job: null as JobRow | null };
-  const repo = getRepo('core');
-  try {
-    const job = await repo.getJobByAnchorDepositAccountId(depositAccountId);
-    if (job) return { repo, job };
-  } catch (e) {
-    // Until the anchor* columns exist on "Job" (sql/core_schema_additions.sql §5) this throws
-    // "column does not exist" — the payload is still recorded below, just without a job.
-    console.warn('Anchor webhook: job lookup failed', e);
+/** The DepositAccount an event is about — on the event itself, or on an included resource. */
+function depositAccountIdFrom(payload: any): string | null {
+  const event = payload?.data ?? payload;
+  const included: any[] = Array.isArray(payload?.included) ? payload.included : [];
+  for (const rel of [event?.relationships, ...included.map((r) => r?.relationships)]) {
+    for (const key of ['account', 'settlementAccount', 'depositAccount']) {
+      const d = rel?.[key]?.data;
+      if (d?.type === 'DepositAccount' && d.id) return d.id;
+    }
   }
-  return { repo: null as Repo | null, job: null as JobRow | null };
+  return included.find((r) => r?.type === 'DepositAccount')?.id ?? null;
 }
 
-/** The InboundNIPTransfer for this event: from `included` if Anchor sent it, else fetched. */
-async function resolveTransfer(payload: any, transferId: string): Promise<AnchorInboundTransfer | null> {
-  const included: any[] = Array.isArray(payload?.included) ? payload.included : [];
-  const fromIncluded = included.find((r) => r?.type === 'InboundNIPTransfer' && r?.id === transferId);
-  if (fromIncluded) return fromIncluded;
+async function locateJob(depositAccountId: string): Promise<JobRow | null> {
   try {
-    return await fetchInboundTransfer(transferId);
-  } catch (err) {
-    console.warn('Anchor webhook: fetchInboundTransfer failed', err);
+    return await getRepo('core').getJobByAnchorDepositAccountId(depositAccountId);
+  } catch (e) {
+    console.warn('Anchor webhook: job lookup failed', e);
     return null;
   }
 }
@@ -81,90 +73,35 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'invalid JSON' }, { status: 400 });
   }
   const event = payload?.data ?? payload;
-  const eventType: string = String(event?.type ?? '');
+  const eventType = String(event?.type ?? '');
+  const eventId: string | undefined = event?.id ?? req.headers.get('x-anchor-event-id') ?? undefined;
+  const isMoneyIn = MONEY_IN_EVENTS.has(eventType);
 
-  // Anything other than an inbound transfer (customer.*, account.*, ...) isn't a payment — ack it
-  // so Anchor stops retrying, but don't write it into "transactions".
-  if (!INBOUND_EVENTS.has(eventType)) {
-    console.info(`Anchor webhook: ignoring ${eventType || 'untyped'} event ${event?.id ?? ''}`);
-    return NextResponse.json({ received: true, note: 'event type not handled' });
-  }
+  const depositAccountId = depositAccountIdFrom(payload);
+  const job = depositAccountId ? await locateJob(depositAccountId) : null;
 
-  const transferId: string | null = event?.relationships?.transfer?.data?.id ?? null;
-  const depositAccountId: string | null = event?.relationships?.account?.data?.id ?? null;
-
-  if (!transferId) {
-    // Nothing to correlate on — record the raw payload for later inspection.
-    await getRepo('core').insertOrphanPayload(payload);
-    return NextResponse.json({ received: true, note: 'no transfer id in payload' });
-  }
-
-  const { repo: owner, job } = await locateJob(depositAccountId);
-  // If the job can't be found, still record the transaction so nothing is silently dropped.
-  const repo = owner ?? getRepo('core');
-
-  // Idempotency — Anchor retries on non-200 responses, and received/completed share a transfer id.
-  const existing = await repo.findTxnByAnchorTransferId(transferId);
-  if (existing?.status === 'successful') {
-    return NextResponse.json({ received: true, note: 'already processed' });
-  }
-
-  const transfer = await resolveTransfer(payload, transferId);
-  if (!transfer) {
-    // No amount to credit. Keep the event on file, then return non-200 so Anchor retries.
-    await repo.upsertAnchorCollection({
-      anchorTransferId: transferId,
-      jobId: job?.id ?? null,
-      amount: 0,
-      status: 'pending',
-      raw: payload,
-    });
-    return NextResponse.json({ error: 'could not resolve inbound transfer' }, { status: 502 });
-  }
-
-  const transferAccountId = transfer.relationships?.account?.data?.id;
-  if (depositAccountId && transferAccountId && transferAccountId !== depositAccountId) {
-    console.error(
-      `Anchor webhook: transfer ${transferId} belongs to ${transferAccountId}, event says ${depositAccountId}`
-    );
-  }
-  const accountMatches = !transferAccountId || !depositAccountId || transferAccountId === depositAccountId;
-  const transferStatus = String(transfer.attributes?.status ?? '').toUpperCase();
-  const isSuccessful =
-    eventType === 'nip.inbound.completed' && transferStatus === 'COMPLETED' && accountMatches;
-  if (eventType === 'nip.inbound.completed' && transferStatus !== 'COMPLETED') {
-    console.warn(`Anchor webhook: completed event but transfer ${transferId} status is "${transferStatus}"`);
-  }
-
-  const amountNaira = Number(transfer.attributes?.amount ?? 0) / 100; // kobo -> naira
-
-  await repo.upsertAnchorCollection({
-    anchorTransferId: transferId,
-    jobId: job?.id ?? null,
-    amount: amountNaira,
-    status: isSuccessful ? 'successful' : 'pending',
-    raw: payload,
-  });
-
-  let credited = false;
-  if (isSuccessful && job?.id) {
-    const jobAmount = Number(job.amount ?? 0);
-    const paid = (await repo.txnsForJob(job.id))
-      .filter((t) => t.type === 'collection' && t.status === 'successful')
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-
-    if (job.status !== 'requested') {
-      console.info(`Anchor webhook: job ${job.id} already ${job.status}, recorded transfer only`);
-    } else if (jobAmount <= 0) {
-      console.warn(`Anchor webhook: job ${job.id} has no amount set, not marking paid`);
-    } else if (paid + 0.005 < jobAmount) {
-      console.warn(`Anchor webhook: job ${job.id} underpaid so far (${paid} of ${jobAmount})`);
-    } else {
-      await repo.setJobStatus(job.id, 'paid_escrow');
-      credited = true;
+  if (!job) {
+    if (isMoneyIn) {
+      // Money moved on an account we can't tie to a job — keep it for inspection.
+      await getRepo('core').insertOrphanPayload(payload);
+      return NextResponse.json({ received: true, note: 'no job for this account; payload recorded' });
     }
+    // customer.*, account.opened (fires before the job is linked to its account), etc.
+    return NextResponse.json({ received: true, note: 'event not for a job account' });
   }
 
-  // Must return 200 or Anchor will retry.
-  return NextResponse.json({ received: true, verified: isSuccessful, credited });
+  try {
+    const result = await syncAnchorCollections(getRepo('core'), job, depositAccountId!, {
+      source: 'webhook',
+      eventId,
+      eventType,
+    });
+    // Must return 200 or Anchor will retry.
+    return NextResponse.json({ received: true, ...result });
+  } catch (err) {
+    // Couldn't read the ledger (Anchor API down?). Keep the event, and return non-200 so Anchor retries.
+    console.error('Anchor webhook: ledger sync failed', err);
+    if (isMoneyIn) await getRepo('core').insertOrphanPayload(payload);
+    return NextResponse.json({ error: 'could not read account ledger' }, { status: 502 });
+  }
 }

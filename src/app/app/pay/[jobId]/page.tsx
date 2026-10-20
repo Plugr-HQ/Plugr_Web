@@ -1,5 +1,5 @@
 // src/app/app/pay/[jobId]/page.tsx
-// Client pays into escrow — real ALATPay virtual account, polled until confirmed.
+// Client pays into escrow — a dedicated per-job account (Anchor; legacy ALATPay), polled until confirmed.
 // Disconnected: after payment the client waits for the Plug (separate tab) to complete,
 // then confirms. A sandbox "simulate" affordance is available in test environments.
 
@@ -21,6 +21,7 @@ export default function AppPayPage() {
   const [paid, setPaid] = useState(false);
   const [copied, setCopied] = useState(false);
   const [simulating, setSimulating] = useState(false);
+  const [sandbox, setSandbox] = useState(false);
   const [alatState, setAlatState] = useState<'idle' | 'pending' | 'unknown'>('idle');
   const [waited, setWaited] = useState(0);
   const [checking, setChecking] = useState(false);
@@ -35,8 +36,9 @@ export default function AppPayPage() {
         const snap = await jsonFetch(`/api/jobs/${jobId}?source=core`);
         setJob(snap.job);
         if (snap.job?.status === 'paid_escrow') { setPaid(true); return; }
-        const { virtualAccount } = await jsonFetch(`/api/jobs/${jobId}/pay?source=core`, { method: 'POST' });
+        const { virtualAccount, sandbox } = await jsonFetch(`/api/jobs/${jobId}/pay?source=core`, { method: 'POST' });
         setVa(virtualAccount);
+        setSandbox(sandbox === true);
       } catch (e: any) { setError(e.message); }
     })();
   }, [jobId]);
@@ -63,8 +65,8 @@ export default function AppPayPage() {
     setCopied(true); setTimeout(() => setCopied(false), 1500);
   }
 
-  // Manual "I've sent the transfer" — forces an immediate re-query of ALATPay instead of
-  // waiting for the next 3s tick, and reports back what ALATPay actually says.
+  // Manual "I've sent the transfer" — forces an immediate payment re-check instead of
+  // waiting for the next 3s tick, and reports back what the payment provider actually says.
   async function checkNow() {
     if (checking) return;
     setChecking(true); setCheckMsg(null);
@@ -152,10 +154,14 @@ export default function AppPayPage() {
           </button>
           {checkMsg && <p className="mt-2 text-xs text-slate leading-relaxed">{checkMsg}</p>}
 
-          <Divider className="my-5" />
-          <button onClick={simulate} disabled={simulating} className="w-full inline-flex items-center justify-center gap-2 rounded-pill border border-dashed border-gold/40 hover:border-gold hover:bg-gold/5 disabled:opacity-50 transition-all text-[13px] font-bold text-pitch-black py-3">
-            {simulating ? <><Loader2 className="w-4 h-4 animate-spin" /> Simulating…</> : 'Sandbox: simulate transfer'}
-          </button>
+          {sandbox && (
+            <>
+              <Divider className="my-5" />
+              <button onClick={simulate} disabled={simulating} className="w-full inline-flex items-center justify-center gap-2 rounded-pill border border-dashed border-gold/40 hover:border-gold hover:bg-gold/5 disabled:opacity-50 transition-all text-[13px] font-bold text-pitch-black py-3">
+                {simulating ? <><Loader2 className="w-4 h-4 animate-spin" /> Simulating…</> : 'Sandbox: simulate transfer'}
+              </button>
+            </>
+          )}
         </Card>
       ) : (
         !error && <div className="flex items-center gap-2 text-slate text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Generating virtual account…</div>

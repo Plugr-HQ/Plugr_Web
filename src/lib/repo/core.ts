@@ -110,7 +110,9 @@ const JOB_COLS = `
   ${STATUS_SQL}                           as status,
   j."createdAt"                                as created_at,
   case when j.status = 'COMPLETED' then j."updatedAt" end as completed_at,
-  j."escrowReleasedAt"                         as escrow_released_at`;
+  j."escrowReleasedAt"                         as escrow_released_at,
+  j."anchorDepositAccountId"                   as anchor_deposit_account_id,
+  j."anchorVirtualAccountNumber"               as anchor_virtual_account_number`;
 
 const JOB_FROM = `
   from "Job" j
@@ -126,7 +128,9 @@ const TXN_COLS = `
   lower(type::text)         as type,
   lower(status::text)       as status,
   "rawWebhookPayload"       as raw_webhook_payload,
-  "createdAt"               as created_at`;
+  "createdAt"               as created_at,
+  coalesce("alatpayTransactionId", "rawWebhookPayload" #>> '{transaction,id}') as reference,
+  coalesce("alatpayVirtualAccount", "rawWebhookPayload" #>> '{accountNumber}') as account_number`;
 
 // ---------------------------------------------------------------- plugs
 
@@ -306,20 +310,28 @@ export async function setJobAmount(jobId: string, amount: number): Promise<void>
 }
 
 // Anchor collection: one DepositAccount per job (src/lib/anchor.ts createJobDepositAccount).
-// Both columns come from section 5 of sql/core_schema_additions.sql — until they exist in the
-// live DB these two queries throw "column does not exist".
+// Columns added by Plugr_Backend migration 20261019000000_add_anchor_job_account.
 
+/**
+ * Attach the job's Anchor account. Only takes when the job has no account yet (or already has this
+ * one, to fill in a number that wasn't generated in time), so two concurrent "Pay" requests can't
+ * leave a client paying into an account the job no longer points at. Returns whether it took.
+ */
 export async function setJobAnchorAccount(
   jobId: string,
   depositAccountId: string,
-  virtualAccountNumber: string
-): Promise<void> {
-  await q(
+  virtualAccountNumber: string | null
+): Promise<boolean> {
+  const row = await one<{ id: string }>(
     `update "Job"
-     set "anchorDepositAccountId" = $2, "anchorVirtualAccountNumber" = $3, "updatedAt" = now()
-     where id = $1`,
+     set "anchorDepositAccountId" = $2,
+         "anchorVirtualAccountNumber" = coalesce($3, "anchorVirtualAccountNumber"),
+         "updatedAt" = now()
+     where id = $1 and ("anchorDepositAccountId" is null or "anchorDepositAccountId" = $2)
+     returning id`,
     [jobId, depositAccountId, virtualAccountNumber]
   );
+  return !!row;
 }
 
 /** The Anchor webhook only carries the DepositAccount id — this is how it finds the job. */
@@ -404,45 +416,49 @@ export async function upsertCollection(input: {
   );
 }
 
-// "transactions" has no Anchor column, so an Anchor collection is keyed on the InboundNIPTransfer
-// id inside its stored event. Anchor's docs show events both wrapped in { data } and bare, hence
-// both paths. nip.inbound.received and nip.inbound.completed share that transfer id, so the
-// completed event promotes the pending row rather than adding a second one.
-const ANCHOR_TRANSFER_ID_SQL = `coalesce(
-  "rawWebhookPayload" #>> '{data,relationships,transfer,data,id}',
-  "rawWebhookPayload" #>> '{relationships,transfer,data,id}')`;
+// "transactions" has no Anchor column, so an Anchor collection is keyed on the id of the Anchor
+// LEDGER transaction (a credit on the job's DepositAccount, e.g. "1792369832968498-anc_txn") stored
+// at rawWebhookPayload.transaction.id. The webhook and /check-status both record credits from the
+// same ledger (src/lib/anchorCollections.ts), so whichever sees a payment first writes the row and
+// the other finds it — one row per credit, never two.
+const ANCHOR_LEDGER_TXN_ID_SQL = `"rawWebhookPayload" #>> '{transaction,id}'`;
 
-export async function findTxnByAnchorTransferId(anchorTransferId: string): Promise<TxnRow | null> {
+export async function findTxnByAnchorTransactionId(anchorTransactionId: string): Promise<TxnRow | null> {
   return one<TxnRow>(
     `select ${TXN_COLS} from transactions
-     where type = 'COLLECTION' and ${ANCHOR_TRANSFER_ID_SQL} = $1
+     where type = 'COLLECTION' and ${ANCHOR_LEDGER_TXN_ID_SQL} = $1
      order by "createdAt" desc limit 1`,
-    [anchorTransferId]
+    [anchorTransactionId]
   );
 }
 
+/** Record one settled Anchor credit as a SUCCESSFUL collection. Returns true when it was new. A
+ *  repeat refreshes the row and merges raw, so details added by an earlier pass are kept. */
 export async function upsertAnchorCollection(input: {
-  anchorTransferId: string;
+  anchorTransactionId: string;
   jobId: string | null;
   amount: number;
-  status: 'pending' | 'successful';
-  raw: unknown;
-}): Promise<void> {
-  await q(
+  raw: Record<string, unknown>;
+}): Promise<boolean> {
+  const row = await one<{ inserted: number }>(
     `with updated as (
        update transactions
-          set status              = $4::"TransactionStatus",
+          set status              = 'SUCCESSFUL',
               "jobId"             = coalesce($2::uuid, "jobId"),
               amount              = $3::double precision,
-              "rawWebhookPayload" = $5::jsonb
-        where type = 'COLLECTION' and ${ANCHOR_TRANSFER_ID_SQL} = $1
+              "rawWebhookPayload" = coalesce("rawWebhookPayload", '{}'::jsonb) || $4::jsonb
+        where type = 'COLLECTION' and ${ANCHOR_LEDGER_TXN_ID_SQL} = $1
         returning id
+     ), inserted as (
+       insert into transactions (id, "jobId", amount, type, status, "rawWebhookPayload", "createdAt")
+       select gen_random_uuid(), $2::uuid, $3::double precision, 'COLLECTION', 'SUCCESSFUL', $4::jsonb, now()
+       where not exists (select 1 from updated)
+       returning id
      )
-     insert into transactions (id, "jobId", amount, type, status, "rawWebhookPayload", "createdAt")
-     select gen_random_uuid(), $2::uuid, $3::double precision, 'COLLECTION', $4::"TransactionStatus", $5::jsonb, now()
-     where not exists (select 1 from updated)`,
-    [input.anchorTransferId, input.jobId, input.amount, input.status.toUpperCase(), input.raw ?? null]
+     select count(*)::int as inserted from inserted`,
+    [input.anchorTransactionId, input.jobId, input.amount, input.raw]
   );
+  return (row?.inserted ?? 0) > 0;
 }
 
 export async function insertOrphanPayload(raw: unknown): Promise<void> {
