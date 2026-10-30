@@ -51,3 +51,9 @@ export function storeAgeBlocked(): void {
 export function ageNoticeVersion(): string | null {
   return readAgeConfirmation()?.v ?? null;
 }
+
+/** Spread into the body of every OTP request, OTP verify and register call. */
+export function ageFields(): { ageConfirmed: true; ageNoticeVersion: string } | Record<string, never> {
+  const v = ageNoticeVersion();
+  return v ? { ageConfirmed: true, ageNoticeVersion: v } : {};
+}
