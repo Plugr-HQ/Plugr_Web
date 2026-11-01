@@ -25,6 +25,8 @@ export async function POST(request: Request) {
     latitude?: number | null;
     longitude?: number | null;
     address?: string | null;
+    ageConfirmed?: boolean;
+    ageNoticeVersion?: string;
   };
 
   try {
@@ -74,6 +76,8 @@ export async function POST(request: Request) {
         latitude: body.latitude ?? null,
         longitude: body.longitude ?? null,
         address: body.address ?? null,
+        ageConfirmed: body.ageConfirmed === true,
+        ageNoticeVersion: typeof body.ageNoticeVersion === 'string' ? body.ageNoticeVersion : undefined,  
       }),
     });
 

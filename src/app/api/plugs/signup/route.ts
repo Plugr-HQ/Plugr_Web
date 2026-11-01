@@ -19,7 +19,7 @@ const MIN_PASSWORD = 8; // must match the backend's @MinLength(8) and the form's
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export async function POST(request: Request) {
-  let body: {
+    let body: {
     firstName?: string;
     lastName?: string;
     phone?: string;
@@ -29,6 +29,8 @@ export async function POST(request: Request) {
     address?: string | null;
     latitude?: number | null;
     longitude?: number | null;
+    ageConfirmed?: boolean;
+    ageNoticeVersion?: string;
   };
 
   try {
@@ -82,6 +84,8 @@ export async function POST(request: Request) {
         latitude: body.latitude ?? null,
         longitude: body.longitude ?? null,
         address: body.address ?? null,
+        ageConfirmed: body.ageConfirmed === true,
+        ageNoticeVersion: typeof body.ageNoticeVersion === 'string' ? body.ageNoticeVersion : undefined,
       }),
     });
 

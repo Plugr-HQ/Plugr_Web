@@ -1,6 +1,7 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 const REFRESH_KEY = 'plugr_refresh_token';
+import { ageNoticeVersion } from "./consent";
 
 // Shared in-flight refresh so a burst of parallel 401s (e.g. the dashboard's several calls)
 // triggers exactly one /auth/refresh, and they all wait on the same result.
@@ -48,6 +49,11 @@ export const setToken = (token: string) => {
     localStorage.setItem('plugr_token', token);
   }
 };
+  
+export function ageFields(): { ageConfirmed: true; ageNoticeVersion: string } | Record<string, never> {
+  const v = ageNoticeVersion();
+  return v ? { ageConfirmed: true, ageNoticeVersion: v } : {};
+}
 
 export const getToken = () => {
   if (typeof window !== 'undefined') {
@@ -92,7 +98,7 @@ export const api = {
       const res = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ phone, role, name }),
+        body: JSON.stringify({ phone, role, name, ...ageFields() }),
       });
       if (!res.ok) throw new Error('Registration failed');
       return res.json();
@@ -102,7 +108,7 @@ export const api = {
       const res = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ phone, ...(channel ? { channel } : {}) }),
+        body: JSON.stringify({ phone, ...(channel ? { channel } : {}),}),
       });
       if (!res.ok) {
         // Surface the backend's own message. It previously threw a flat 'Login failed', which
@@ -126,6 +132,7 @@ export const api = {
           phone,
           ...(role ? { role } : {}),
           ...(channel ? { channel } : {}),
+          ...ageFields(),
         }),
       });
       if (!res.ok) {
@@ -144,7 +151,7 @@ export const api = {
       const res = await fetch(`${API_URL}/auth/otp/verify`, {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ phone, otp, ...(verifyOnly ? { verifyOnly: true } : {}) }),
+        body: JSON.stringify({ phone, otp, ...(verifyOnly ? { verifyOnly: true } : {}), ...ageFields() }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({} as any));
@@ -160,7 +167,7 @@ export const api = {
       const res = await fetch(`${API_URL}/auth/login/password`, {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ phone, password }),
+        body: JSON.stringify({ phone, password, ...ageFields() }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({} as any));

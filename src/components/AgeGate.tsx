@@ -4,27 +4,33 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { PrimaryButton } from './ui';
 import { isAgeBlocked, readAgeConfirmation, storeAgeBlocked, storeAgeConfirmation } from '@/src/lib/consent';
 
-function AgeGateDialog({ open, onYes, onNo, onCancel }: { open: boolean; onYes: () => void; onNo: () => void; onCancel: () => void }) {
+type View = 'closed' | 'ask' | 'declined';
+
+function AgeGateDialog({ view, onYes, onNo, onDismiss }: { view: View; onYes: () => void; onNo: () => void; onDismiss: () => void }) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const open = view !== 'closed';
 
   useEffect(() => {
     if (!open) return;
     const before = document.activeElement as HTMLElement | null;
     const overflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    dialogRef.current?.querySelector('button')?.focus();
     return () => {
       document.body.style.overflow = overflow;
       before?.focus?.();
     };
   }, [open]);
 
+  useEffect(() => {
+    if (open) dialogRef.current?.querySelector('button')?.focus();
+  }, [open, view]);
+
   if (!open) return null;
 
   function onKeyDown(e: KeyboardEvent) {
     if (e.key === 'Escape') {
       e.stopPropagation();
-      onCancel();
+      onDismiss();
       return;
     }
     if (e.key !== 'Tab') return;
@@ -42,11 +48,13 @@ function AgeGateDialog({ open, onYes, onNo, onCancel }: { open: boolean; onYes: 
     }
   }
 
+  const declined = view === 'declined';
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onCancel();
+        if (e.target === e.currentTarget) onDismiss();
       }}
     >
       <div
@@ -59,20 +67,28 @@ function AgeGateDialog({ open, onYes, onNo, onCancel }: { open: boolean; onYes: 
         className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
       >
         <h2 id="age-gate-title" className="text-xl font-bold text-slate">
-          Are you 18 or older?
+          {declined ? 'Plugr is for people 18 and over' : 'Are you 18 or older?'}
         </h2>
         <p id="age-gate-desc" className="mt-2 text-sm text-slate/70">
-          Plugr is for people 18 and over. We ask before we take your name or phone number.
+          {declined
+            ? 'We can’t continue, and we haven’t kept any of the details you entered.'
+            : 'Plugr is for people 18 and over. We ask before we take your name or phone number.'}
         </p>
         <div className="mt-6 space-y-3">
-          <PrimaryButton onClick={onYes}>Yes, I’m 18 or older</PrimaryButton>
-          <button
-            type="button"
-            onClick={onNo}
-            className="w-full rounded-xl border border-slate/20 px-4 py-3 text-sm font-semibold text-slate hover:bg-slate/5"
-          >
-            No, I’m under 18
-          </button>
+          {declined ? (
+            <PrimaryButton onClick={onDismiss}>OK</PrimaryButton>
+          ) : (
+            <>
+              <PrimaryButton onClick={onYes}>Yes, I’m 18 or older</PrimaryButton>
+              <button
+                type="button"
+                onClick={onNo}
+                className="w-full rounded-xl border border-slate/20 px-4 py-3 text-sm font-semibold text-slate hover:bg-slate/5"
+              >
+                No, I’m under 18
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -82,9 +98,11 @@ function AgeGateDialog({ open, onYes, onNo, onCancel }: { open: boolean; onYes: 
 /**
  * Run an action only once the person has confirmed they are 18 or older. Asked once per browser.
  * `ask(action)` runs it straight away if they already said yes, otherwise opens the dialog first.
+ * Render `dialog` once in the page. `blocked` is true after a "No" on this browser (the sign-up
+ * form uses it to show its own screen; login pages ignore it so a shared family phone isn't locked out).
  */
 export function useAgeGate(opts: { onUnderage?: () => void } = {}) {
-  const [open, setOpen] = useState(false);
+  const [view, setView] = useState<View>('closed');
   const [blocked, setBlocked] = useState(false);
   const pending = useRef<(() => void) | null>(null);
 
@@ -96,12 +114,12 @@ export function useAgeGate(opts: { onUnderage?: () => void } = {}) {
   function ask(action: () => void) {
     if (readAgeConfirmation()) return action();
     pending.current = action;
-    setOpen(true);
+    setView('ask');
   }
 
   function yes() {
     storeAgeConfirmation();
-    setOpen(false);
+    setView('closed');
     const run = pending.current;
     pending.current = null;
     run?.();
@@ -110,16 +128,16 @@ export function useAgeGate(opts: { onUnderage?: () => void } = {}) {
   function no() {
     storeAgeBlocked();
     pending.current = null;
-    setOpen(false);
     opts.onUnderage?.();
     setBlocked(true);
+    setView('declined');
   }
 
-  function cancel() {
+  function dismiss() {
     pending.current = null;
-    setOpen(false);
+    setView('closed');
   }
 
-  const dialog = <AgeGateDialog open={open} onYes={yes} onNo={no} onCancel={cancel} />;
+  const dialog = <AgeGateDialog view={view} onYes={yes} onNo={no} onDismiss={dismiss} />;
   return { ask, dialog, blocked };
 }
