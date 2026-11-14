@@ -57,7 +57,7 @@ export function Label({ children, className }: { children: React.ReactNode; clas
 
 export function Card({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('rounded-[22px] bg-white border border-pitch-black/[0.06] card-shadow', className)}>{children}</div>
+    <div className={cn('rounded-[22px] bg-white border border-pitch-black/6 card-shadow', className)}>{children}</div>
   );
 }
 
@@ -190,7 +190,7 @@ export function StatusChip({ status, className }: { status: string; className?: 
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-[10.5px] font-bold uppercase tracking-[0.1em]',
+        'inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-[10.5px] font-bold uppercase tracking-widest',
         STATUS_TONE[status] ?? 'bg-slate/12 text-slate',
         className
       )}

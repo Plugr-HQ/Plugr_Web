@@ -195,10 +195,10 @@ export default function AdminLoginPage() {
 
           <div className="relative z-10 max-w-sm">
             <h2 className="font-display text-4xl leading-[1.1] text-pitch-black">
-              Welcome back to Plugr admin.
+              Welcome back Admin.
             </h2>
             <p className="mt-4 text-base leading-relaxed text-slate">
-              Sign in with your admin phone number to pick up where you left off.
+              Sign in to access your personalized dashboard and pick up where you left off.
             </p>
           </div>
 
@@ -296,7 +296,7 @@ export default function AdminLoginPage() {
                 ))}
               </div>
 
-              <div aria-live="polite" className="min-h-[1.25rem]">
+              <div aria-live="polite" className="min-h-">
                 {busy && (
                   <div className="flex items-center gap-2 text-sm text-slate">
                     <Loader2 className="h-4 w-4 animate-spin text-gold" /> Checking code…
