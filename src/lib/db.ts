@@ -3,8 +3,8 @@
 // rest of Plugr_Web uses). A direct connection means full privileges and no PostgREST/RLS
 // gate — and no service-role key needed.
 //
-// This is the raw pool. Route handlers should not build SQL against it directly; they go
-// through src/lib/repo, which picks the hack_ or core table set per request.
+// This is the raw pool, used by the auth helpers. Job and payment state are no longer read or
+// written here: they belong to the NestJS backend, reached through the same-origin proxies.
 
 import { Pool } from 'pg';
 
