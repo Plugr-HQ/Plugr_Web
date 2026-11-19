@@ -1,7 +1,8 @@
 // src/app/app/plug-job/[jobId]/page.tsx
-// M1 Plug job-card — the Plug views an assigned job and takes the four state-machine actions on it:
-// accept / decline the assignment, submit a quote, and mark a requested visit complete (plus the
-// request-visit step the state machine requires before visit-done is reachable).
+// Plug job-card — the Plug views an assigned job and takes the state-machine actions on it:
+// accept / decline the assignment, submit a quote, mark a requested visit complete (plus the
+// request-visit step the state machine requires before visit-done is reachable), and — once the
+// client has paid — the work steps: on my way → arrived → start → done. The client confirms after.
 //
 // Wiring pattern is copied from the admin Dispatch Queue: it calls same-origin proxy routes under
 // /api/plug/jobs/[jobId]/* that forward the bearer token to the real NestJS M1 backend. It shows
@@ -93,8 +94,11 @@ export default function PlugJobCard() {
 
   const flash = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 4500); };
 
-  // No-body actions: accept / decline / request-visit / visit-done.
-  async function act(action: 'accept' | 'decline' | 'request-visit' | 'visit-done', okMsg: string) {
+  // No-body actions: accept / decline / request-visit / visit-done, and the after-payment work steps.
+  async function act(
+    action: 'accept' | 'decline' | 'request-visit' | 'visit-done' | 'en-route' | 'arrived' | 'start' | 'done',
+    okMsg: string,
+  ) {
     if (busy) return;
     setBusy(action);
     setError(null);
@@ -342,8 +346,33 @@ export default function PlugJobCard() {
             />
           )}
 
-          {/* Terminal / later stages: informational only, no plug action from this card. */}
-          {['QUOTE_ACCEPTED', 'ESCROW_HELD', 'EN_ROUTE', 'ARRIVED', 'IN_PROGRESS', 'AWAITING_CONFIRM', 'COMPLETED', 'RELEASED', 'CANCELLED', 'EXPIRED', 'SEARCHING_PLUG'].includes(status) && (
+          {/* After payment: the work itself, one step at a time. The client confirms the last step. */}
+          {status === 'ESCROW_HELD' && (
+            <GoldButton onClick={() => act('en-route', 'Marked on the way — the client has been told.')} loading={busy === 'en-route'} disabled={!!busy}>
+              <Navigation className="h-4 w-4" /> {busy === 'en-route' ? 'Updating…' : 'I’m on my way'}
+            </GoldButton>
+          )}
+
+          {status === 'EN_ROUTE' && (
+            <PrimaryButton onClick={() => act('arrived', 'Marked arrived — the client has been told.')} loading={busy === 'arrived'} disabled={!!busy}>
+              <MapPin className="h-4 w-4" /> {busy === 'arrived' ? 'Updating…' : 'I’ve arrived'}
+            </PrimaryButton>
+          )}
+
+          {status === 'ARRIVED' && (
+            <PrimaryButton onClick={() => act('start', 'Work started.')} loading={busy === 'start'} disabled={!!busy}>
+              <Wrench className="h-4 w-4" /> {busy === 'start' ? 'Updating…' : 'Start the work'}
+            </PrimaryButton>
+          )}
+
+          {status === 'IN_PROGRESS' && (
+            <GoldButton onClick={() => act('done', 'Marked done — waiting for the client to confirm.')} loading={busy === 'done'} disabled={!!busy}>
+              <Check className="h-4 w-4" /> {busy === 'done' ? 'Updating…' : 'Mark the work done'}
+            </GoldButton>
+          )}
+
+          {/* Terminal / waiting stages: informational only, no plug action from this card. */}
+          {['QUOTE_ACCEPTED', 'AWAITING_CONFIRM', 'COMPLETED', 'RELEASED', 'CANCELLED', 'EXPIRED', 'SEARCHING_PLUG'].includes(status) && (
             <p className="text-center text-sm text-slate">No action needed from you right now.</p>
           )}
         </>

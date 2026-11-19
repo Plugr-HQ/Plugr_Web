@@ -1,11 +1,6 @@
 // TODO: Follow-up pass to migrate other production screens under src/app/app/**
 // that still use jsonFetch instead of apiFetch:
-// - src/app/app/book/[plugId]/page.tsx
-// - src/app/app/confirm/[jobId]/page.tsx
-// - src/app/app/pay/[jobId]/page.tsx
-// - src/app/app/plug/[jobId]/page.tsx
 // - src/app/app/plugs/[plugId]/page.tsx
-// - src/app/app/receipt/[jobId]/page.tsx
 // - src/app/app/wallet/[plugId]/page.tsx
 // - src/app/app/withdraw/[plugId]/page.tsx
 

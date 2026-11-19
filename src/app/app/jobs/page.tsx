@@ -16,6 +16,7 @@ import { Card, Money } from '@/src/components/ui';
 import { cn } from '@/src/lib/utils';
 import { api, getToken } from '@/src/lib/api';
 import { JobListSkeleton } from '@/src/components/Skeleton';
+import { rungFor } from '@/src/lib/jobStatusLadder';
 
 type Job = {
   id: string;
@@ -25,34 +26,33 @@ type Job = {
   address?: string | null;
   price?: number | null;
   escrowAmount?: number | null;
+  jobAmount?: number | null;
   createdAt: string;
   category?: { name?: string; code?: string } | null;
   plug?: { user?: { name?: string } } | null;
 };
 
-// JobStatus enum values as they come off the backend (job-state-machine.ts).
-const STATUS_META: Record<string, { label: string; cls: string; icon: typeof Clock }> = {
-  PENDING: { label: 'Pending', cls: 'bg-slate/15 text-slate', icon: Clock },
-  SEARCHING_PLUG: { label: 'Finding a Plug', cls: 'bg-amber-100 text-amber-700', icon: Clock },
-  PLUG_ASSIGNED: { label: 'Plug Assigned', cls: 'bg-amber-100 text-amber-700', icon: Clock },
-  CLIENT_ACCEPTED: { label: 'Accepted', cls: 'bg-blue-100 text-blue-700', icon: Clock },
-  ESCROW_HELD: { label: 'Payment Held', cls: 'bg-blue-100 text-blue-700', icon: Clock },
-  PLUG_ACCEPTED: { label: 'In Progress', cls: 'bg-blue-100 text-blue-700', icon: Clock },
-  IN_PROGRESS: { label: 'In Progress', cls: 'bg-blue-100 text-blue-700', icon: Clock },
-  COMPLETED: { label: 'Completed', cls: 'bg-green-100 text-green-700', icon: CheckCircle2 },
-  CANCELLED: { label: 'Cancelled', cls: 'bg-red-100 text-red-700', icon: XCircle },
-  EXPIRED: { label: 'Expired', cls: 'bg-red-100 text-red-700', icon: XCircle },
-};
-
-const ACTIVE = new Set(['PENDING', 'SEARCHING_PLUG', 'PLUG_ASSIGNED', 'CLIENT_ACCEPTED', 'PLUG_ACCEPTED', 'IN_PROGRESS']);
+// Status wording comes from the shared ladder (src/lib/jobStatusLadder.ts), in the client's voice —
+// the same words the client job page uses. This map used to predate the quote flow: it had no entry
+// for QUOTED, AWAITING_CONFIRM and the rest, and fell back to printing the raw enum.
+const DONE = new Set(['COMPLETED', 'RELEASED']);
+const STOPPED = new Set(['CANCELLED', 'EXPIRED', 'DISPUTED']);
+// Everything that isn't finished or stopped is still active.
+const isActive = (status: string) => !DONE.has(status) && !STOPPED.has(status);
 
 function StatusBadge({ status }: { status: string }) {
-  const meta = STATUS_META[status] ?? { label: status, cls: 'bg-slate/15 text-slate', icon: Clock };
-  const Icon = meta.icon;
+  // The ladder's client wording for ESCROW_HELD is "pay to start" — wrong once they have paid.
+  const label = status === 'ESCROW_HELD' ? 'Payment secured' : rungFor(status).canonical;
+  const Icon = DONE.has(status) ? CheckCircle2 : STOPPED.has(status) ? XCircle : Clock;
+  const cls = DONE.has(status)
+    ? 'bg-green-100 text-green-700'
+    : STOPPED.has(status)
+      ? 'bg-red-100 text-red-700'
+      : 'bg-amber-100 text-amber-700';
   return (
-    <div className={cn('inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase', meta.cls)}>
+    <div className={cn('inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase', cls)}>
       <Icon className="w-3 h-3" />
-      {meta.label}
+      {label}
     </div>
   );
 }
@@ -73,8 +73,8 @@ export default function MyJobsPage() {
       .catch((e) => setError(e?.message ?? 'Could not load your jobs.'));
   }, [router]);
 
-  const active = jobs?.filter((j) => ACTIVE.has(j.status)) ?? [];
-  const history = jobs?.filter((j) => !ACTIVE.has(j.status)) ?? [];
+  const active = jobs?.filter((j) => isActive(j.status)) ?? [];
+  const history = jobs?.filter((j) => !isActive(j.status)) ?? [];
 
   return (
     <Shell eyebrow="Your account" title="My Jobs" subtitle="Everything you've booked on Plugr." back="/app/browse">
@@ -99,7 +99,7 @@ export default function MyJobsPage() {
           <h2 className="text-xs font-bold text-slate uppercase tracking-widest mb-4">Active</h2>
           <div className="space-y-3">
             {active.map((job) => (
-              <JobRow key={job.id} job={job} onClick={() => router.push(`/app/confirm/${job.id}`)} />
+              <JobRow key={job.id} job={job} onClick={() => router.push(`/app/jobs/${job.id}`)} />
             ))}
           </div>
         </div>
@@ -112,7 +112,7 @@ export default function MyJobsPage() {
             {history.map((job) => (
               <button
                 key={job.id}
-                onClick={() => router.push(`/app/receipt/${job.id}`)}
+                onClick={() => router.push(`/app/jobs/${job.id}`)}
                 className="w-full p-4 flex items-center justify-between hover:bg-bone/40 transition-colors text-left"
               >
                 <div className="min-w-0">
@@ -149,7 +149,7 @@ function JobRow({ job, onClick }: { job: Job; onClick: () => void }) {
       </div>
 
       <div className="flex items-center justify-between pt-3 border-t border-bone">
-        <Money amount={job.escrowAmount ?? job.price} size="sm" />
+        <Money amount={job.jobAmount ?? job.escrowAmount ?? job.price} size="sm" />
         <button
           onClick={onClick}
           className="bg-pitch-black text-white px-4 py-2 rounded-pill text-xs font-bold hover:bg-gold hover:text-pitch-black transition-colors flex items-center gap-1"
